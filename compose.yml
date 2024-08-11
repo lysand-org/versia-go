@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16.2-alpine
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  nats:
+    image: nats:2.9.25-scratch
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: "--js"
