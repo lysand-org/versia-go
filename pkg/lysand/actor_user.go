@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 )
 
 // User represents a user object in the Lysand protocol. For more information, see the [Spec].
@@ -105,13 +106,13 @@ func (c *FederationClient) GetUser(ctx context.Context, uri *url.URL) (*User, er
 		return nil, err
 	}
 
-	date, sigHeader, err := ExtractFederationHeaders(resp.Header)
+	fedHeaders, err := ExtractFederationHeaders(resp.Header)
 	if err != nil {
 		return nil, err
 	}
 
 	v := Verifier{ed25519.PublicKey(user.PublicKey.PublicKey)}
-	if !v.Verify("GET", date, uri.Host, uri.Path, body, sigHeader) {
+	if !v.Verify("GET", uri, body, fedHeaders) {
 		c.log.V(2).Info("signature verification failed", "user", user.URI.String())
 		return nil, fmt.Errorf("signature verification failed")
 	}
@@ -128,9 +129,12 @@ func (c *FederationClient) SendToInbox(ctx context.Context, signer Signer, user 
 		return nil, err
 	}
 
-	date := time.Now()
+	nonce := make([]byte, 32)
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, err
+	}
 
-	sigData := NewSignatureData("POST", date, uri.Host, uri.Path, hashSHA256(body))
+	sigData := NewSignatureData("POST", base64.StdEncoding.EncodeToString(nonce), uri, hashSHA256(body))
 	sig := signer.Sign(*sigData)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", uri.String(), bytes.NewReader(body))
@@ -138,8 +142,7 @@ func (c *FederationClient) SendToInbox(ctx context.Context, signer Signer, user 
 		return nil, err
 	}
 
-	req.Header.Set("Date", TimeFromStd(date).String())
-	req.Header.Set("Signature", sig.String())
+	sig.Inject(req.Header)
 
 	_, respBody, err := c.doReq(req)
 	if err != nil {

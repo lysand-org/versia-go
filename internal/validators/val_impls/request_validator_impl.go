@@ -44,13 +44,13 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 
 	r = r.WithContext(ctx)
 
-	date, sigHeader, err := lysand.ExtractFederationHeaders(r.Header)
+	fedHeaders, err := lysand.ExtractFederationHeaders(r.Header)
 	if err != nil {
 		return err
 	}
 
 	// TODO: Fetch user from database instead of using the URI
-	user, err := i.repositories.Users().Resolve(ctx, lysand.URLFromStd(sigHeader.KeyID))
+	user, err := i.repositories.Users().Resolve(ctx, lysand.URLFromStd(fedHeaders.SignedBy))
 	if err != nil {
 		return err
 	}
@@ -60,13 +60,13 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 		return err
 	}
 
-	if !(lysand.Verifier{PublicKey: user.PublicKey}).Verify(r.Method, date, r.Host, r.URL.Path, body, sigHeader) {
-		i.log.Info("signature verification failed", "user", user.URI, "ur", r.URL.Path)
+	if !(lysand.Verifier{PublicKey: user.PublicKey}).Verify(r.Method, r.URL, body, fedHeaders) {
+		i.log.Info("signature verification failed", "user", user.URI, "url", r.URL.Path)
 		s.CaptureError(ErrInvalidSignature)
 
 		return ErrInvalidSignature
 	} else {
-		i.log.V(2).Info("signature verification succeeded", "user", user.URI, "ur", r.URL.Path)
+		i.log.V(2).Info("signature verification succeeded", "user", user.URI, "url", r.URL.Path)
 	}
 
 	return nil
