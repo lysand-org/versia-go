@@ -50,7 +50,7 @@ func NewClient(opts ...Opt) *FederationClient {
 
 	c.httpC.Transport = &federationClientHTTPTransport{
 		inner:     c.httpC.Transport,
-		useragent: "github.com/thedevminertv/go-lysand#0.0.1",
+		useragent: "github.com/lysand-org/versia-go/pkg/lysand#0.0.1",
 	}
 
 	return c
