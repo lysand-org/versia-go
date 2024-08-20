@@ -36,7 +36,7 @@ func NewFollowRepositoryImpl(db *ent.Client, log logr.Logger, telemetry *unitel.
 }
 
 func (i FollowRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*entity.Follow, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.FollowRepositoryImpl.GetByID").
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/FollowRepositoryImpl.GetByID").
 		AddAttribute("followID", id)
 	defer s.End()
 	ctx = s.Context()
@@ -58,7 +58,7 @@ func (i FollowRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*entit
 }
 
 func (i FollowRepositoryImpl) Follow(ctx context.Context, follower, followee *entity.User) (*entity.Follow, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.FollowRepositoryImpl.Follow").
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/FollowRepositoryImpl.Follow").
 		AddAttribute("follower", follower.URI).
 		AddAttribute("followee", followee.URI)
 	defer s.End()
@@ -101,7 +101,7 @@ func (i FollowRepositoryImpl) Follow(ctx context.Context, follower, followee *en
 }
 
 func (i FollowRepositoryImpl) Unfollow(ctx context.Context, follower, followee *entity.User) error {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.FollowRepositoryImpl.Unfollow").
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/FollowRepositoryImpl.Unfollow").
 		AddAttribute("follower", follower.URI).
 		AddAttribute("followee", followee.URI)
 	defer s.End()
@@ -121,7 +121,7 @@ func (i FollowRepositoryImpl) Unfollow(ctx context.Context, follower, followee *
 }
 
 func (i FollowRepositoryImpl) AcceptFollow(ctx context.Context, follower, followee *entity.User) error {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.FollowRepositoryImpl.AcceptFollow").
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/FollowRepositoryImpl.AcceptFollow").
 		AddAttribute("follower", follower.URI).
 		AddAttribute("followee", followee.URI)
 	defer s.End()
@@ -141,7 +141,7 @@ func (i FollowRepositoryImpl) AcceptFollow(ctx context.Context, follower, follow
 }
 
 func (i FollowRepositoryImpl) RejectFollow(ctx context.Context, follower, followee *entity.User) error {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.FollowRepositoryImpl.RejectFollow").
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/FollowRepositoryImpl.RejectFollow").
 		AddAttribute("follower", follower.URI).
 		AddAttribute("followee", followee.URI)
 	defer s.End()

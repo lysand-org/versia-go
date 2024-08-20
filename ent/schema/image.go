@@ -9,7 +9,7 @@ type Image struct{ ent.Schema }
 
 func (Image) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("url"),
+		field.String("url").Validate(ValidateURI),
 		field.String("mimeType"),
 	}
 }

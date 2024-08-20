@@ -2,6 +2,7 @@ package entity
 
 import (
 	"github.com/lysand-org/versia-go/internal/helpers"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/lysand/crypto"
 	"net/url"
 
 	"github.com/lysand-org/versia-go/ent"
@@ -12,12 +13,14 @@ import (
 type User struct {
 	*ent.User
 
-	URI       *lysand.URL
-	Inbox     *lysand.URL
-	Outbox    *lysand.URL
-	Featured  *lysand.URL
-	Followers *lysand.URL
-	Following *lysand.URL
+	URI        *lysand.URL
+	PKActorURI *lysand.URL
+	PublicKey  *lysand.SPKIPublicKey
+	Inbox      *lysand.URL
+	Outbox     *lysand.URL
+	Featured   *lysand.URL
+	Followers  *lysand.URL
+	Following  *lysand.URL
 
 	DisplayName     string
 	LysandAvatar    lysand.ImageContentTypeMap
@@ -25,38 +28,52 @@ type User struct {
 	Signer          lysand.Signer
 }
 
-func NewUser(dbUser *ent.User) (*User, error) {
-	u := &User{User: dbUser}
+func NewUser(dbData *ent.User) (*User, error) {
+	u := &User{
+		User: dbData,
+		PublicKey: &lysand.SPKIPublicKey{
+			Key:       nil,
+			Algorithm: dbData.PublicKeyAlgorithm,
+		},
+		DisplayName: dbData.Username,
 
-	u.DisplayName = u.Username
-	if dbUser.DisplayName != nil {
-		u.DisplayName = *dbUser.DisplayName
+		LysandAvatar:    lysandAvatar(dbData),
+		LysandBiography: lysandBiography(dbData),
+	}
+
+	if dbData.DisplayName != nil {
+		u.DisplayName = *dbData.DisplayName
 	}
 
 	var err error
-	if u.URI, err = lysand.ParseURL(dbUser.URI); err != nil {
-		return nil, err
-	}
-	if u.Inbox, err = lysand.ParseURL(dbUser.Inbox); err != nil {
-		return nil, err
-	}
-	if u.Outbox, err = lysand.ParseURL(dbUser.Outbox); err != nil {
-		return nil, err
-	}
-	if u.Featured, err = lysand.ParseURL(dbUser.Featured); err != nil {
-		return nil, err
-	}
-	if u.Followers, err = lysand.ParseURL(dbUser.Followers); err != nil {
-		return nil, err
-	}
-	if u.Following, err = lysand.ParseURL(dbUser.Following); err != nil {
+	if u.PublicKey.Key, err = versiacrypto.ToTypedKey(dbData.PublicKeyAlgorithm, dbData.PublicKey); err != nil {
 		return nil, err
 	}
 
-	u.LysandAvatar = lysandAvatar(dbUser)
-	u.LysandBiography = lysandBiography(dbUser)
+	if u.URI, err = lysand.ParseURL(dbData.URI); err != nil {
+		return nil, err
+	}
+	if u.PKActorURI, err = lysand.ParseURL(dbData.PublicKeyActor); err != nil {
+		return nil, err
+	}
+	if u.Inbox, err = lysand.ParseURL(dbData.Inbox); err != nil {
+		return nil, err
+	}
+	if u.Outbox, err = lysand.ParseURL(dbData.Outbox); err != nil {
+		return nil, err
+	}
+	if u.Featured, err = lysand.ParseURL(dbData.Featured); err != nil {
+		return nil, err
+	}
+	if u.Followers, err = lysand.ParseURL(dbData.Followers); err != nil {
+		return nil, err
+	}
+	if u.Following, err = lysand.ParseURL(dbData.Following); err != nil {
+		return nil, err
+	}
+
 	u.Signer = lysand.Signer{
-		PrivateKey: dbUser.PrivateKey,
+		PrivateKey: dbData.PrivateKey,
 		UserURL:    u.URI.ToStd(),
 	}
 
@@ -76,9 +93,10 @@ func (u User) ToLysand() *lysand.User {
 		Avatar:      u.LysandAvatar,
 		Header:      imageMap(u.Edges.HeaderImage),
 		Indexable:   u.Indexable,
-		PublicKey: lysand.PublicKey{
-			Actor:     utils.UserAPIURL(u.ID),
-			PublicKey: lysand.SPKIPublicKey(u.PublicKey),
+		PublicKey: lysand.UserPublicKey{
+			Actor:     u.PKActorURI,
+			Algorithm: u.PublicKeyAlgorithm,
+			Key:       u.PublicKey,
 		},
 		Bio:    u.LysandBiography,
 		Fields: u.Fields,
@@ -88,10 +106,6 @@ func (u User) ToLysand() *lysand.User {
 		Featured:  u.Featured,
 		Followers: u.Followers,
 		Following: u.Following,
-
-		// TODO: Remove these, they got deprecated and moved into an extension
-		Likes:    utils.UserLikesAPIURL(u.ID),
-		Dislikes: utils.UserDislikesAPIURL(u.ID),
 	}
 }
 

@@ -15,32 +15,38 @@ type Factory[T any] func(db *ent.Client, log logr.Logger, telemetry *unitel.Tele
 var _ repository.Manager = (*ManagerImpl)(nil)
 
 type ManagerImpl struct {
-	users   repository.UserRepository
-	notes   repository.NoteRepository
-	follows repository.FollowRepository
+	users            repository.UserRepository
+	notes            repository.NoteRepository
+	follows          repository.FollowRepository
+	instanceMetadata repository.InstanceMetadataRepository
 
-	uRFactory Factory[repository.UserRepository]
-	nRFactory Factory[repository.NoteRepository]
-	fRFactory Factory[repository.FollowRepository]
+	uRFactory  Factory[repository.UserRepository]
+	nRFactory  Factory[repository.NoteRepository]
+	fRFactory  Factory[repository.FollowRepository]
+	imRFactory Factory[repository.InstanceMetadataRepository]
 
 	db        *ent.Client
 	log       logr.Logger
 	telemetry *unitel.Telemetry
 }
 
-func NewManagerImpl(db *ent.Client, telemetry *unitel.Telemetry, log logr.Logger, userRepositoryFunc Factory[repository.UserRepository], noteRepositoryFunc Factory[repository.NoteRepository], followRepositoryFunc Factory[repository.FollowRepository]) *ManagerImpl {
-	userRepository := userRepositoryFunc(db, log.WithName("users"), telemetry)
-	noteRepository := noteRepositoryFunc(db, log.WithName("notes"), telemetry)
-	followRepository := followRepositoryFunc(db, log.WithName("follows"), telemetry)
-
+func NewManagerImpl(
+	db *ent.Client, telemetry *unitel.Telemetry, log logr.Logger,
+	userRepositoryFunc Factory[repository.UserRepository],
+	noteRepositoryFunc Factory[repository.NoteRepository],
+	followRepositoryFunc Factory[repository.FollowRepository],
+	instanceMetadataRepositoryFunc Factory[repository.InstanceMetadataRepository],
+) *ManagerImpl {
 	return &ManagerImpl{
-		users:   userRepository,
-		notes:   noteRepository,
-		follows: followRepository,
+		users:            userRepositoryFunc(db, log.WithName("users"), telemetry),
+		notes:            noteRepositoryFunc(db, log.WithName("notes"), telemetry),
+		follows:          followRepositoryFunc(db, log.WithName("follows"), telemetry),
+		instanceMetadata: instanceMetadataRepositoryFunc(db, log.WithName("instanceMetadata"), telemetry),
 
-		uRFactory: userRepositoryFunc,
-		nRFactory: noteRepositoryFunc,
-		fRFactory: followRepositoryFunc,
+		uRFactory:  userRepositoryFunc,
+		nRFactory:  noteRepositoryFunc,
+		fRFactory:  followRepositoryFunc,
+		imRFactory: instanceMetadataRepositoryFunc,
 
 		db:        db,
 		log:       log,
@@ -49,11 +55,17 @@ func NewManagerImpl(db *ent.Client, telemetry *unitel.Telemetry, log logr.Logger
 }
 
 func (i *ManagerImpl) withDB(db *ent.Client) *ManagerImpl {
-	return NewManagerImpl(db, i.telemetry, i.log, i.uRFactory, i.nRFactory, i.fRFactory)
+	return NewManagerImpl(
+		db, i.telemetry, i.log,
+		i.uRFactory,
+		i.nRFactory,
+		i.fRFactory,
+		i.imRFactory,
+	)
 }
 
 func (i *ManagerImpl) Atomic(ctx context.Context, fn func(ctx context.Context, tx repository.Manager) error) error {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.ManagerImpl.Atomic")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/ManagerImpl.Atomic")
 	defer s.End()
 	ctx = s.Context()
 
@@ -87,4 +99,8 @@ func (i *ManagerImpl) Notes() repository.NoteRepository {
 
 func (i *ManagerImpl) Follows() repository.FollowRepository {
 	return i.follows
+}
+
+func (i *ManagerImpl) InstanceMetadata() repository.InstanceMetadataRepository {
+	return i.instanceMetadata
 }

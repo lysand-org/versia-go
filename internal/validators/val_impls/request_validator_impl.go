@@ -1,17 +1,15 @@
 package val_impls
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/gofiber/fiber/v2"
 	"github.com/lysand-org/versia-go/internal/repository"
+	"github.com/lysand-org/versia-go/internal/utils"
 	"github.com/lysand-org/versia-go/internal/validators"
 	"github.com/lysand-org/versia-go/pkg/lysand"
-	"github.com/valyala/fasthttp/fasthttpadaptor"
-	"io"
 	"net/http"
 )
 
@@ -38,7 +36,7 @@ func NewRequestValidator(repositories repository.Manager, telemetry *unitel.Tele
 }
 
 func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) error {
-	s := i.telemetry.StartSpan(ctx, "function", "validator/val_impls.RequestValidatorImpl.Validate")
+	s := i.telemetry.StartSpan(ctx, "function", "val_impls/RequestValidatorImpl.Validate")
 	defer s.End()
 	ctx = s.Context()
 
@@ -55,13 +53,13 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 		return err
 	}
 
-	body, err := copyBody(r)
+	body, err := utils.CopyBody(r)
 	if err != nil {
 		return err
 	}
 
-	if !(lysand.Verifier{PublicKey: user.PublicKey}).Verify(r.Method, r.URL, body, fedHeaders) {
-		i.log.Info("signature verification failed", "user", user.URI, "url", r.URL.Path)
+	if !(lysand.Verifier{PublicKey: user.PublicKey.Key}).Verify(r.Method, r.URL, body, fedHeaders) {
+		i.log.WithCallDepth(1).Info("signature verification failed", "user", user.URI, "url", r.URL.Path)
 		s.CaptureError(ErrInvalidSignature)
 
 		return ErrInvalidSignature
@@ -73,37 +71,14 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 }
 
 func (i RequestValidatorImpl) ValidateFiberCtx(ctx context.Context, c *fiber.Ctx) error {
-	s := i.telemetry.StartSpan(ctx, "function", "validator/val_impls.RequestValidatorImpl.ValidateFiberCtx")
+	s := i.telemetry.StartSpan(ctx, "function", "val_impls/RequestValidatorImpl.ValidateFiberCtx")
 	defer s.End()
 	ctx = s.Context()
 
-	r, err := convertToStdRequest(c)
+	r, err := utils.ConvertToStdRequest(c)
 	if err != nil {
 		return err
 	}
 
 	return i.Validate(ctx, r)
-}
-
-func convertToStdRequest(c *fiber.Ctx) (*http.Request, error) {
-	stdReq := &http.Request{}
-	if err := fasthttpadaptor.ConvertRequest(c.Context(), stdReq, true); err != nil {
-		return nil, err
-	}
-
-	return stdReq, nil
-}
-
-func copyBody(req *http.Request) ([]byte, error) {
-	body, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := req.Body.Close(); err != nil {
-		return nil, err
-	}
-
-	req.Body = io.NopCloser(bytes.NewBuffer(body))
-	return body, nil
 }

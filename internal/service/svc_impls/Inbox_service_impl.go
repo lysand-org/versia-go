@@ -18,29 +18,31 @@ import (
 var _ service.InboxService = (*InboxServiceImpl)(nil)
 
 type InboxServiceImpl struct {
-	repositories repository.Manager
-
 	federationService service.FederationService
+
+	repositories repository.Manager
 
 	telemetry *unitel.Telemetry
 	log       logr.Logger
 }
 
-func NewInboxService(repositories repository.Manager, federationService service.FederationService, telemetry *unitel.Telemetry, log logr.Logger) *InboxServiceImpl {
+func NewInboxService(federationService service.FederationService, repositories repository.Manager, telemetry *unitel.Telemetry, log logr.Logger) *InboxServiceImpl {
 	return &InboxServiceImpl{
-		repositories:      repositories,
 		federationService: federationService,
-		telemetry:         telemetry,
-		log:               log,
+
+		repositories: repositories,
+
+		telemetry: telemetry,
+		log:       log,
 	}
 }
 
 func (i InboxServiceImpl) WithRepositories(repositories repository.Manager) service.InboxService {
-	return NewInboxService(repositories, i.federationService, i.telemetry, i.log)
+	return NewInboxService(i.federationService, repositories, i.telemetry, i.log)
 }
 
 func (i InboxServiceImpl) Handle(ctx context.Context, obj any, userId uuid.UUID) error {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.InboxServiceImpl.Handle")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/InboxServiceImpl.Handle")
 	defer s.End()
 	ctx = s.Context()
 
@@ -87,7 +89,7 @@ func (i InboxServiceImpl) Handle(ctx context.Context, obj any, userId uuid.UUID)
 }
 
 func (i InboxServiceImpl) handleFollow(ctx context.Context, o lysand.Follow, u *entity.User) error {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.InboxServiceImpl.handleFollow")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/InboxServiceImpl.handleFollow")
 	defer s.End()
 	ctx = s.Context()
 
@@ -129,7 +131,7 @@ func (i InboxServiceImpl) handleFollow(ctx context.Context, o lysand.Follow, u *
 }
 
 func (i InboxServiceImpl) handleNote(ctx context.Context, o lysand.Note, u *entity.User) error {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.InboxServiceImpl.handleNote")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/InboxServiceImpl.handleNote")
 	defer s.End()
 	ctx = s.Context()
 

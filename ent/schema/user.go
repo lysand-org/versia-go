@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"crypto/ed25519"
 	"errors"
 	"regexp"
 
@@ -20,17 +19,31 @@ type User struct{ ent.Schema }
 
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("username").Unique().MaxLen(32).Validate(ValidateUsername),
-		field.Bytes("passwordHash").Optional().Nillable(),
+		field.String("username").
+			Unique().
+			MaxLen(32).
+			Validate(ValidateUsername),
+		field.Bytes("passwordHash").
+			Optional().
+			Nillable(),
 
-		field.String("displayName").MaxLen(256).Optional().Nillable(),
-		field.String("biography").Optional().Nillable(),
+		field.String("displayName").
+			MaxLen(256).
+			Optional().
+			Nillable(),
+		field.String("biography").
+			Optional().
+			Nillable(),
 
-		field.Bytes("publicKey").GoType(ed25519.PublicKey([]byte{})),
-		field.Bytes("privateKey").GoType(ed25519.PrivateKey([]byte{})).Optional(),
+		field.Bytes("publicKey"),
+		field.String("publicKeyActor"),
+		field.String("publicKeyAlgorithm"),
+		field.Bytes("privateKey").Optional(),
 
 		field.Bool("indexable").Default(true),
-		field.Enum("privacyLevel").Values("public", "restricted", "private").Default("public"),
+		field.Enum("privacyLevel").
+			Values("public", "restricted", "private").
+			Default("public"),
 
 		field.JSON("fields", []lysand.Field{}).Default([]lysand.Field{}),
 
@@ -51,6 +64,10 @@ func (User) Edges() []ent.Edge {
 
 		edge.From("authoredNotes", Note.Type).Ref("author"),
 		edge.From("mentionedNotes", Note.Type).Ref("mentions"),
+
+		edge.From("servers", InstanceMetadata.Type).Ref("users"),
+		edge.From("moderatedServers", InstanceMetadata.Type).Ref("moderators"),
+		edge.From("administeredServers", InstanceMetadata.Type).Ref("admins"),
 	}
 }
 

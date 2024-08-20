@@ -27,5 +27,5 @@ func (i *Handler) GetLysandUser(c *fiber.Ctx) error {
 		return api_schema.ErrNotFound(map[string]any{"id": parsedRequestedUserID})
 	}
 
-	return c.JSON(u.ToLysand())
+	return i.requestSigner.Sign(c, u.Signer, u.ToLysand())
 }

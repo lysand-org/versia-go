@@ -45,6 +45,18 @@ func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImageMutation", m)
 }
 
+// The InstanceMetadataFunc type is an adapter to allow the use of ordinary
+// function as InstanceMetadata mutator.
+type InstanceMetadataFunc func(context.Context, *ent.InstanceMetadataMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InstanceMetadataFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InstanceMetadataMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InstanceMetadataMutation", m)
+}
+
 // The NoteFunc type is an adapter to allow the use of ordinary
 // function as Note mutator.
 type NoteFunc func(context.Context, *ent.NoteMutation) (ent.Value, error)
@@ -55,18 +67,6 @@ func (f NoteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NoteMutation", m)
-}
-
-// The ServerMetadataFunc type is an adapter to allow the use of ordinary
-// function as ServerMetadata mutator.
-type ServerMetadataFunc func(context.Context, *ent.ServerMetadataMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ServerMetadataFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ServerMetadataMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServerMetadataMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

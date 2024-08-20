@@ -19,8 +19,8 @@ import (
 	"github.com/lysand-org/versia-go/ent/attachment"
 	"github.com/lysand-org/versia-go/ent/follow"
 	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
-	"github.com/lysand-org/versia-go/ent/servermetadata"
 	"github.com/lysand-org/versia-go/ent/user"
 )
 
@@ -35,10 +35,10 @@ type Client struct {
 	Follow *FollowClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// InstanceMetadata is the client for interacting with the InstanceMetadata builders.
+	InstanceMetadata *InstanceMetadataClient
 	// Note is the client for interacting with the Note builders.
 	Note *NoteClient
-	// ServerMetadata is the client for interacting with the ServerMetadata builders.
-	ServerMetadata *ServerMetadataClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -55,8 +55,8 @@ func (c *Client) init() {
 	c.Attachment = NewAttachmentClient(c.config)
 	c.Follow = NewFollowClient(c.config)
 	c.Image = NewImageClient(c.config)
+	c.InstanceMetadata = NewInstanceMetadataClient(c.config)
 	c.Note = NewNoteClient(c.config)
-	c.ServerMetadata = NewServerMetadataClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -148,14 +148,14 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:            ctx,
-		config:         cfg,
-		Attachment:     NewAttachmentClient(cfg),
-		Follow:         NewFollowClient(cfg),
-		Image:          NewImageClient(cfg),
-		Note:           NewNoteClient(cfg),
-		ServerMetadata: NewServerMetadataClient(cfg),
-		User:           NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Attachment:       NewAttachmentClient(cfg),
+		Follow:           NewFollowClient(cfg),
+		Image:            NewImageClient(cfg),
+		InstanceMetadata: NewInstanceMetadataClient(cfg),
+		Note:             NewNoteClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -173,14 +173,14 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:            ctx,
-		config:         cfg,
-		Attachment:     NewAttachmentClient(cfg),
-		Follow:         NewFollowClient(cfg),
-		Image:          NewImageClient(cfg),
-		Note:           NewNoteClient(cfg),
-		ServerMetadata: NewServerMetadataClient(cfg),
-		User:           NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Attachment:       NewAttachmentClient(cfg),
+		Follow:           NewFollowClient(cfg),
+		Image:            NewImageClient(cfg),
+		InstanceMetadata: NewInstanceMetadataClient(cfg),
+		Note:             NewNoteClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -210,7 +210,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Attachment, c.Follow, c.Image, c.Note, c.ServerMetadata, c.User,
+		c.Attachment, c.Follow, c.Image, c.InstanceMetadata, c.Note, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -220,7 +220,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Attachment, c.Follow, c.Image, c.Note, c.ServerMetadata, c.User,
+		c.Attachment, c.Follow, c.Image, c.InstanceMetadata, c.Note, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -235,10 +235,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Follow.mutate(ctx, m)
 	case *ImageMutation:
 		return c.Image.mutate(ctx, m)
+	case *InstanceMetadataMutation:
+		return c.InstanceMetadata.mutate(ctx, m)
 	case *NoteMutation:
 		return c.Note.mutate(ctx, m)
-	case *ServerMetadataMutation:
-		return c.ServerMetadata.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -693,6 +693,187 @@ func (c *ImageClient) mutate(ctx context.Context, m *ImageMutation) (Value, erro
 	}
 }
 
+// InstanceMetadataClient is a client for the InstanceMetadata schema.
+type InstanceMetadataClient struct {
+	config
+}
+
+// NewInstanceMetadataClient returns a client for the InstanceMetadata from the given config.
+func NewInstanceMetadataClient(c config) *InstanceMetadataClient {
+	return &InstanceMetadataClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `instancemetadata.Hooks(f(g(h())))`.
+func (c *InstanceMetadataClient) Use(hooks ...Hook) {
+	c.hooks.InstanceMetadata = append(c.hooks.InstanceMetadata, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `instancemetadata.Intercept(f(g(h())))`.
+func (c *InstanceMetadataClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InstanceMetadata = append(c.inters.InstanceMetadata, interceptors...)
+}
+
+// Create returns a builder for creating a InstanceMetadata entity.
+func (c *InstanceMetadataClient) Create() *InstanceMetadataCreate {
+	mutation := newInstanceMetadataMutation(c.config, OpCreate)
+	return &InstanceMetadataCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InstanceMetadata entities.
+func (c *InstanceMetadataClient) CreateBulk(builders ...*InstanceMetadataCreate) *InstanceMetadataCreateBulk {
+	return &InstanceMetadataCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InstanceMetadataClient) MapCreateBulk(slice any, setFunc func(*InstanceMetadataCreate, int)) *InstanceMetadataCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InstanceMetadataCreateBulk{err: fmt.Errorf("calling to InstanceMetadataClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InstanceMetadataCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InstanceMetadataCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InstanceMetadata.
+func (c *InstanceMetadataClient) Update() *InstanceMetadataUpdate {
+	mutation := newInstanceMetadataMutation(c.config, OpUpdate)
+	return &InstanceMetadataUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InstanceMetadataClient) UpdateOne(im *InstanceMetadata) *InstanceMetadataUpdateOne {
+	mutation := newInstanceMetadataMutation(c.config, OpUpdateOne, withInstanceMetadata(im))
+	return &InstanceMetadataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InstanceMetadataClient) UpdateOneID(id uuid.UUID) *InstanceMetadataUpdateOne {
+	mutation := newInstanceMetadataMutation(c.config, OpUpdateOne, withInstanceMetadataID(id))
+	return &InstanceMetadataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InstanceMetadata.
+func (c *InstanceMetadataClient) Delete() *InstanceMetadataDelete {
+	mutation := newInstanceMetadataMutation(c.config, OpDelete)
+	return &InstanceMetadataDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InstanceMetadataClient) DeleteOne(im *InstanceMetadata) *InstanceMetadataDeleteOne {
+	return c.DeleteOneID(im.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InstanceMetadataClient) DeleteOneID(id uuid.UUID) *InstanceMetadataDeleteOne {
+	builder := c.Delete().Where(instancemetadata.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InstanceMetadataDeleteOne{builder}
+}
+
+// Query returns a query builder for InstanceMetadata.
+func (c *InstanceMetadataClient) Query() *InstanceMetadataQuery {
+	return &InstanceMetadataQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInstanceMetadata},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InstanceMetadata entity by its id.
+func (c *InstanceMetadataClient) Get(ctx context.Context, id uuid.UUID) (*InstanceMetadata, error) {
+	return c.Query().Where(instancemetadata.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InstanceMetadataClient) GetX(ctx context.Context, id uuid.UUID) *InstanceMetadata {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUsers queries the users edge of a InstanceMetadata.
+func (c *InstanceMetadataClient) QueryUsers(im *InstanceMetadata) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := im.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instancemetadata.Table, instancemetadata.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, instancemetadata.UsersTable, instancemetadata.UsersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(im.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryModerators queries the moderators edge of a InstanceMetadata.
+func (c *InstanceMetadataClient) QueryModerators(im *InstanceMetadata) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := im.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instancemetadata.Table, instancemetadata.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, instancemetadata.ModeratorsTable, instancemetadata.ModeratorsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(im.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAdmins queries the admins edge of a InstanceMetadata.
+func (c *InstanceMetadataClient) QueryAdmins(im *InstanceMetadata) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := im.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instancemetadata.Table, instancemetadata.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, instancemetadata.AdminsTable, instancemetadata.AdminsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(im.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InstanceMetadataClient) Hooks() []Hook {
+	return c.hooks.InstanceMetadata
+}
+
+// Interceptors returns the client interceptors.
+func (c *InstanceMetadataClient) Interceptors() []Interceptor {
+	return c.inters.InstanceMetadata
+}
+
+func (c *InstanceMetadataClient) mutate(ctx context.Context, m *InstanceMetadataMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InstanceMetadataCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InstanceMetadataUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InstanceMetadataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InstanceMetadataDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InstanceMetadata mutation op: %q", m.Op())
+	}
+}
+
 // NoteClient is a client for the Note schema.
 type NoteClient struct {
 	config
@@ -874,171 +1055,6 @@ func (c *NoteClient) mutate(ctx context.Context, m *NoteMutation) (Value, error)
 	}
 }
 
-// ServerMetadataClient is a client for the ServerMetadata schema.
-type ServerMetadataClient struct {
-	config
-}
-
-// NewServerMetadataClient returns a client for the ServerMetadata from the given config.
-func NewServerMetadataClient(c config) *ServerMetadataClient {
-	return &ServerMetadataClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `servermetadata.Hooks(f(g(h())))`.
-func (c *ServerMetadataClient) Use(hooks ...Hook) {
-	c.hooks.ServerMetadata = append(c.hooks.ServerMetadata, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `servermetadata.Intercept(f(g(h())))`.
-func (c *ServerMetadataClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ServerMetadata = append(c.inters.ServerMetadata, interceptors...)
-}
-
-// Create returns a builder for creating a ServerMetadata entity.
-func (c *ServerMetadataClient) Create() *ServerMetadataCreate {
-	mutation := newServerMetadataMutation(c.config, OpCreate)
-	return &ServerMetadataCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ServerMetadata entities.
-func (c *ServerMetadataClient) CreateBulk(builders ...*ServerMetadataCreate) *ServerMetadataCreateBulk {
-	return &ServerMetadataCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ServerMetadataClient) MapCreateBulk(slice any, setFunc func(*ServerMetadataCreate, int)) *ServerMetadataCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ServerMetadataCreateBulk{err: fmt.Errorf("calling to ServerMetadataClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ServerMetadataCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ServerMetadataCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ServerMetadata.
-func (c *ServerMetadataClient) Update() *ServerMetadataUpdate {
-	mutation := newServerMetadataMutation(c.config, OpUpdate)
-	return &ServerMetadataUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ServerMetadataClient) UpdateOne(sm *ServerMetadata) *ServerMetadataUpdateOne {
-	mutation := newServerMetadataMutation(c.config, OpUpdateOne, withServerMetadata(sm))
-	return &ServerMetadataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ServerMetadataClient) UpdateOneID(id uuid.UUID) *ServerMetadataUpdateOne {
-	mutation := newServerMetadataMutation(c.config, OpUpdateOne, withServerMetadataID(id))
-	return &ServerMetadataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ServerMetadata.
-func (c *ServerMetadataClient) Delete() *ServerMetadataDelete {
-	mutation := newServerMetadataMutation(c.config, OpDelete)
-	return &ServerMetadataDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ServerMetadataClient) DeleteOne(sm *ServerMetadata) *ServerMetadataDeleteOne {
-	return c.DeleteOneID(sm.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ServerMetadataClient) DeleteOneID(id uuid.UUID) *ServerMetadataDeleteOne {
-	builder := c.Delete().Where(servermetadata.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ServerMetadataDeleteOne{builder}
-}
-
-// Query returns a query builder for ServerMetadata.
-func (c *ServerMetadataClient) Query() *ServerMetadataQuery {
-	return &ServerMetadataQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeServerMetadata},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ServerMetadata entity by its id.
-func (c *ServerMetadataClient) Get(ctx context.Context, id uuid.UUID) (*ServerMetadata, error) {
-	return c.Query().Where(servermetadata.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ServerMetadataClient) GetX(ctx context.Context, id uuid.UUID) *ServerMetadata {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryFollower queries the follower edge of a ServerMetadata.
-func (c *ServerMetadataClient) QueryFollower(sm *ServerMetadata) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(servermetadata.Table, servermetadata.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, servermetadata.FollowerTable, servermetadata.FollowerColumn),
-		)
-		fromV = sqlgraph.Neighbors(sm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFollowee queries the followee edge of a ServerMetadata.
-func (c *ServerMetadataClient) QueryFollowee(sm *ServerMetadata) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(servermetadata.Table, servermetadata.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, servermetadata.FolloweeTable, servermetadata.FolloweeColumn),
-		)
-		fromV = sqlgraph.Neighbors(sm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ServerMetadataClient) Hooks() []Hook {
-	return c.hooks.ServerMetadata
-}
-
-// Interceptors returns the client interceptors.
-func (c *ServerMetadataClient) Interceptors() []Interceptor {
-	return c.inters.ServerMetadata
-}
-
-func (c *ServerMetadataClient) mutate(ctx context.Context, m *ServerMetadataMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ServerMetadataCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ServerMetadataUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ServerMetadataUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ServerMetadataDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ServerMetadata mutation op: %q", m.Op())
-	}
-}
-
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -1211,6 +1227,54 @@ func (c *UserClient) QueryMentionedNotes(u *User) *NoteQuery {
 	return query
 }
 
+// QueryServers queries the servers edge of a User.
+func (c *UserClient) QueryServers(u *User) *InstanceMetadataQuery {
+	query := (&InstanceMetadataClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(instancemetadata.Table, instancemetadata.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.ServersTable, user.ServersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryModeratedServers queries the moderatedServers edge of a User.
+func (c *UserClient) QueryModeratedServers(u *User) *InstanceMetadataQuery {
+	query := (&InstanceMetadataClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(instancemetadata.Table, instancemetadata.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.ModeratedServersTable, user.ModeratedServersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAdministeredServers queries the administeredServers edge of a User.
+func (c *UserClient) QueryAdministeredServers(u *User) *InstanceMetadataQuery {
+	query := (&InstanceMetadataClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(instancemetadata.Table, instancemetadata.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.AdministeredServersTable, user.AdministeredServersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -1239,9 +1303,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, Follow, Image, Note, ServerMetadata, User []ent.Hook
+		Attachment, Follow, Image, InstanceMetadata, Note, User []ent.Hook
 	}
 	inters struct {
-		Attachment, Follow, Image, Note, ServerMetadata, User []ent.Interceptor
+		Attachment, Follow, Image, InstanceMetadata, Note, User []ent.Interceptor
 	}
 )

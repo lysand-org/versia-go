@@ -31,7 +31,7 @@ func NewNoteRepositoryImpl(db *ent.Client, log logr.Logger, telemetry *unitel.Te
 }
 
 func (i *NoteRepositoryImpl) NewNote(ctx context.Context, author *entity.User, content string, mentions []*entity.User) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.NoteRepositoryImpl.NewNote")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/NoteRepositoryImpl.NewNote")
 	defer s.End()
 	ctx = s.Context()
 
@@ -63,7 +63,7 @@ func (i *NoteRepositoryImpl) NewNote(ctx context.Context, author *entity.User, c
 }
 
 func (i *NoteRepositoryImpl) ImportLysandNote(ctx context.Context, lNote *lysand.Note) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.NoteRepositoryImpl.ImportLysandNote")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/NoteRepositoryImpl.ImportLysandNote")
 	defer s.End()
 	ctx = s.Context()
 
@@ -91,7 +91,7 @@ func (i *NoteRepositoryImpl) ImportLysandNote(ctx context.Context, lNote *lysand
 }
 
 func (i *NoteRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.NoteRepositoryImpl.LookupByIDOrUsername")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/NoteRepositoryImpl.LookupByIDOrUsername")
 	defer s.End()
 	ctx = s.Context()
 

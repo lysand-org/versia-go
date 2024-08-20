@@ -73,3 +73,23 @@ func NoteAPIURL(uuid uuid.UUID) *lysand.URL {
 	newPath := &url.URL{Path: fmt.Sprintf("/api/notes/%s/", uuid.String())}
 	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }
+
+func InstanceMetadataAPIURL() *lysand.URL {
+	newPath := &url.URL{Path: "/.well-known/versia/"}
+	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+}
+
+func InstanceMetadataAdminsAPIURL() *lysand.URL {
+	newPath := &url.URL{Path: "/.well-known/versia/admins/"}
+	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+}
+
+func InstanceMetadataModeratorsAPIURL() *lysand.URL {
+	newPath := &url.URL{Path: "/.well-known/versia/moderators/"}
+	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+}
+
+func SharedInboxAPIURL() *lysand.URL {
+	newPath := &url.URL{Path: "/api/inbox/"}
+	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+}

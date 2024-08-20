@@ -39,7 +39,7 @@ func NewNoteServiceImpl(federationService service.FederationService, taskService
 }
 
 func (i NoteServiceImpl) CreateNote(ctx context.Context, req api_schema.CreateNoteRequest) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.NoteServiceImpl.CreateNote")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/NoteServiceImpl.CreateNote")
 	defer s.End()
 	ctx = s.Context()
 
@@ -82,7 +82,7 @@ func (i NoteServiceImpl) CreateNote(ctx context.Context, req api_schema.CreateNo
 }
 
 func (i NoteServiceImpl) GetNote(ctx context.Context, id uuid.UUID) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.NoteServiceImpl.GetUserByID")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/NoteServiceImpl.GetUserByID")
 	defer s.End()
 	ctx = s.Context()
 
@@ -90,7 +90,7 @@ func (i NoteServiceImpl) GetNote(ctx context.Context, id uuid.UUID) (*entity.Not
 }
 
 func (i NoteServiceImpl) ImportLysandNote(ctx context.Context, lNote *lysand.Note) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.NoteServiceImpl.ImportLysandNote")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/NoteServiceImpl.ImportLysandNote")
 	defer s.End()
 	ctx = s.Context()
 

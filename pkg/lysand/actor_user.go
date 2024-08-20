@@ -1,15 +1,7 @@
 package lysand
 
 import (
-	"bytes"
-	"context"
-	"crypto/ed25519"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/url"
 )
 
 // User represents a user object in the Lysand protocol. For more information, see the [Spec].
@@ -20,7 +12,7 @@ type User struct {
 
 	// PublicKey is the public key of the user.
 	// https://lysand.org/objects/user#public-key
-	PublicKey PublicKey `json:"public_key"`
+	PublicKey UserPublicKey `json:"public_key"`
 
 	// DisplayName is the display name of the user.
 	// https://lysand.org/objects/user#display-name
@@ -66,14 +58,6 @@ type User struct {
 	// https://lysand.org/objects/user#following
 	Following *URL `json:"following"`
 
-	// Likes is the likes of the user.
-	// https://lysand.org/objects/user#likes
-	Likes *URL `json:"likes"`
-
-	// Dislikes is the dislikes of the user.
-	// https://lysand.org/objects/user#dislikes
-	Dislikes *URL `json:"dislikes"`
-
 	// Inbox is the inbox of the user.
 	// https://lysand.org/objects/user#posts
 	Inbox *URL `json:"inbox"`
@@ -93,61 +77,4 @@ func (u User) MarshalJSON() ([]byte, error) {
 type Field struct {
 	Key   TextContentTypeMap `json:"key"`
 	Value TextContentTypeMap `json:"value"`
-}
-
-func (c *FederationClient) GetUser(ctx context.Context, uri *url.URL) (*User, error) {
-	resp, body, err := c.rawGET(ctx, uri)
-	if err != nil {
-		return nil, err
-	}
-
-	user := &User{}
-	if err := json.Unmarshal(body, user); err != nil {
-		return nil, err
-	}
-
-	fedHeaders, err := ExtractFederationHeaders(resp.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	v := Verifier{ed25519.PublicKey(user.PublicKey.PublicKey)}
-	if !v.Verify("GET", uri, body, fedHeaders) {
-		c.log.V(2).Info("signature verification failed", "user", user.URI.String())
-		return nil, fmt.Errorf("signature verification failed")
-	}
-	c.log.V(2).Info("signature verification succeeded", "user", user.URI.String())
-
-	return user, nil
-}
-
-func (c *FederationClient) SendToInbox(ctx context.Context, signer Signer, user *User, object any) ([]byte, error) {
-	uri := user.Inbox.ToStd()
-
-	body, err := json.Marshal(object)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := make([]byte, 32)
-	if _, err := rand.Read(nonce); err != nil {
-		return nil, err
-	}
-
-	sigData := NewSignatureData("POST", base64.StdEncoding.EncodeToString(nonce), uri, hashSHA256(body))
-	sig := signer.Sign(*sigData)
-
-	req, err := http.NewRequestWithContext(ctx, "POST", uri.String(), bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-
-	sig.Inject(req.Header)
-
-	_, respBody, err := c.doReq(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return respBody, nil
 }

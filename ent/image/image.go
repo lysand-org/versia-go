@@ -36,6 +36,11 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// URLValidator is a validator for the "url" field. It is called by the builders before save.
+	URLValidator func(string) error
+)
+
 // OrderOption defines the ordering options for the Image queries.
 type OrderOption func(*sql.Selector)
 

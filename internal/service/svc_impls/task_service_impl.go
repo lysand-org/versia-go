@@ -28,7 +28,7 @@ func NewTaskServiceImpl(client *taskqueue.Client, telemetry *unitel.Telemetry, l
 }
 
 func (i TaskServiceImpl) ScheduleTask(ctx context.Context, type_ string, data any) error {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.TaskServiceImpl.ScheduleTask")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/TaskServiceImpl.ScheduleTask")
 	defer s.End()
 	ctx = s.Context()
 

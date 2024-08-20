@@ -15,6 +15,9 @@ type UserRepository interface {
 
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 	GetLocalByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
+	GetLocalByUsername(ctx context.Context, username string) (*entity.User, error)
+
+	Discover(ctx context.Context, host, username string) (*entity.User, error)
 
 	Resolve(ctx context.Context, uri *lysand.URL) (*entity.User, error)
 	ResolveMultiple(ctx context.Context, uris []lysand.URL) ([]*entity.User, error)
@@ -40,10 +43,16 @@ type NoteRepository interface {
 	GetByID(ctx context.Context, idOrUsername uuid.UUID) (*entity.Note, error)
 }
 
+type InstanceMetadataRepository interface {
+	GetByHost(ctx context.Context, host string) (*entity.InstanceMetadata, error)
+	ImportFromLysandByURI(ctx context.Context, uri *lysand.URL) (*entity.InstanceMetadata, error)
+}
+
 type Manager interface {
 	Atomic(ctx context.Context, fn func(ctx context.Context, tx Manager) error) error
 
 	Users() UserRepository
 	Notes() NoteRepository
 	Follows() FollowRepository
+	InstanceMetadata() InstanceMetadataRepository
 }

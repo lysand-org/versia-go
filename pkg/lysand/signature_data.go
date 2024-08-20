@@ -1,10 +1,13 @@
 package lysand
 
 import (
+	"crypto"
 	"crypto/ed25519"
 	"encoding/base64"
 	"fmt"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/lysand/crypto"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -32,8 +35,16 @@ func (s *SignatureData) String() string {
 	return fmt.Sprintf("%s %s?%s %s %s", strings.ToLower(s.RequestMethod), s.URL.Path, s.URL.RawQuery, s.Nonce, base64.StdEncoding.EncodeToString(s.Digest))
 }
 
-func (s *SignatureData) Validate(pubKey ed25519.PublicKey, signature []byte) bool {
-	return ed25519.Verify(pubKey, []byte(s.String()), signature)
+func (s *SignatureData) Validate(pubKey crypto.PublicKey, signature []byte) bool {
+	data := []byte(s.String())
+
+	verify, err := versiacrypto.NewVerify(pubKey)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)
+		return false
+	}
+
+	return verify(data, signature)
 }
 
 func (s *SignatureData) Sign(privKey ed25519.PrivateKey) []byte {
@@ -54,11 +65,10 @@ func (s Signer) Sign(signatureData SignatureData) *FederationHeaders {
 }
 
 type Verifier struct {
-	PublicKey ed25519.PublicKey
+	PublicKey crypto.PublicKey
 }
 
 func (v Verifier) Verify(method string, u *url.URL, body []byte, fedHeaders *FederationHeaders) bool {
-	sigData := NewSignatureData(method, fedHeaders.Nonce, u, hashSHA256(body))
-
-	return sigData.Validate(v.PublicKey, fedHeaders.Signature)
+	return NewSignatureData(method, fedHeaders.Nonce, u, versiacrypto.SHA256(body)).
+		Validate(v.PublicKey, fedHeaders.Signature)
 }

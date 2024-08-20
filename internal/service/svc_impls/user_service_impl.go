@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
-	"fmt"
+	"github.com/lysand-org/versia-go/internal/api_schema"
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/service"
 	"net/url"
@@ -45,7 +45,7 @@ func (i UserServiceImpl) WithRepositories(repositories repository.Manager) servi
 }
 
 func (i UserServiceImpl) NewUser(ctx context.Context, username, password string) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.UserServiceImpl.NewUser")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/UserServiceImpl.NewUser")
 	defer s.End()
 	ctx = s.Context()
 
@@ -73,7 +73,7 @@ func (i UserServiceImpl) NewUser(ctx context.Context, username, password string)
 }
 
 func (i UserServiceImpl) GetUserByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.UserServiceImpl.GetUserByID")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/UserServiceImpl.GetUserByID")
 	defer s.End()
 	ctx = s.Context()
 
@@ -81,7 +81,7 @@ func (i UserServiceImpl) GetUserByID(ctx context.Context, id uuid.UUID) (*entity
 }
 
 func (i UserServiceImpl) GetWebfingerForUser(ctx context.Context, userID string) (*webfinger.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.UserServiceImpl.GetWebfingerForUser")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/UserServiceImpl.GetWebfingerForUser")
 	defer s.End()
 	ctx = s.Context()
 
@@ -90,7 +90,7 @@ func (i UserServiceImpl) GetWebfingerForUser(ctx context.Context, userID string)
 		return nil, err
 	}
 	if u == nil {
-		return nil, fmt.Errorf("user not found")
+		return nil, api_schema.ErrUserNotFound
 	}
 
 	wf := &webfinger.User{
@@ -119,4 +119,26 @@ func (i UserServiceImpl) GetWebfingerForUser(ctx context.Context, userID string)
 	}
 
 	return wf, nil
+}
+
+func (i UserServiceImpl) Search(ctx context.Context, req api_schema.SearchUserRequest) (u *entity.User, err error) {
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/UserServiceImpl.Search").
+		AddAttribute("username", req.Username)
+	defer s.End()
+	ctx = s.Context()
+
+	domain := ""
+	if req.Domain != nil {
+		domain = *req.Domain
+	}
+
+	err = i.repositories.Atomic(ctx, func(ctx context.Context, tx repository.Manager) error {
+		var err error
+		if u, err = i.repositories.Users().Discover(ctx, domain, req.Username); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	return
 }

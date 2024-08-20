@@ -98,6 +98,38 @@ var (
 		Columns:    ImagesColumns,
 		PrimaryKey: []*schema.Column{ImagesColumns[0]},
 	}
+	// InstanceMetadataColumns holds the columns for the "instance_metadata" table.
+	InstanceMetadataColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "is_remote", Type: field.TypeBool},
+		{Name: "uri", Type: field.TypeString},
+		{Name: "extensions", Type: field.TypeJSON},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "host", Type: field.TypeString, Unique: true},
+		{Name: "public_key", Type: field.TypeBytes},
+		{Name: "public_key_algorithm", Type: field.TypeString},
+		{Name: "private_key", Type: field.TypeBytes, Nullable: true},
+		{Name: "software_name", Type: field.TypeString},
+		{Name: "software_version", Type: field.TypeString},
+		{Name: "shared_inbox_uri", Type: field.TypeString},
+		{Name: "moderators_uri", Type: field.TypeString, Nullable: true},
+		{Name: "admins_uri", Type: field.TypeString, Nullable: true},
+		{Name: "logo_endpoint", Type: field.TypeString, Nullable: true},
+		{Name: "logo_mime_type", Type: field.TypeString, Nullable: true},
+		{Name: "banner_endpoint", Type: field.TypeString, Nullable: true},
+		{Name: "banner_mime_type", Type: field.TypeString, Nullable: true},
+		{Name: "supported_versions", Type: field.TypeJSON},
+		{Name: "supported_extensions", Type: field.TypeJSON},
+	}
+	// InstanceMetadataTable holds the schema information for the "instance_metadata" table.
+	InstanceMetadataTable = &schema.Table{
+		Name:       "instance_metadata",
+		Columns:    InstanceMetadataColumns,
+		PrimaryKey: []*schema.Column{InstanceMetadataColumns[0]},
+	}
 	// NotesColumns holds the columns for the "notes" table.
 	NotesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -126,48 +158,6 @@ var (
 			},
 		},
 	}
-	// ServerMetadataColumns holds the columns for the "server_metadata" table.
-	ServerMetadataColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "is_remote", Type: field.TypeBool},
-		{Name: "uri", Type: field.TypeString},
-		{Name: "extensions", Type: field.TypeJSON},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "version", Type: field.TypeString},
-		{Name: "supported_extensions", Type: field.TypeJSON},
-		{Name: "server_metadata_follower", Type: field.TypeUUID},
-		{Name: "server_metadata_followee", Type: field.TypeUUID},
-	}
-	// ServerMetadataTable holds the schema information for the "server_metadata" table.
-	ServerMetadataTable = &schema.Table{
-		Name:       "server_metadata",
-		Columns:    ServerMetadataColumns,
-		PrimaryKey: []*schema.Column{ServerMetadataColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "server_metadata_users_follower",
-				Columns:    []*schema.Column{ServerMetadataColumns[10]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "server_metadata_users_followee",
-				Columns:    []*schema.Column{ServerMetadataColumns[11]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "servermetadata_server_metadata_follower_server_metadata_followee",
-				Unique:  true,
-				Columns: []*schema.Column{ServerMetadataColumns[10], ServerMetadataColumns[11]},
-			},
-		},
-	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -181,6 +171,8 @@ var (
 		{Name: "display_name", Type: field.TypeString, Nullable: true, Size: 256},
 		{Name: "biography", Type: field.TypeString, Nullable: true},
 		{Name: "public_key", Type: field.TypeBytes},
+		{Name: "public_key_actor", Type: field.TypeString},
+		{Name: "public_key_algorithm", Type: field.TypeString},
 		{Name: "private_key", Type: field.TypeBytes, Nullable: true},
 		{Name: "indexable", Type: field.TypeBool, Default: true},
 		{Name: "privacy_level", Type: field.TypeEnum, Enums: []string{"public", "restricted", "private"}, Default: "public"},
@@ -201,15 +193,90 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_images_avatarImage",
-				Columns:    []*schema.Column{UsersColumns[20]},
+				Columns:    []*schema.Column{UsersColumns[22]},
 				RefColumns: []*schema.Column{ImagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "users_images_headerImage",
-				Columns:    []*schema.Column{UsersColumns[21]},
+				Columns:    []*schema.Column{UsersColumns[23]},
 				RefColumns: []*schema.Column{ImagesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// InstanceMetadataUsersColumns holds the columns for the "instance_metadata_users" table.
+	InstanceMetadataUsersColumns = []*schema.Column{
+		{Name: "instance_metadata_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// InstanceMetadataUsersTable holds the schema information for the "instance_metadata_users" table.
+	InstanceMetadataUsersTable = &schema.Table{
+		Name:       "instance_metadata_users",
+		Columns:    InstanceMetadataUsersColumns,
+		PrimaryKey: []*schema.Column{InstanceMetadataUsersColumns[0], InstanceMetadataUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "instance_metadata_users_instance_metadata_id",
+				Columns:    []*schema.Column{InstanceMetadataUsersColumns[0]},
+				RefColumns: []*schema.Column{InstanceMetadataColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "instance_metadata_users_user_id",
+				Columns:    []*schema.Column{InstanceMetadataUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// InstanceMetadataModeratorsColumns holds the columns for the "instance_metadata_moderators" table.
+	InstanceMetadataModeratorsColumns = []*schema.Column{
+		{Name: "instance_metadata_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// InstanceMetadataModeratorsTable holds the schema information for the "instance_metadata_moderators" table.
+	InstanceMetadataModeratorsTable = &schema.Table{
+		Name:       "instance_metadata_moderators",
+		Columns:    InstanceMetadataModeratorsColumns,
+		PrimaryKey: []*schema.Column{InstanceMetadataModeratorsColumns[0], InstanceMetadataModeratorsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "instance_metadata_moderators_instance_metadata_id",
+				Columns:    []*schema.Column{InstanceMetadataModeratorsColumns[0]},
+				RefColumns: []*schema.Column{InstanceMetadataColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "instance_metadata_moderators_user_id",
+				Columns:    []*schema.Column{InstanceMetadataModeratorsColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// InstanceMetadataAdminsColumns holds the columns for the "instance_metadata_admins" table.
+	InstanceMetadataAdminsColumns = []*schema.Column{
+		{Name: "instance_metadata_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// InstanceMetadataAdminsTable holds the schema information for the "instance_metadata_admins" table.
+	InstanceMetadataAdminsTable = &schema.Table{
+		Name:       "instance_metadata_admins",
+		Columns:    InstanceMetadataAdminsColumns,
+		PrimaryKey: []*schema.Column{InstanceMetadataAdminsColumns[0], InstanceMetadataAdminsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "instance_metadata_admins_instance_metadata_id",
+				Columns:    []*schema.Column{InstanceMetadataAdminsColumns[0]},
+				RefColumns: []*schema.Column{InstanceMetadataColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "instance_metadata_admins_user_id",
+				Columns:    []*schema.Column{InstanceMetadataAdminsColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -243,9 +310,12 @@ var (
 		AttachmentsTable,
 		FollowsTable,
 		ImagesTable,
+		InstanceMetadataTable,
 		NotesTable,
-		ServerMetadataTable,
 		UsersTable,
+		InstanceMetadataUsersTable,
+		InstanceMetadataModeratorsTable,
+		InstanceMetadataAdminsTable,
 		NoteMentionsTable,
 	}
 )
@@ -256,10 +326,14 @@ func init() {
 	FollowsTable.ForeignKeys[0].RefTable = UsersTable
 	FollowsTable.ForeignKeys[1].RefTable = UsersTable
 	NotesTable.ForeignKeys[0].RefTable = UsersTable
-	ServerMetadataTable.ForeignKeys[0].RefTable = UsersTable
-	ServerMetadataTable.ForeignKeys[1].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = ImagesTable
 	UsersTable.ForeignKeys[1].RefTable = ImagesTable
+	InstanceMetadataUsersTable.ForeignKeys[0].RefTable = InstanceMetadataTable
+	InstanceMetadataUsersTable.ForeignKeys[1].RefTable = UsersTable
+	InstanceMetadataModeratorsTable.ForeignKeys[0].RefTable = InstanceMetadataTable
+	InstanceMetadataModeratorsTable.ForeignKeys[1].RefTable = UsersTable
+	InstanceMetadataAdminsTable.ForeignKeys[0].RefTable = InstanceMetadataTable
+	InstanceMetadataAdminsTable.ForeignKeys[1].RefTable = UsersTable
 	NoteMentionsTable.ForeignKeys[0].RefTable = NotesTable
 	NoteMentionsTable.ForeignKeys[1].RefTable = UsersTable
 }

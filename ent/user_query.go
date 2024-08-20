@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
@@ -21,15 +22,18 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                *QueryContext
-	order              []user.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.User
-	withAvatarImage    *ImageQuery
-	withHeaderImage    *ImageQuery
-	withAuthoredNotes  *NoteQuery
-	withMentionedNotes *NoteQuery
-	withFKs            bool
+	ctx                     *QueryContext
+	order                   []user.OrderOption
+	inters                  []Interceptor
+	predicates              []predicate.User
+	withAvatarImage         *ImageQuery
+	withHeaderImage         *ImageQuery
+	withAuthoredNotes       *NoteQuery
+	withMentionedNotes      *NoteQuery
+	withServers             *InstanceMetadataQuery
+	withModeratedServers    *InstanceMetadataQuery
+	withAdministeredServers *InstanceMetadataQuery
+	withFKs                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -147,6 +151,72 @@ func (uq *UserQuery) QueryMentionedNotes() *NoteQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(note.Table, note.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, user.MentionedNotesTable, user.MentionedNotesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryServers chains the current query on the "servers" edge.
+func (uq *UserQuery) QueryServers() *InstanceMetadataQuery {
+	query := (&InstanceMetadataClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(instancemetadata.Table, instancemetadata.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.ServersTable, user.ServersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryModeratedServers chains the current query on the "moderatedServers" edge.
+func (uq *UserQuery) QueryModeratedServers() *InstanceMetadataQuery {
+	query := (&InstanceMetadataClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(instancemetadata.Table, instancemetadata.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.ModeratedServersTable, user.ModeratedServersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAdministeredServers chains the current query on the "administeredServers" edge.
+func (uq *UserQuery) QueryAdministeredServers() *InstanceMetadataQuery {
+	query := (&InstanceMetadataClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(instancemetadata.Table, instancemetadata.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.AdministeredServersTable, user.AdministeredServersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -341,15 +411,18 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:             uq.config,
-		ctx:                uq.ctx.Clone(),
-		order:              append([]user.OrderOption{}, uq.order...),
-		inters:             append([]Interceptor{}, uq.inters...),
-		predicates:         append([]predicate.User{}, uq.predicates...),
-		withAvatarImage:    uq.withAvatarImage.Clone(),
-		withHeaderImage:    uq.withHeaderImage.Clone(),
-		withAuthoredNotes:  uq.withAuthoredNotes.Clone(),
-		withMentionedNotes: uq.withMentionedNotes.Clone(),
+		config:                  uq.config,
+		ctx:                     uq.ctx.Clone(),
+		order:                   append([]user.OrderOption{}, uq.order...),
+		inters:                  append([]Interceptor{}, uq.inters...),
+		predicates:              append([]predicate.User{}, uq.predicates...),
+		withAvatarImage:         uq.withAvatarImage.Clone(),
+		withHeaderImage:         uq.withHeaderImage.Clone(),
+		withAuthoredNotes:       uq.withAuthoredNotes.Clone(),
+		withMentionedNotes:      uq.withMentionedNotes.Clone(),
+		withServers:             uq.withServers.Clone(),
+		withModeratedServers:    uq.withModeratedServers.Clone(),
+		withAdministeredServers: uq.withAdministeredServers.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -397,6 +470,39 @@ func (uq *UserQuery) WithMentionedNotes(opts ...func(*NoteQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withMentionedNotes = query
+	return uq
+}
+
+// WithServers tells the query-builder to eager-load the nodes that are connected to
+// the "servers" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithServers(opts ...func(*InstanceMetadataQuery)) *UserQuery {
+	query := (&InstanceMetadataClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withServers = query
+	return uq
+}
+
+// WithModeratedServers tells the query-builder to eager-load the nodes that are connected to
+// the "moderatedServers" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithModeratedServers(opts ...func(*InstanceMetadataQuery)) *UserQuery {
+	query := (&InstanceMetadataClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withModeratedServers = query
+	return uq
+}
+
+// WithAdministeredServers tells the query-builder to eager-load the nodes that are connected to
+// the "administeredServers" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithAdministeredServers(opts ...func(*InstanceMetadataQuery)) *UserQuery {
+	query := (&InstanceMetadataClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withAdministeredServers = query
 	return uq
 }
 
@@ -479,11 +585,14 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [7]bool{
 			uq.withAvatarImage != nil,
 			uq.withHeaderImage != nil,
 			uq.withAuthoredNotes != nil,
 			uq.withMentionedNotes != nil,
+			uq.withServers != nil,
+			uq.withModeratedServers != nil,
+			uq.withAdministeredServers != nil,
 		}
 	)
 	if uq.withAvatarImage != nil || uq.withHeaderImage != nil {
@@ -533,6 +642,29 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadMentionedNotes(ctx, query, nodes,
 			func(n *User) { n.Edges.MentionedNotes = []*Note{} },
 			func(n *User, e *Note) { n.Edges.MentionedNotes = append(n.Edges.MentionedNotes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withServers; query != nil {
+		if err := uq.loadServers(ctx, query, nodes,
+			func(n *User) { n.Edges.Servers = []*InstanceMetadata{} },
+			func(n *User, e *InstanceMetadata) { n.Edges.Servers = append(n.Edges.Servers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withModeratedServers; query != nil {
+		if err := uq.loadModeratedServers(ctx, query, nodes,
+			func(n *User) { n.Edges.ModeratedServers = []*InstanceMetadata{} },
+			func(n *User, e *InstanceMetadata) { n.Edges.ModeratedServers = append(n.Edges.ModeratedServers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withAdministeredServers; query != nil {
+		if err := uq.loadAdministeredServers(ctx, query, nodes,
+			func(n *User) { n.Edges.AdministeredServers = []*InstanceMetadata{} },
+			func(n *User, e *InstanceMetadata) {
+				n.Edges.AdministeredServers = append(n.Edges.AdministeredServers, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -688,6 +820,189 @@ func (uq *UserQuery) loadMentionedNotes(ctx context.Context, query *NoteQuery, n
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "mentionedNotes" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadServers(ctx context.Context, query *InstanceMetadataQuery, nodes []*User, init func(*User), assign func(*User, *InstanceMetadata)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[uuid.UUID]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.ServersTable)
+		s.Join(joinT).On(s.C(instancemetadata.FieldID), joinT.C(user.ServersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(user.ServersPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.ServersPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*InstanceMetadata](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "servers" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadModeratedServers(ctx context.Context, query *InstanceMetadataQuery, nodes []*User, init func(*User), assign func(*User, *InstanceMetadata)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[uuid.UUID]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.ModeratedServersTable)
+		s.Join(joinT).On(s.C(instancemetadata.FieldID), joinT.C(user.ModeratedServersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(user.ModeratedServersPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.ModeratedServersPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*InstanceMetadata](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "moderatedServers" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadAdministeredServers(ctx context.Context, query *InstanceMetadataQuery, nodes []*User, init func(*User), assign func(*User, *InstanceMetadata)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[uuid.UUID]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.AdministeredServersTable)
+		s.Join(joinT).On(s.C(instancemetadata.FieldID), joinT.C(user.AdministeredServersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(user.AdministeredServersPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.AdministeredServersPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*InstanceMetadata](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "administeredServers" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

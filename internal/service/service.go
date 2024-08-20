@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/gofiber/fiber/v2"
 	"github.com/lysand-org/versia-go/internal/repository"
 
 	"github.com/google/uuid"
@@ -19,11 +20,16 @@ type UserService interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 
 	GetWebfingerForUser(ctx context.Context, userID string) (*webfinger.User, error)
+
+	Search(ctx context.Context, req api_schema.SearchUserRequest) (*entity.User, error)
 }
 
 type FederationService interface {
 	SendToInbox(ctx context.Context, author *entity.User, target *entity.User, object any) ([]byte, error)
 	GetUser(ctx context.Context, uri *lysand.URL) (*lysand.User, error)
+
+	DiscoverUser(ctx context.Context, baseURL, username string) (*webfinger.User, error)
+	DiscoverInstance(ctx context.Context, baseURL string) (*lysand.InstanceMetadata, error)
 }
 
 type InboxService interface {
@@ -44,6 +50,14 @@ type FollowService interface {
 	ImportLysandFollow(ctx context.Context, lFollow *lysand.Follow) (*entity.Follow, error)
 }
 
+type InstanceMetadataService interface {
+	Ours(ctx context.Context) (*entity.InstanceMetadata, error)
+}
+
 type TaskService interface {
 	ScheduleTask(ctx context.Context, type_ string, data any) error
+}
+
+type RequestSigner interface {
+	Sign(c *fiber.Ctx, signer lysand.Signer, body any) error
 }

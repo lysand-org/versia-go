@@ -15,11 +15,11 @@ type Follow func(*sql.Selector)
 // Image is the predicate function for image builders.
 type Image func(*sql.Selector)
 
+// InstanceMetadata is the predicate function for instancemetadata builders.
+type InstanceMetadata func(*sql.Selector)
+
 // Note is the predicate function for note builders.
 type Note func(*sql.Selector)
-
-// ServerMetadata is the predicate function for servermetadata builders.
-type ServerMetadata func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

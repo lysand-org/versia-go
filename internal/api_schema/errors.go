@@ -6,6 +6,7 @@ var (
 	ErrUnauthorized       = NewAPIError(401, "Unauthorized")
 	ErrForbidden          = NewAPIError(403, "Forbidden")
 	ErrNotFound           = NewAPIError(404, "Not found")
+	ErrUserNotFound       = ErrNotFound(map[string]any{"reason": "user not found"})
 	ErrConflict           = NewAPIError(409, "Conflict")
 	ErrUsernameTaken      = NewAPIError(409, "Username is taken")
 	ErrRateLimitExceeded  = NewAPIError(429, "Rate limit exceeded")

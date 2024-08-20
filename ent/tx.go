@@ -18,10 +18,10 @@ type Tx struct {
 	Follow *FollowClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// InstanceMetadata is the client for interacting with the InstanceMetadata builders.
+	InstanceMetadata *InstanceMetadataClient
 	// Note is the client for interacting with the Note builders.
 	Note *NoteClient
-	// ServerMetadata is the client for interacting with the ServerMetadata builders.
-	ServerMetadata *ServerMetadataClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -158,8 +158,8 @@ func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.Follow = NewFollowClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
+	tx.InstanceMetadata = NewInstanceMetadataClient(tx.config)
 	tx.Note = NewNoteClient(tx.config)
-	tx.ServerMetadata = NewServerMetadataClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

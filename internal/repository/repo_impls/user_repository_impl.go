@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"errors"
+	"github.com/lysand-org/versia-go/config"
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/service"
 	"golang.org/x/crypto/bcrypt"
@@ -45,7 +46,7 @@ func NewUserRepositoryImpl(federationService service.FederationService, db *ent.
 }
 
 func (i *UserRepositoryImpl) NewUser(ctx context.Context, username, password string, priv ed25519.PrivateKey, pub ed25519.PublicKey) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.NewUser")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.NewUser")
 	defer s.End()
 	ctx = s.Context()
 
@@ -62,8 +63,10 @@ func (i *UserRepositoryImpl) NewUser(ctx context.Context, username, password str
 		SetURI(utils.UserAPIURL(uid).String()).
 		SetUsername(username).
 		SetPasswordHash(pwHash).
-		SetPublicKey(pub).
 		SetPrivateKey(priv).
+		SetPublicKey(pub).
+		SetPublicKeyAlgorithm("ed25519").
+		SetPublicKeyActor(utils.UserAPIURL(uid).String()).
 		SetInbox(utils.UserInboxAPIURL(uid).String()).
 		SetOutbox(utils.UserOutboxAPIURL(uid).String()).
 		SetFeatured(utils.UserFeaturedAPIURL(uid).String()).
@@ -82,7 +85,7 @@ func (i *UserRepositoryImpl) NewUser(ctx context.Context, username, password str
 }
 
 func (i *UserRepositoryImpl) ImportLysandUserByURI(ctx context.Context, uri *lysand.URL) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.ImportLysandUserByURI")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.ImportLysandUserByURI")
 	defer s.End()
 	ctx = s.Context()
 
@@ -99,7 +102,9 @@ func (i *UserRepositoryImpl) ImportLysandUserByURI(ctx context.Context, uri *lys
 		SetUsername(lUser.Username).
 		SetNillableDisplayName(lUser.DisplayName).
 		SetBiography(lUser.Bio.String()).
-		SetPublicKey(lUser.PublicKey.PublicKey.ToStd()).
+		SetPublicKey(lUser.PublicKey.RawKey).
+		SetPublicKeyAlgorithm(lUser.PublicKey.Algorithm).
+		SetPublicKeyActor(lUser.PublicKey.Actor.String()).
 		SetIndexable(lUser.Indexable).
 		SetFields(lUser.Fields).
 		SetExtensions(lUser.Extensions).
@@ -127,10 +132,65 @@ func (i *UserRepositoryImpl) ImportLysandUserByURI(ctx context.Context, uri *lys
 	return entity.NewUser(u)
 }
 
-func (i *UserRepositoryImpl) Resolve(ctx context.Context, uri *lysand.URL) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.Resolve")
+func (i *UserRepositoryImpl) Discover(ctx context.Context, domain, username string) (*entity.User, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/UserServiceImpl.Search").
+		AddAttribute("username", username).
+		AddAttribute("domain", domain)
 	defer s.End()
 	ctx = s.Context()
+
+	l := i.log.WithValues("domain", domain, "username", username)
+
+	// TODO: This *could* go wrong
+	if domain != config.C.Host {
+		l.V(2).Info("Discovering instance")
+
+		im, err := i.federationService.DiscoverInstance(ctx, domain)
+		if err != nil {
+			l.Error(err, "Failed to discover instance")
+			return nil, err
+		}
+
+		l = l.WithValues("host", im.Host)
+
+		l.V(2).Info("Discovering user")
+
+		wf, err := i.federationService.DiscoverUser(ctx, im.Host, username)
+		if err != nil {
+			l.Error(err, "Failed to discover user")
+			return nil, err
+		}
+
+		l.V(2).Info("Found remote user", "userURI", wf.URI)
+
+		u, err := i.Resolve(ctx, lysand.URLFromStd(wf.URI))
+		if err != nil {
+			l.Error(err, "Failed to resolve user")
+			return nil, err
+		}
+
+		return u, nil
+	}
+
+	l.V(2).Info("Finding local user")
+
+	u, err := i.GetLocalByUsername(ctx, username)
+	if err != nil {
+		l.Error(err, "Failed to find local user", "username", username)
+		return nil, err
+	}
+
+	l.V(2).Info("Found local user", "userURI", u.URI)
+
+	return u, nil
+}
+
+func (i *UserRepositoryImpl) Resolve(ctx context.Context, uri *lysand.URL) (*entity.User, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.Resolve")
+	defer s.End()
+	ctx = s.Context()
+
+	l := i.log.WithValues("uri", uri)
 
 	u, err := i.LookupByURI(ctx, uri)
 	if err != nil {
@@ -139,24 +199,24 @@ func (i *UserRepositoryImpl) Resolve(ctx context.Context, uri *lysand.URL) (*ent
 
 	// check if the user is already imported
 	if u == nil {
-		i.log.V(2).Info("User not found in DB", "uri", uri)
+		l.V(2).Info("User not found in DB")
 
 		u, err := i.ImportLysandUserByURI(ctx, uri)
 		if err != nil {
-			i.log.Error(err, "Failed to import user", "uri", uri)
+			l.Error(err, "Failed to import user")
 			return nil, err
 		}
 
 		return u, nil
 	}
 
-	i.log.V(2).Info("User found in DB", "uri", uri)
+	l.V(2).Info("User found in DB")
 
 	return u, nil
 }
 
 func (i *UserRepositoryImpl) ResolveMultiple(ctx context.Context, uris []lysand.URL) ([]*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.ResolveMultiple")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.ResolveMultiple")
 	defer s.End()
 	ctx = s.Context()
 
@@ -168,25 +228,27 @@ func (i *UserRepositoryImpl) ResolveMultiple(ctx context.Context, uris []lysand.
 	// TODO: Refactor to use async imports using a work queue
 outer:
 	for _, uri := range uris {
+		l := i.log.WithValues("uri", uri)
+
 		// check if the user is already imported
 		for _, u := range us {
 			if uri.String() == u.URI.String() {
-				i.log.V(2).Info("User found in DB", "uri", uri)
+				l.V(2).Info("User found in DB")
 
 				continue outer
 			}
 		}
 
-		i.log.V(2).Info("User not found in DB", "uri", uri)
+		l.V(2).Info("User not found in DB")
 
 		importedUser, err := i.ImportLysandUserByURI(ctx, &uri)
 		if err != nil {
-			i.log.Error(err, "Failed to import user", "uri", uri)
+			l.Error(err, "Failed to import user")
 
 			continue
 		}
 
-		i.log.V(2).Info("Imported user", "uri", uri)
+		l.V(2).Info("Imported user")
 
 		us = append(us, importedUser)
 	}
@@ -195,9 +257,11 @@ outer:
 }
 
 func (i *UserRepositoryImpl) GetByID(ctx context.Context, uid uuid.UUID) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.GetByID")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.GetByID")
 	defer s.End()
 	ctx = s.Context()
+
+	l := i.log.WithValues("id", uid)
 
 	u, err := i.db.User.Query().
 		Where(user.IDEQ(uid)).
@@ -206,24 +270,26 @@ func (i *UserRepositoryImpl) GetByID(ctx context.Context, uid uuid.UUID) (*entit
 		Only(ctx)
 	if err != nil {
 		if !ent.IsNotFound(err) {
-			i.log.Error(err, "Failed to query user", "id", uid)
+			l.Error(err, "Failed to query user")
 			return nil, err
 		}
 
-		i.log.V(2).Info("User not found in DB", "id", uid)
+		l.V(2).Info("User not found in DB")
 
 		return nil, nil
 	}
 
-	i.log.V(2).Info("User found in DB", "id", uid)
+	l.V(2).Info("User found in DB")
 
 	return entity.NewUser(u)
 }
 
 func (i *UserRepositoryImpl) GetLocalByID(ctx context.Context, uid uuid.UUID) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.GetLocalByID")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.GetLocalByID")
 	defer s.End()
 	ctx = s.Context()
+
+	l := i.log.WithValues("id", uid)
 
 	u, err := i.db.User.Query().
 		Where(user.And(user.ID(uid), user.IsRemote(false))).
@@ -232,24 +298,54 @@ func (i *UserRepositoryImpl) GetLocalByID(ctx context.Context, uid uuid.UUID) (*
 		Only(ctx)
 	if err != nil {
 		if !ent.IsNotFound(err) {
-			i.log.Error(err, "Failed to query local user", "id", uid)
+			l.Error(err, "Failed to query local user")
 			return nil, err
 		}
 
-		i.log.V(2).Info("Local user not found in DB", "id", uid)
+		l.V(2).Info("Local user not found in DB")
 
 		return nil, nil
 	}
 
-	i.log.V(2).Info("Local user found in DB", "id", uid)
+	l.V(2).Info("Local user found in DB", "uri", u.URI)
+
+	return entity.NewUser(u)
+}
+
+func (i *UserRepositoryImpl) GetLocalByUsername(ctx context.Context, username string) (*entity.User, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.GetLocalByUsername")
+	defer s.End()
+	ctx = s.Context()
+
+	l := i.log.WithValues("username", username)
+
+	u, err := i.db.User.Query().
+		Where(user.And(user.Username(username), user.IsRemote(false))).
+		WithAvatarImage().
+		WithHeaderImage().
+		Only(ctx)
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			l.Error(err, "Failed to query local user")
+			return nil, err
+		}
+
+		l.V(2).Info("Local user not found in DB")
+
+		return nil, nil
+	}
+
+	l.V(2).Info("Local user found in DB", "uri", u.URI)
 
 	return entity.NewUser(u)
 }
 
 func (i *UserRepositoryImpl) LookupByURI(ctx context.Context, uri *lysand.URL) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.LookupByURI")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.LookupByURI")
 	defer s.End()
 	ctx = s.Context()
+
+	l := i.log.WithValues("uri", uri)
 
 	// check if the user is already imported
 	u, err := i.db.User.Query().
@@ -257,22 +353,22 @@ func (i *UserRepositoryImpl) LookupByURI(ctx context.Context, uri *lysand.URL) (
 		Only(ctx)
 	if err != nil {
 		if !ent.IsNotFound(err) {
-			i.log.Error(err, "Failed to query user", "uri", uri)
+			l.Error(err, "Failed to query user")
 			return nil, err
 		}
 
-		i.log.V(2).Info("User not found in DB", "uri", uri)
+		l.V(2).Info("User not found in DB")
 
 		return nil, nil
 	}
 
-	i.log.V(2).Info("User found in DB", "uri", uri)
+	l.V(2).Info("User found in DB")
 
 	return entity.NewUser(u)
 }
 
 func (i *UserRepositoryImpl) LookupByURIs(ctx context.Context, uris []lysand.URL) ([]*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.LookupByURIs")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.LookupByURIs")
 	defer s.End()
 	ctx = s.Context()
 
@@ -292,7 +388,7 @@ func (i *UserRepositoryImpl) LookupByURIs(ctx context.Context, uris []lysand.URL
 }
 
 func (i *UserRepositoryImpl) LookupByIDOrUsername(ctx context.Context, idOrUsername string) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repository/repo_impls.UserRepositoryImpl.LookupByIDOrUsername")
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.LookupByIDOrUsername")
 	defer s.End()
 	ctx = s.Context()
 
@@ -303,6 +399,8 @@ func (i *UserRepositoryImpl) LookupByIDOrUsername(ctx context.Context, idOrUsern
 		preds = append(preds, user.UsernameEQ(idOrUsername))
 	}
 
+	l := i.log.WithValues("idOrUsername", idOrUsername)
+
 	u, err := i.db.User.Query().
 		Where(preds...).
 		WithAvatarImage().
@@ -310,16 +408,16 @@ func (i *UserRepositoryImpl) LookupByIDOrUsername(ctx context.Context, idOrUsern
 		Only(ctx)
 	if err != nil {
 		if !ent.IsNotFound(err) {
-			i.log.Error(err, "Failed to query user", "idOrUsername", idOrUsername)
+			l.Error(err, "Failed to query user")
 			return nil, err
 		}
 
-		i.log.V(2).Info("User not found in DB", "idOrUsername", idOrUsername)
+		l.V(2).Info("User not found in DB")
 
 		return nil, nil
 	}
 
-	i.log.V(2).Info("User found in DB", "idOrUsername", idOrUsername, "id", u.ID)
+	l.V(2).Info("User found in DB", "id", u.ID)
 
 	return entity.NewUser(u)
 }

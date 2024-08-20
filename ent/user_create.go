@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"crypto/ed25519"
 	"errors"
 	"fmt"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/user"
 	"github.com/lysand-org/versia-go/pkg/lysand"
@@ -115,14 +115,26 @@ func (uc *UserCreate) SetNillableBiography(s *string) *UserCreate {
 }
 
 // SetPublicKey sets the "publicKey" field.
-func (uc *UserCreate) SetPublicKey(ek ed25519.PublicKey) *UserCreate {
-	uc.mutation.SetPublicKey(ek)
+func (uc *UserCreate) SetPublicKey(b []byte) *UserCreate {
+	uc.mutation.SetPublicKey(b)
+	return uc
+}
+
+// SetPublicKeyActor sets the "publicKeyActor" field.
+func (uc *UserCreate) SetPublicKeyActor(s string) *UserCreate {
+	uc.mutation.SetPublicKeyActor(s)
+	return uc
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (uc *UserCreate) SetPublicKeyAlgorithm(s string) *UserCreate {
+	uc.mutation.SetPublicKeyAlgorithm(s)
 	return uc
 }
 
 // SetPrivateKey sets the "privateKey" field.
-func (uc *UserCreate) SetPrivateKey(ek ed25519.PrivateKey) *UserCreate {
-	uc.mutation.SetPrivateKey(ek)
+func (uc *UserCreate) SetPrivateKey(b []byte) *UserCreate {
+	uc.mutation.SetPrivateKey(b)
 	return uc
 }
 
@@ -272,6 +284,51 @@ func (uc *UserCreate) AddMentionedNotes(n ...*Note) *UserCreate {
 	return uc.AddMentionedNoteIDs(ids...)
 }
 
+// AddServerIDs adds the "servers" edge to the InstanceMetadata entity by IDs.
+func (uc *UserCreate) AddServerIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddServerIDs(ids...)
+	return uc
+}
+
+// AddServers adds the "servers" edges to the InstanceMetadata entity.
+func (uc *UserCreate) AddServers(i ...*InstanceMetadata) *UserCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uc.AddServerIDs(ids...)
+}
+
+// AddModeratedServerIDs adds the "moderatedServers" edge to the InstanceMetadata entity by IDs.
+func (uc *UserCreate) AddModeratedServerIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddModeratedServerIDs(ids...)
+	return uc
+}
+
+// AddModeratedServers adds the "moderatedServers" edges to the InstanceMetadata entity.
+func (uc *UserCreate) AddModeratedServers(i ...*InstanceMetadata) *UserCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uc.AddModeratedServerIDs(ids...)
+}
+
+// AddAdministeredServerIDs adds the "administeredServers" edge to the InstanceMetadata entity by IDs.
+func (uc *UserCreate) AddAdministeredServerIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddAdministeredServerIDs(ids...)
+	return uc
+}
+
+// AddAdministeredServers adds the "administeredServers" edges to the InstanceMetadata entity.
+func (uc *UserCreate) AddAdministeredServers(i ...*InstanceMetadata) *UserCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uc.AddAdministeredServerIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -374,6 +431,12 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.PublicKey(); !ok {
 		return &ValidationError{Name: "publicKey", err: errors.New(`ent: missing required field "User.publicKey"`)}
+	}
+	if _, ok := uc.mutation.PublicKeyActor(); !ok {
+		return &ValidationError{Name: "publicKeyActor", err: errors.New(`ent: missing required field "User.publicKeyActor"`)}
+	}
+	if _, ok := uc.mutation.PublicKeyAlgorithm(); !ok {
+		return &ValidationError{Name: "publicKeyAlgorithm", err: errors.New(`ent: missing required field "User.publicKeyAlgorithm"`)}
 	}
 	if _, ok := uc.mutation.Indexable(); !ok {
 		return &ValidationError{Name: "indexable", err: errors.New(`ent: missing required field "User.indexable"`)}
@@ -505,6 +568,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldPublicKey, field.TypeBytes, value)
 		_node.PublicKey = value
 	}
+	if value, ok := uc.mutation.PublicKeyActor(); ok {
+		_spec.SetField(user.FieldPublicKeyActor, field.TypeString, value)
+		_node.PublicKeyActor = value
+	}
+	if value, ok := uc.mutation.PublicKeyAlgorithm(); ok {
+		_spec.SetField(user.FieldPublicKeyAlgorithm, field.TypeString, value)
+		_node.PublicKeyAlgorithm = value
+	}
 	if value, ok := uc.mutation.PrivateKey(); ok {
 		_spec.SetField(user.FieldPrivateKey, field.TypeBytes, value)
 		_node.PrivateKey = value
@@ -600,6 +671,54 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(note.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ServersTable,
+			Columns: user.ServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ModeratedServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ModeratedServersTable,
+			Columns: user.ModeratedServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.AdministeredServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AdministeredServersTable,
+			Columns: user.AdministeredServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -774,7 +893,7 @@ func (u *UserUpsert) ClearBiography() *UserUpsert {
 }
 
 // SetPublicKey sets the "publicKey" field.
-func (u *UserUpsert) SetPublicKey(v ed25519.PublicKey) *UserUpsert {
+func (u *UserUpsert) SetPublicKey(v []byte) *UserUpsert {
 	u.Set(user.FieldPublicKey, v)
 	return u
 }
@@ -785,8 +904,32 @@ func (u *UserUpsert) UpdatePublicKey() *UserUpsert {
 	return u
 }
 
+// SetPublicKeyActor sets the "publicKeyActor" field.
+func (u *UserUpsert) SetPublicKeyActor(v string) *UserUpsert {
+	u.Set(user.FieldPublicKeyActor, v)
+	return u
+}
+
+// UpdatePublicKeyActor sets the "publicKeyActor" field to the value that was provided on create.
+func (u *UserUpsert) UpdatePublicKeyActor() *UserUpsert {
+	u.SetExcluded(user.FieldPublicKeyActor)
+	return u
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (u *UserUpsert) SetPublicKeyAlgorithm(v string) *UserUpsert {
+	u.Set(user.FieldPublicKeyAlgorithm, v)
+	return u
+}
+
+// UpdatePublicKeyAlgorithm sets the "publicKeyAlgorithm" field to the value that was provided on create.
+func (u *UserUpsert) UpdatePublicKeyAlgorithm() *UserUpsert {
+	u.SetExcluded(user.FieldPublicKeyAlgorithm)
+	return u
+}
+
 // SetPrivateKey sets the "privateKey" field.
-func (u *UserUpsert) SetPrivateKey(v ed25519.PrivateKey) *UserUpsert {
+func (u *UserUpsert) SetPrivateKey(v []byte) *UserUpsert {
 	u.Set(user.FieldPrivateKey, v)
 	return u
 }
@@ -1084,7 +1227,7 @@ func (u *UserUpsertOne) ClearBiography() *UserUpsertOne {
 }
 
 // SetPublicKey sets the "publicKey" field.
-func (u *UserUpsertOne) SetPublicKey(v ed25519.PublicKey) *UserUpsertOne {
+func (u *UserUpsertOne) SetPublicKey(v []byte) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPublicKey(v)
 	})
@@ -1097,8 +1240,36 @@ func (u *UserUpsertOne) UpdatePublicKey() *UserUpsertOne {
 	})
 }
 
+// SetPublicKeyActor sets the "publicKeyActor" field.
+func (u *UserUpsertOne) SetPublicKeyActor(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPublicKeyActor(v)
+	})
+}
+
+// UpdatePublicKeyActor sets the "publicKeyActor" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdatePublicKeyActor() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePublicKeyActor()
+	})
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (u *UserUpsertOne) SetPublicKeyAlgorithm(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPublicKeyAlgorithm(v)
+	})
+}
+
+// UpdatePublicKeyAlgorithm sets the "publicKeyAlgorithm" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdatePublicKeyAlgorithm() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePublicKeyAlgorithm()
+	})
+}
+
 // SetPrivateKey sets the "privateKey" field.
-func (u *UserUpsertOne) SetPrivateKey(v ed25519.PrivateKey) *UserUpsertOne {
+func (u *UserUpsertOne) SetPrivateKey(v []byte) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPrivateKey(v)
 	})
@@ -1582,7 +1753,7 @@ func (u *UserUpsertBulk) ClearBiography() *UserUpsertBulk {
 }
 
 // SetPublicKey sets the "publicKey" field.
-func (u *UserUpsertBulk) SetPublicKey(v ed25519.PublicKey) *UserUpsertBulk {
+func (u *UserUpsertBulk) SetPublicKey(v []byte) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPublicKey(v)
 	})
@@ -1595,8 +1766,36 @@ func (u *UserUpsertBulk) UpdatePublicKey() *UserUpsertBulk {
 	})
 }
 
+// SetPublicKeyActor sets the "publicKeyActor" field.
+func (u *UserUpsertBulk) SetPublicKeyActor(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPublicKeyActor(v)
+	})
+}
+
+// UpdatePublicKeyActor sets the "publicKeyActor" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdatePublicKeyActor() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePublicKeyActor()
+	})
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (u *UserUpsertBulk) SetPublicKeyAlgorithm(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetPublicKeyAlgorithm(v)
+	})
+}
+
+// UpdatePublicKeyAlgorithm sets the "publicKeyAlgorithm" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdatePublicKeyAlgorithm() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdatePublicKeyAlgorithm()
+	})
+}
+
 // SetPrivateKey sets the "privateKey" field.
-func (u *UserUpsertBulk) SetPrivateKey(v ed25519.PrivateKey) *UserUpsertBulk {
+func (u *UserUpsertBulk) SetPrivateKey(v []byte) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.SetPrivateKey(v)
 	})

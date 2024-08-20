@@ -8,9 +8,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/attachment"
 	"github.com/lysand-org/versia-go/ent/follow"
+	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/schema"
-	"github.com/lysand-org/versia-go/ent/servermetadata"
 	"github.com/lysand-org/versia-go/ent/user"
 	"github.com/lysand-org/versia-go/pkg/lysand"
 )
@@ -77,6 +78,91 @@ func init() {
 	followDescID := followMixinFields0[0].Descriptor()
 	// follow.DefaultID holds the default value on creation for the id field.
 	follow.DefaultID = followDescID.Default.(func() uuid.UUID)
+	imageFields := schema.Image{}.Fields()
+	_ = imageFields
+	// imageDescURL is the schema descriptor for url field.
+	imageDescURL := imageFields[0].Descriptor()
+	// image.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	image.URLValidator = imageDescURL.Validators[0].(func(string) error)
+	instancemetadataMixin := schema.InstanceMetadata{}.Mixin()
+	instancemetadataMixinFields0 := instancemetadataMixin[0].Fields()
+	_ = instancemetadataMixinFields0
+	instancemetadataFields := schema.InstanceMetadata{}.Fields()
+	_ = instancemetadataFields
+	// instancemetadataDescURI is the schema descriptor for uri field.
+	instancemetadataDescURI := instancemetadataMixinFields0[2].Descriptor()
+	// instancemetadata.URIValidator is a validator for the "uri" field. It is called by the builders before save.
+	instancemetadata.URIValidator = instancemetadataDescURI.Validators[0].(func(string) error)
+	// instancemetadataDescExtensions is the schema descriptor for extensions field.
+	instancemetadataDescExtensions := instancemetadataMixinFields0[3].Descriptor()
+	// instancemetadata.DefaultExtensions holds the default value on creation for the extensions field.
+	instancemetadata.DefaultExtensions = instancemetadataDescExtensions.Default.(lysand.Extensions)
+	// instancemetadataDescCreatedAt is the schema descriptor for created_at field.
+	instancemetadataDescCreatedAt := instancemetadataMixinFields0[4].Descriptor()
+	// instancemetadata.DefaultCreatedAt holds the default value on creation for the created_at field.
+	instancemetadata.DefaultCreatedAt = instancemetadataDescCreatedAt.Default.(func() time.Time)
+	// instancemetadataDescUpdatedAt is the schema descriptor for updated_at field.
+	instancemetadataDescUpdatedAt := instancemetadataMixinFields0[5].Descriptor()
+	// instancemetadata.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	instancemetadata.DefaultUpdatedAt = instancemetadataDescUpdatedAt.Default.(func() time.Time)
+	// instancemetadata.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	instancemetadata.UpdateDefaultUpdatedAt = instancemetadataDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// instancemetadataDescName is the schema descriptor for name field.
+	instancemetadataDescName := instancemetadataFields[0].Descriptor()
+	// instancemetadata.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	instancemetadata.NameValidator = instancemetadataDescName.Validators[0].(func(string) error)
+	// instancemetadataDescHost is the schema descriptor for host field.
+	instancemetadataDescHost := instancemetadataFields[2].Descriptor()
+	// instancemetadata.HostValidator is a validator for the "host" field. It is called by the builders before save.
+	instancemetadata.HostValidator = instancemetadataDescHost.Validators[0].(func(string) error)
+	// instancemetadataDescSoftwareName is the schema descriptor for softwareName field.
+	instancemetadataDescSoftwareName := instancemetadataFields[6].Descriptor()
+	// instancemetadata.SoftwareNameValidator is a validator for the "softwareName" field. It is called by the builders before save.
+	instancemetadata.SoftwareNameValidator = instancemetadataDescSoftwareName.Validators[0].(func(string) error)
+	// instancemetadataDescSoftwareVersion is the schema descriptor for softwareVersion field.
+	instancemetadataDescSoftwareVersion := instancemetadataFields[7].Descriptor()
+	// instancemetadata.SoftwareVersionValidator is a validator for the "softwareVersion" field. It is called by the builders before save.
+	instancemetadata.SoftwareVersionValidator = instancemetadataDescSoftwareVersion.Validators[0].(func(string) error)
+	// instancemetadataDescSharedInboxURI is the schema descriptor for sharedInboxURI field.
+	instancemetadataDescSharedInboxURI := instancemetadataFields[8].Descriptor()
+	// instancemetadata.SharedInboxURIValidator is a validator for the "sharedInboxURI" field. It is called by the builders before save.
+	instancemetadata.SharedInboxURIValidator = instancemetadataDescSharedInboxURI.Validators[0].(func(string) error)
+	// instancemetadataDescModeratorsURI is the schema descriptor for moderatorsURI field.
+	instancemetadataDescModeratorsURI := instancemetadataFields[9].Descriptor()
+	// instancemetadata.ModeratorsURIValidator is a validator for the "moderatorsURI" field. It is called by the builders before save.
+	instancemetadata.ModeratorsURIValidator = instancemetadataDescModeratorsURI.Validators[0].(func(string) error)
+	// instancemetadataDescAdminsURI is the schema descriptor for adminsURI field.
+	instancemetadataDescAdminsURI := instancemetadataFields[10].Descriptor()
+	// instancemetadata.AdminsURIValidator is a validator for the "adminsURI" field. It is called by the builders before save.
+	instancemetadata.AdminsURIValidator = instancemetadataDescAdminsURI.Validators[0].(func(string) error)
+	// instancemetadataDescLogoEndpoint is the schema descriptor for logoEndpoint field.
+	instancemetadataDescLogoEndpoint := instancemetadataFields[11].Descriptor()
+	// instancemetadata.LogoEndpointValidator is a validator for the "logoEndpoint" field. It is called by the builders before save.
+	instancemetadata.LogoEndpointValidator = instancemetadataDescLogoEndpoint.Validators[0].(func(string) error)
+	// instancemetadataDescLogoMimeType is the schema descriptor for logoMimeType field.
+	instancemetadataDescLogoMimeType := instancemetadataFields[12].Descriptor()
+	// instancemetadata.LogoMimeTypeValidator is a validator for the "logoMimeType" field. It is called by the builders before save.
+	instancemetadata.LogoMimeTypeValidator = instancemetadataDescLogoMimeType.Validators[0].(func(string) error)
+	// instancemetadataDescBannerEndpoint is the schema descriptor for bannerEndpoint field.
+	instancemetadataDescBannerEndpoint := instancemetadataFields[13].Descriptor()
+	// instancemetadata.BannerEndpointValidator is a validator for the "bannerEndpoint" field. It is called by the builders before save.
+	instancemetadata.BannerEndpointValidator = instancemetadataDescBannerEndpoint.Validators[0].(func(string) error)
+	// instancemetadataDescBannerMimeType is the schema descriptor for bannerMimeType field.
+	instancemetadataDescBannerMimeType := instancemetadataFields[14].Descriptor()
+	// instancemetadata.BannerMimeTypeValidator is a validator for the "bannerMimeType" field. It is called by the builders before save.
+	instancemetadata.BannerMimeTypeValidator = instancemetadataDescBannerMimeType.Validators[0].(func(string) error)
+	// instancemetadataDescSupportedVersions is the schema descriptor for supportedVersions field.
+	instancemetadataDescSupportedVersions := instancemetadataFields[15].Descriptor()
+	// instancemetadata.DefaultSupportedVersions holds the default value on creation for the supportedVersions field.
+	instancemetadata.DefaultSupportedVersions = instancemetadataDescSupportedVersions.Default.([]string)
+	// instancemetadataDescSupportedExtensions is the schema descriptor for supportedExtensions field.
+	instancemetadataDescSupportedExtensions := instancemetadataFields[16].Descriptor()
+	// instancemetadata.DefaultSupportedExtensions holds the default value on creation for the supportedExtensions field.
+	instancemetadata.DefaultSupportedExtensions = instancemetadataDescSupportedExtensions.Default.([]string)
+	// instancemetadataDescID is the schema descriptor for id field.
+	instancemetadataDescID := instancemetadataMixinFields0[0].Descriptor()
+	// instancemetadata.DefaultID holds the default value on creation for the id field.
+	instancemetadata.DefaultID = instancemetadataDescID.Default.(func() uuid.UUID)
 	noteMixin := schema.Note{}.Mixin()
 	noteMixinFields0 := noteMixin[0].Fields()
 	_ = noteMixinFields0
@@ -112,45 +198,6 @@ func init() {
 	noteDescID := noteMixinFields0[0].Descriptor()
 	// note.DefaultID holds the default value on creation for the id field.
 	note.DefaultID = noteDescID.Default.(func() uuid.UUID)
-	servermetadataMixin := schema.ServerMetadata{}.Mixin()
-	servermetadataMixinFields0 := servermetadataMixin[0].Fields()
-	_ = servermetadataMixinFields0
-	servermetadataFields := schema.ServerMetadata{}.Fields()
-	_ = servermetadataFields
-	// servermetadataDescURI is the schema descriptor for uri field.
-	servermetadataDescURI := servermetadataMixinFields0[2].Descriptor()
-	// servermetadata.URIValidator is a validator for the "uri" field. It is called by the builders before save.
-	servermetadata.URIValidator = servermetadataDescURI.Validators[0].(func(string) error)
-	// servermetadataDescExtensions is the schema descriptor for extensions field.
-	servermetadataDescExtensions := servermetadataMixinFields0[3].Descriptor()
-	// servermetadata.DefaultExtensions holds the default value on creation for the extensions field.
-	servermetadata.DefaultExtensions = servermetadataDescExtensions.Default.(lysand.Extensions)
-	// servermetadataDescCreatedAt is the schema descriptor for created_at field.
-	servermetadataDescCreatedAt := servermetadataMixinFields0[4].Descriptor()
-	// servermetadata.DefaultCreatedAt holds the default value on creation for the created_at field.
-	servermetadata.DefaultCreatedAt = servermetadataDescCreatedAt.Default.(func() time.Time)
-	// servermetadataDescUpdatedAt is the schema descriptor for updated_at field.
-	servermetadataDescUpdatedAt := servermetadataMixinFields0[5].Descriptor()
-	// servermetadata.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	servermetadata.DefaultUpdatedAt = servermetadataDescUpdatedAt.Default.(func() time.Time)
-	// servermetadata.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	servermetadata.UpdateDefaultUpdatedAt = servermetadataDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// servermetadataDescName is the schema descriptor for name field.
-	servermetadataDescName := servermetadataFields[0].Descriptor()
-	// servermetadata.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	servermetadata.NameValidator = servermetadataDescName.Validators[0].(func(string) error)
-	// servermetadataDescVersion is the schema descriptor for version field.
-	servermetadataDescVersion := servermetadataFields[2].Descriptor()
-	// servermetadata.VersionValidator is a validator for the "version" field. It is called by the builders before save.
-	servermetadata.VersionValidator = servermetadataDescVersion.Validators[0].(func(string) error)
-	// servermetadataDescSupportedExtensions is the schema descriptor for supportedExtensions field.
-	servermetadataDescSupportedExtensions := servermetadataFields[3].Descriptor()
-	// servermetadata.DefaultSupportedExtensions holds the default value on creation for the supportedExtensions field.
-	servermetadata.DefaultSupportedExtensions = servermetadataDescSupportedExtensions.Default.([]string)
-	// servermetadataDescID is the schema descriptor for id field.
-	servermetadataDescID := servermetadataMixinFields0[0].Descriptor()
-	// servermetadata.DefaultID holds the default value on creation for the id field.
-	servermetadata.DefaultID = servermetadataDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
@@ -197,31 +244,31 @@ func init() {
 	// user.DisplayNameValidator is a validator for the "displayName" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
 	// userDescIndexable is the schema descriptor for indexable field.
-	userDescIndexable := userFields[6].Descriptor()
+	userDescIndexable := userFields[8].Descriptor()
 	// user.DefaultIndexable holds the default value on creation for the indexable field.
 	user.DefaultIndexable = userDescIndexable.Default.(bool)
 	// userDescFields is the schema descriptor for fields field.
-	userDescFields := userFields[8].Descriptor()
+	userDescFields := userFields[10].Descriptor()
 	// user.DefaultFields holds the default value on creation for the fields field.
 	user.DefaultFields = userDescFields.Default.([]lysand.Field)
 	// userDescInbox is the schema descriptor for inbox field.
-	userDescInbox := userFields[9].Descriptor()
+	userDescInbox := userFields[11].Descriptor()
 	// user.InboxValidator is a validator for the "inbox" field. It is called by the builders before save.
 	user.InboxValidator = userDescInbox.Validators[0].(func(string) error)
 	// userDescFeatured is the schema descriptor for featured field.
-	userDescFeatured := userFields[10].Descriptor()
+	userDescFeatured := userFields[12].Descriptor()
 	// user.FeaturedValidator is a validator for the "featured" field. It is called by the builders before save.
 	user.FeaturedValidator = userDescFeatured.Validators[0].(func(string) error)
 	// userDescFollowers is the schema descriptor for followers field.
-	userDescFollowers := userFields[11].Descriptor()
+	userDescFollowers := userFields[13].Descriptor()
 	// user.FollowersValidator is a validator for the "followers" field. It is called by the builders before save.
 	user.FollowersValidator = userDescFollowers.Validators[0].(func(string) error)
 	// userDescFollowing is the schema descriptor for following field.
-	userDescFollowing := userFields[12].Descriptor()
+	userDescFollowing := userFields[14].Descriptor()
 	// user.FollowingValidator is a validator for the "following" field. It is called by the builders before save.
 	user.FollowingValidator = userDescFollowing.Validators[0].(func(string) error)
 	// userDescOutbox is the schema descriptor for outbox field.
-	userDescOutbox := userFields[13].Descriptor()
+	userDescOutbox := userFields[15].Descriptor()
 	// user.OutboxValidator is a validator for the "outbox" field. It is called by the builders before save.
 	user.OutboxValidator = userDescOutbox.Validators[0].(func(string) error)
 	// userDescID is the schema descriptor for id field.

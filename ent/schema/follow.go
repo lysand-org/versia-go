@@ -11,7 +11,9 @@ type Follow struct{ ent.Schema }
 
 func (Follow) Fields() []ent.Field {
 	return []ent.Field{
-		field.Enum("status").Values("pending", "accepted").Default("pending"),
+		field.Enum("status").
+			Values("pending", "accepted").
+			Default("pending"),
 	}
 }
 

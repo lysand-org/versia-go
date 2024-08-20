@@ -70,6 +70,11 @@ func (ic *ImageCreate) check() error {
 	if _, ok := ic.mutation.URL(); !ok {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Image.url"`)}
 	}
+	if v, ok := ic.mutation.URL(); ok {
+		if err := image.URLValidator(v); err != nil {
+			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "Image.url": %w`, err)}
+		}
+	}
 	if _, ok := ic.mutation.MimeType(); !ok {
 		return &ValidationError{Name: "mimeType", err: errors.New(`ent: missing required field "Image.mimeType"`)}
 	}

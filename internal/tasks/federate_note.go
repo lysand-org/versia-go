@@ -24,6 +24,10 @@ func (t *Handler) FederateNote(ctx context.Context, data FederateNoteData) error
 		if err != nil {
 			return err
 		}
+		if n == nil {
+			t.log.V(-1).Info("Could not find note", "id", data.NoteID)
+			return nil
+		}
 
 		for _, uu := range n.Mentions {
 			if !uu.IsRemote {

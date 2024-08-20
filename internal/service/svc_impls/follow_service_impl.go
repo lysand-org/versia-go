@@ -33,7 +33,7 @@ func NewFollowServiceImpl(federationService service.FederationService, repositor
 }
 
 func (i FollowServiceImpl) NewFollow(ctx context.Context, follower, followee *entity.User) (*entity.Follow, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.FollowServiceImpl.NewFollow").
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FollowServiceImpl.NewFollow").
 		AddAttribute("follower", follower.URI).
 		AddAttribute("followee", followee.URI)
 	defer s.End()
@@ -54,7 +54,7 @@ func (i FollowServiceImpl) NewFollow(ctx context.Context, follower, followee *en
 }
 
 func (i FollowServiceImpl) GetFollow(ctx context.Context, id uuid.UUID) (*entity.Follow, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.FollowServiceImpl.GetFollow").
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FollowServiceImpl.GetFollow").
 		AddAttribute("followID", id)
 	defer s.End()
 	ctx = s.Context()
@@ -70,7 +70,7 @@ func (i FollowServiceImpl) GetFollow(ctx context.Context, id uuid.UUID) (*entity
 }
 
 func (i FollowServiceImpl) ImportLysandFollow(ctx context.Context, lFollow *lysand.Follow) (*entity.Follow, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "service/svc_impls.FollowServiceImpl.ImportLysandFollow").
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FollowServiceImpl.ImportLysandFollow").
 		AddAttribute("uri", lFollow.URI.String())
 	defer s.End()
 	ctx = s.Context()

@@ -1,12 +1,18 @@
+x-versia: &versia-default
+  build: .
+  env_file: [ .env, .env.local ]
+  depends_on:
+    - nats
+
 services:
-  db:
-    image: postgres:16.2-alpine
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+  #  db:
+  #    image: postgres:16.2-alpine
+  #    environment:
+  #      POSTGRES_DB: postgres
+  #      POSTGRES_USER: postgres
+  #      POSTGRES_PASSWORD: postgres
+  #    ports:
+  #      - "5432:5432"
 
   nats:
     image: nats:2.9.25-scratch
@@ -14,3 +20,49 @@ services:
       - "4222:4222"
       - "8222:8222"
     command: "--js"
+
+  versia-1:
+    <<: *versia-default
+    hostname: lysand-test.i.devminer.xyz
+    volumes:
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+      - /etc/ca-certificates/extracted:/etc/ca-certificates/extracted
+      - type: bind
+        source: ./key.pem
+        target: /app/key.pem
+      - type: bind
+        source: ./cert.pem
+        target: /app/cert.pem
+      - type: bind
+        source: ./1.db
+        target: /app/test.db
+    environment:
+      PORT: 8443
+      NATS_URI: nats://nats:4222
+      PUBLIC_ADDRESS: https://lysand-test.i.devminer.xyz:8443
+      NATS_STREAM_NAME: versia-go-1
+    ports:
+      - "8443:8443"
+
+  versia-2:
+    <<: *versia-default
+    hostname: lysand-test-2.i.devminer.xyz
+    volumes:
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+      - /etc/ca-certificates/extracted:/etc/ca-certificates/extracted
+      - type: bind
+        source: ./key2.pem
+        target: /app/key.pem
+      - type: bind
+        source: ./cert2.pem
+        target: /app/cert.pem
+      - type: bind
+        source: ./2.db
+        target: /app/test.db
+    environment:
+      PORT: 8444
+      NATS_URI: nats://nats:4222
+      PUBLIC_ADDRESS: https://lysand-test-2.i.devminer.xyz:8444
+      NATS_STREAM_NAME: versia-go-2
+    ports:
+      - "8444:8444"

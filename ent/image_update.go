@@ -87,7 +87,20 @@ func (iu *ImageUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (iu *ImageUpdate) check() error {
+	if v, ok := iu.mutation.URL(); ok {
+		if err := image.URLValidator(v); err != nil {
+			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "Image.url": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := iu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(image.Table, image.Columns, sqlgraph.NewFieldSpec(image.FieldID, field.TypeInt))
 	if ps := iu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -195,7 +208,20 @@ func (iuo *ImageUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (iuo *ImageUpdateOne) check() error {
+	if v, ok := iuo.mutation.URL(); ok {
+		if err := image.URLValidator(v); err != nil {
+			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "Image.url": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error) {
+	if err := iuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(image.Table, image.Columns, sqlgraph.NewFieldSpec(image.FieldID, field.TypeInt))
 	id, ok := iuo.mutation.ID()
 	if !ok {

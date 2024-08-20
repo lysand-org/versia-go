@@ -4,8 +4,11 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/tls"
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/internal/handlers/follow_handler"
 	"github.com/lysand-org/versia-go/internal/handlers/meta_handler"
 	"github.com/lysand-org/versia-go/internal/handlers/note_handler"
@@ -27,11 +30,9 @@ import (
 	"github.com/go-logr/zerologr"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/google/uuid"
 	pgx "github.com/jackc/pgx/v5/stdlib"
 	"github.com/lysand-org/versia-go/config"
 	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/ent/user"
 	"github.com/lysand-org/versia-go/internal/database"
 	"github.com/lysand-org/versia-go/internal/handlers/user_handler"
 	"github.com/lysand-org/versia-go/internal/tasks"
@@ -59,17 +60,23 @@ func main() {
 
 	tel, err := unitel.Initialize(config.C.Telemetry)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to initialize telemetry")
+		log.Fatal().Err(err).Msg("Failed to initialize telemetry")
 	}
 
-	federationClient := lysand.NewClient(lysand.WithHTTPClient(&http.Client{
+	httpClient := &http.Client{
 		Transport: tel.NewTracedTransport(
-			http.DefaultTransport,
-			false,
-			[]string{"origin", "date", "signature"},
-			[]string{"host", "date", "signature"},
+			&http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: config.C.Telemetry.Environment == "development"}},
+			// TODO: Only forward traces to configured hosts
+			true,
+			[]string{"origin", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
+			[]string{"host", "x-nonce", "x-signature", "x-signed-by"},
 		),
-	}), lysand.WithLogger(zerologr.New(&log.Logger).WithName("federation-client")))
+	}
+
+	federationClient := lysand.NewClient(
+		lysand.WithHTTPClient(httpClient),
+		lysand.WithLogger(zerologr.New(&log.Logger).WithName("federation-client")),
+	)
 
 	log.Debug().Msg("Opening database connection")
 	var db *ent.Client
@@ -79,37 +86,46 @@ func main() {
 		db, err = openDB(tel, true, config.C.DatabaseURI)
 	}
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed opening connection to the database")
+		log.Fatal().Err(err).Msg("Failed opening connection to the database")
 	}
 	defer db.Close()
 
 	nc, err := nats.Connect(config.C.NATSURI)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to connect to NATS")
+		log.Fatal().Err(err).Msg("Failed to connect to NATS")
 	}
 
 	log.Debug().Msg("Starting taskqueue client")
-	tq, err := taskqueue.NewClient(context.Background(), "versia-go", nc, tel, zerologr.New(&log.Logger).WithName("taskqueue-client"))
+	tq, err := taskqueue.NewClient(context.Background(), config.C.NATSStreamName, nc, tel, zerologr.New(&log.Logger).WithName("taskqueue-client"))
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to create taskqueue client")
+		log.Fatal().Err(err).Msg("Failed to create taskqueue client")
 	}
 	defer tq.Close()
 
 	log.Debug().Msg("Running schema migration")
 	if err := migrateDB(db, zerologr.New(&log.Logger).WithName("migrate-db"), tel); err != nil {
-		log.Fatal().Err(err).Msg("failed to run schema migration")
+		log.Fatal().Err(err).Msg("Failed to run schema migration")
 	}
 
 	// Stateless services
 
-	federationService := svc_impls.NewFederationServiceImpl(federationClient, tel, zerologr.New(&log.Logger).WithName("federation-service"))
+	requestSigner := svc_impls.NewRequestSignerImpl(tel, zerologr.New(&log.Logger).WithName("request-signer"))
+	federationService := svc_impls.NewFederationServiceImpl(httpClient, federationClient, tel, zerologr.New(&log.Logger).WithName("federation-service"))
 	taskService := svc_impls.NewTaskServiceImpl(tq, tel, zerologr.New(&log.Logger).WithName("task-service"))
 
 	// Manager
 
-	repos := repo_impls.NewManagerImpl(db, tel, zerologr.New(&log.Logger).WithName("repositories"), func(db *ent.Client, log logr.Logger, telemetry *unitel.Telemetry) repository.UserRepository {
-		return repo_impls.NewUserRepositoryImpl(federationService, db, log, telemetry)
-	}, repo_impls.NewNoteRepositoryImpl, repo_impls.NewFollowRepositoryImpl)
+	repos := repo_impls.NewManagerImpl(
+		db, tel, zerologr.New(&log.Logger).WithName("repositories"),
+		func(db *ent.Client, log logr.Logger, telemetry *unitel.Telemetry) repository.UserRepository {
+			return repo_impls.NewUserRepositoryImpl(federationService, db, log, telemetry)
+		},
+		repo_impls.NewNoteRepositoryImpl,
+		repo_impls.NewFollowRepositoryImpl,
+		func(db *ent.Client, log logr.Logger, telemetry *unitel.Telemetry) repository.InstanceMetadataRepository {
+			return repo_impls.NewInstanceMetadataRepositoryImpl(federationService, db, log, telemetry)
+		},
+	)
 
 	// Validators
 
@@ -121,19 +137,20 @@ func main() {
 	userService := svc_impls.NewUserServiceImpl(repos, federationService, tel, zerologr.New(&log.Logger).WithName("user-service"))
 	noteService := svc_impls.NewNoteServiceImpl(federationService, taskService, repos, tel, zerologr.New(&log.Logger).WithName("note-service"))
 	followService := svc_impls.NewFollowServiceImpl(federationService, repos, tel, zerologr.New(&log.Logger).WithName("follow-service"))
-	inboxService := svc_impls.NewInboxService(repos, federationService, tel, zerologr.New(&log.Logger).WithName("inbox-service"))
+	inboxService := svc_impls.NewInboxService(federationService, repos, tel, zerologr.New(&log.Logger).WithName("inbox-service"))
+	instanceMetadataService := svc_impls.NewInstanceMetadataServiceImpl(federationService, repos, tel, zerologr.New(&log.Logger).WithName("instance-metadata-service"))
 
 	// Handlers
 
-	userHandler := user_handler.New(userService, federationService, inboxService, bodyValidator, requestValidator, zerologr.New(&log.Logger).WithName("user-handler"))
+	userHandler := user_handler.New(federationService, requestSigner, userService, inboxService, bodyValidator, requestValidator, zerologr.New(&log.Logger).WithName("user-handler"))
 	noteHandler := note_handler.New(noteService, bodyValidator, zerologr.New(&log.Logger).WithName("notes-handler"))
 	followHandler := follow_handler.New(followService, federationService, zerologr.New(&log.Logger).WithName("follow-handler"))
-	metaHandler := meta_handler.New(zerologr.New(&log.Logger).WithName("meta-handler"))
+	metaHandler := meta_handler.New(instanceMetadataService, zerologr.New(&log.Logger).WithName("meta-handler"))
 
 	// Initialization
 
 	if err := initServerActor(db, tel); err != nil {
-		log.Fatal().Err(err).Msg("failed to initialize server actor")
+		log.Fatal().Err(err).Msg("Failed to initialize server actor")
 	}
 
 	web := fiber.New(fiber.Config{
@@ -160,9 +177,9 @@ func main() {
 		WaitForDelivery: false,
 		Timeout:         5 * time.Second,
 		// host for incoming requests
-		TraceRequestHeaders: []string{"origin", "date", "signature", "host"},
+		TraceRequestHeaders: []string{"origin", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
 		// origin for outgoing requests
-		TraceResponseHeaders: []string{"origin", "date", "signature", "origin"},
+		TraceResponseHeaders: []string{"host", "x-nonce", "x-signature", "x-signed-by"},
 		// IgnoredRoutes:        nil,
 	}))
 	web.Use(unitel.RequestLogger(log.Logger, true, true))
@@ -186,7 +203,7 @@ func main() {
 		tasks.NewHandler(federationService, repos, tel, zerologr.New(&log.Logger).WithName("task-handler")).
 			Register(tq)
 
-		if err := tq.Start(context.Background()); err != nil {
+		if err := tq.StartConsumer(context.Background(), "consumer"); err != nil {
 			log.Fatal().Err(err).Msg("failed to start taskqueue client")
 		}
 	}()
@@ -195,7 +212,7 @@ func main() {
 		defer wg.Done()
 
 		log.Debug().Msg("Starting server")
-		if err := web.ListenTLS(":8443", "cert.pem", "key.pem"); err != nil {
+		if err := web.ListenTLS(fmt.Sprintf(":%d", config.C.Port), "cert.pem", "key.pem"); err != nil {
 			log.Fatal().Err(err).Msg("Failed to start server")
 		}
 	}()
@@ -277,45 +294,44 @@ func initServerActor(db *ent.Client, telemetry *unitel.Telemetry) error {
 	}(tx)
 	ctx = tx.Context()
 
-	_, err = tx.User.Query().
-		Where(user.Username("actor")).
-		Only(ctx)
-	if err != nil && !ent.IsNotFound(err) {
-		log.Error().Err(err).Msg("Failed to query user")
-
+	pub, priv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to generate keypair")
 		return err
 	}
 
-	if ent.IsNotFound(err) {
-		pub, priv, err := ed25519.GenerateKey(rand.Reader)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to generate keypair")
-
-			return err
-		}
-
-		uid := uuid.New()
-
-		err = tx.User.Create().
-			SetID(uid).
-			SetUsername("actor").
-			SetIsRemote(false).
-			SetURI(utils.UserAPIURL(uid).String()).
-			SetIndexable(false).
-			SetPrivacyLevel(user.PrivacyLevelPrivate).
-			SetPublicKey(pub).
-			SetPrivateKey(priv).
-			SetInbox(utils.UserInboxAPIURL(uid).String()).
-			SetOutbox(utils.UserOutboxAPIURL(uid).String()).
-			SetFeatured(utils.UserFeaturedAPIURL(uid).String()).
-			SetFollowers(utils.UserFollowersAPIURL(uid).String()).
-			SetFollowing(utils.UserFollowingAPIURL(uid).String()).
-			Exec(ctx)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to create user")
-
-			return err
-		}
+	err = tx.InstanceMetadata.Create().
+		SetIsRemote(false).
+		SetURI(utils.InstanceMetadataAPIURL().String()).
+		SetName(config.C.InstanceName).
+		SetNillableDescription(config.C.InstanceDescription).
+		SetHost(config.C.Host).
+		SetPrivateKey(priv).
+		SetPublicKey(pub).
+		SetPublicKeyAlgorithm("ed25519").
+		SetSoftwareName("versia-go").
+		SetSoftwareVersion("0.0.1").
+		SetSharedInboxURI(utils.SharedInboxAPIURL().String()).
+		SetAdminsURI(utils.InstanceMetadataAdminsAPIURL().String()).
+		SetModeratorsURI(utils.InstanceMetadataModeratorsAPIURL().String()).
+		SetSupportedVersions([]string{"0.4.0"}).
+		SetSupportedExtensions([]string{}).
+		//
+		OnConflictColumns(instancemetadata.FieldHost).
+		UpdateName().
+		UpdateDescription().
+		UpdateHost().
+		UpdateSoftwareName().
+		UpdateSoftwareVersion().
+		UpdateSharedInboxURI().
+		UpdateAdminsURI().
+		UpdateModeratorsURI().
+		UpdateSupportedVersions().
+		UpdateSupportedExtensions().
+		Exec(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create server metadata")
+		return err
 	}
 
 	tx.MarkForCommit()

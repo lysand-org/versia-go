@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -41,9 +40,13 @@ type User struct {
 	// Biography holds the value of the "biography" field.
 	Biography *string `json:"biography,omitempty"`
 	// PublicKey holds the value of the "publicKey" field.
-	PublicKey ed25519.PublicKey `json:"publicKey,omitempty"`
+	PublicKey []byte `json:"publicKey,omitempty"`
+	// PublicKeyActor holds the value of the "publicKeyActor" field.
+	PublicKeyActor string `json:"publicKeyActor,omitempty"`
+	// PublicKeyAlgorithm holds the value of the "publicKeyAlgorithm" field.
+	PublicKeyAlgorithm string `json:"publicKeyAlgorithm,omitempty"`
 	// PrivateKey holds the value of the "privateKey" field.
-	PrivateKey ed25519.PrivateKey `json:"privateKey,omitempty"`
+	PrivateKey []byte `json:"privateKey,omitempty"`
 	// Indexable holds the value of the "indexable" field.
 	Indexable bool `json:"indexable,omitempty"`
 	// PrivacyLevel holds the value of the "privacyLevel" field.
@@ -78,9 +81,15 @@ type UserEdges struct {
 	AuthoredNotes []*Note `json:"authoredNotes,omitempty"`
 	// MentionedNotes holds the value of the mentionedNotes edge.
 	MentionedNotes []*Note `json:"mentionedNotes,omitempty"`
+	// Servers holds the value of the servers edge.
+	Servers []*InstanceMetadata `json:"servers,omitempty"`
+	// ModeratedServers holds the value of the moderatedServers edge.
+	ModeratedServers []*InstanceMetadata `json:"moderatedServers,omitempty"`
+	// AdministeredServers holds the value of the administeredServers edge.
+	AdministeredServers []*InstanceMetadata `json:"administeredServers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [7]bool
 }
 
 // AvatarImageOrErr returns the AvatarImage value or an error if the edge
@@ -123,6 +132,33 @@ func (e UserEdges) MentionedNotesOrErr() ([]*Note, error) {
 	return nil, &NotLoadedError{edge: "mentionedNotes"}
 }
 
+// ServersOrErr returns the Servers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ServersOrErr() ([]*InstanceMetadata, error) {
+	if e.loadedTypes[4] {
+		return e.Servers, nil
+	}
+	return nil, &NotLoadedError{edge: "servers"}
+}
+
+// ModeratedServersOrErr returns the ModeratedServers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ModeratedServersOrErr() ([]*InstanceMetadata, error) {
+	if e.loadedTypes[5] {
+		return e.ModeratedServers, nil
+	}
+	return nil, &NotLoadedError{edge: "moderatedServers"}
+}
+
+// AdministeredServersOrErr returns the AdministeredServers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) AdministeredServersOrErr() ([]*InstanceMetadata, error) {
+	if e.loadedTypes[6] {
+		return e.AdministeredServers, nil
+	}
+	return nil, &NotLoadedError{edge: "administeredServers"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -132,7 +168,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case user.FieldIsRemote, user.FieldIndexable:
 			values[i] = new(sql.NullBool)
-		case user.FieldURI, user.FieldUsername, user.FieldDisplayName, user.FieldBiography, user.FieldPrivacyLevel, user.FieldInbox, user.FieldFeatured, user.FieldFollowers, user.FieldFollowing, user.FieldOutbox:
+		case user.FieldURI, user.FieldUsername, user.FieldDisplayName, user.FieldBiography, user.FieldPublicKeyActor, user.FieldPublicKeyAlgorithm, user.FieldPrivacyLevel, user.FieldInbox, user.FieldFeatured, user.FieldFollowers, user.FieldFollowing, user.FieldOutbox:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -226,6 +262,18 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field publicKey", values[i])
 			} else if value != nil {
 				u.PublicKey = *value
+			}
+		case user.FieldPublicKeyActor:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field publicKeyActor", values[i])
+			} else if value.Valid {
+				u.PublicKeyActor = value.String
+			}
+		case user.FieldPublicKeyAlgorithm:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field publicKeyAlgorithm", values[i])
+			} else if value.Valid {
+				u.PublicKeyAlgorithm = value.String
 			}
 		case user.FieldPrivateKey:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -330,6 +378,21 @@ func (u *User) QueryMentionedNotes() *NoteQuery {
 	return NewUserClient(u.config).QueryMentionedNotes(u)
 }
 
+// QueryServers queries the "servers" edge of the User entity.
+func (u *User) QueryServers() *InstanceMetadataQuery {
+	return NewUserClient(u.config).QueryServers(u)
+}
+
+// QueryModeratedServers queries the "moderatedServers" edge of the User entity.
+func (u *User) QueryModeratedServers() *InstanceMetadataQuery {
+	return NewUserClient(u.config).QueryModeratedServers(u)
+}
+
+// QueryAdministeredServers queries the "administeredServers" edge of the User entity.
+func (u *User) QueryAdministeredServers() *InstanceMetadataQuery {
+	return NewUserClient(u.config).QueryAdministeredServers(u)
+}
+
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -388,6 +451,12 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("publicKey=")
 	builder.WriteString(fmt.Sprintf("%v", u.PublicKey))
+	builder.WriteString(", ")
+	builder.WriteString("publicKeyActor=")
+	builder.WriteString(u.PublicKeyActor)
+	builder.WriteString(", ")
+	builder.WriteString("publicKeyAlgorithm=")
+	builder.WriteString(u.PublicKeyAlgorithm)
 	builder.WriteString(", ")
 	builder.WriteString("privateKey=")
 	builder.WriteString(fmt.Sprintf("%v", u.PrivateKey))

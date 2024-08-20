@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"crypto/ed25519"
 	"errors"
 	"fmt"
 	"sync"
@@ -16,9 +15,9 @@ import (
 	"github.com/lysand-org/versia-go/ent/attachment"
 	"github.com/lysand-org/versia-go/ent/follow"
 	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/servermetadata"
 	"github.com/lysand-org/versia-go/ent/user"
 	"github.com/lysand-org/versia-go/pkg/lysand"
 )
@@ -32,12 +31,12 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAttachment     = "Attachment"
-	TypeFollow         = "Follow"
-	TypeImage          = "Image"
-	TypeNote           = "Note"
-	TypeServerMetadata = "ServerMetadata"
-	TypeUser           = "User"
+	TypeAttachment       = "Attachment"
+	TypeFollow           = "Follow"
+	TypeImage            = "Image"
+	TypeInstanceMetadata = "InstanceMetadata"
+	TypeNote             = "Note"
+	TypeUser             = "User"
 )
 
 // AttachmentMutation represents an operation that mutates the Attachment nodes in the graph.
@@ -2412,6 +2411,1918 @@ func (m *ImageMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Image edge %s", name)
 }
 
+// InstanceMetadataMutation represents an operation that mutates the InstanceMetadata nodes in the graph.
+type InstanceMetadataMutation struct {
+	config
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	isRemote                  *bool
+	uri                       *string
+	extensions                *lysand.Extensions
+	created_at                *time.Time
+	updated_at                *time.Time
+	name                      *string
+	description               *string
+	host                      *string
+	publicKey                 *[]byte
+	publicKeyAlgorithm        *string
+	privateKey                *[]byte
+	softwareName              *string
+	softwareVersion           *string
+	sharedInboxURI            *string
+	moderatorsURI             *string
+	adminsURI                 *string
+	logoEndpoint              *string
+	logoMimeType              *string
+	bannerEndpoint            *string
+	bannerMimeType            *string
+	supportedVersions         *[]string
+	appendsupportedVersions   []string
+	supportedExtensions       *[]string
+	appendsupportedExtensions []string
+	clearedFields             map[string]struct{}
+	users                     map[uuid.UUID]struct{}
+	removedusers              map[uuid.UUID]struct{}
+	clearedusers              bool
+	moderators                map[uuid.UUID]struct{}
+	removedmoderators         map[uuid.UUID]struct{}
+	clearedmoderators         bool
+	admins                    map[uuid.UUID]struct{}
+	removedadmins             map[uuid.UUID]struct{}
+	clearedadmins             bool
+	done                      bool
+	oldValue                  func(context.Context) (*InstanceMetadata, error)
+	predicates                []predicate.InstanceMetadata
+}
+
+var _ ent.Mutation = (*InstanceMetadataMutation)(nil)
+
+// instancemetadataOption allows management of the mutation configuration using functional options.
+type instancemetadataOption func(*InstanceMetadataMutation)
+
+// newInstanceMetadataMutation creates new mutation for the InstanceMetadata entity.
+func newInstanceMetadataMutation(c config, op Op, opts ...instancemetadataOption) *InstanceMetadataMutation {
+	m := &InstanceMetadataMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInstanceMetadata,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInstanceMetadataID sets the ID field of the mutation.
+func withInstanceMetadataID(id uuid.UUID) instancemetadataOption {
+	return func(m *InstanceMetadataMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InstanceMetadata
+		)
+		m.oldValue = func(ctx context.Context) (*InstanceMetadata, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InstanceMetadata.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInstanceMetadata sets the old InstanceMetadata of the mutation.
+func withInstanceMetadata(node *InstanceMetadata) instancemetadataOption {
+	return func(m *InstanceMetadataMutation) {
+		m.oldValue = func(context.Context) (*InstanceMetadata, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InstanceMetadataMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InstanceMetadataMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InstanceMetadata entities.
+func (m *InstanceMetadataMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InstanceMetadataMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InstanceMetadataMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InstanceMetadata.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetIsRemote sets the "isRemote" field.
+func (m *InstanceMetadataMutation) SetIsRemote(b bool) {
+	m.isRemote = &b
+}
+
+// IsRemote returns the value of the "isRemote" field in the mutation.
+func (m *InstanceMetadataMutation) IsRemote() (r bool, exists bool) {
+	v := m.isRemote
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsRemote returns the old "isRemote" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldIsRemote(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsRemote is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsRemote requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsRemote: %w", err)
+	}
+	return oldValue.IsRemote, nil
+}
+
+// ResetIsRemote resets all changes to the "isRemote" field.
+func (m *InstanceMetadataMutation) ResetIsRemote() {
+	m.isRemote = nil
+}
+
+// SetURI sets the "uri" field.
+func (m *InstanceMetadataMutation) SetURI(s string) {
+	m.uri = &s
+}
+
+// URI returns the value of the "uri" field in the mutation.
+func (m *InstanceMetadataMutation) URI() (r string, exists bool) {
+	v := m.uri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURI returns the old "uri" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldURI(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURI is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURI requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURI: %w", err)
+	}
+	return oldValue.URI, nil
+}
+
+// ResetURI resets all changes to the "uri" field.
+func (m *InstanceMetadataMutation) ResetURI() {
+	m.uri = nil
+}
+
+// SetExtensions sets the "extensions" field.
+func (m *InstanceMetadataMutation) SetExtensions(l lysand.Extensions) {
+	m.extensions = &l
+}
+
+// Extensions returns the value of the "extensions" field in the mutation.
+func (m *InstanceMetadataMutation) Extensions() (r lysand.Extensions, exists bool) {
+	v := m.extensions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExtensions returns the old "extensions" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldExtensions(ctx context.Context) (v lysand.Extensions, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExtensions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExtensions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExtensions: %w", err)
+	}
+	return oldValue.Extensions, nil
+}
+
+// ResetExtensions resets all changes to the "extensions" field.
+func (m *InstanceMetadataMutation) ResetExtensions() {
+	m.extensions = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InstanceMetadataMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InstanceMetadataMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InstanceMetadataMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InstanceMetadataMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InstanceMetadataMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InstanceMetadataMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetName sets the "name" field.
+func (m *InstanceMetadataMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InstanceMetadataMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InstanceMetadataMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *InstanceMetadataMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *InstanceMetadataMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *InstanceMetadataMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[instancemetadata.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *InstanceMetadataMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, instancemetadata.FieldDescription)
+}
+
+// SetHost sets the "host" field.
+func (m *InstanceMetadataMutation) SetHost(s string) {
+	m.host = &s
+}
+
+// Host returns the value of the "host" field in the mutation.
+func (m *InstanceMetadataMutation) Host() (r string, exists bool) {
+	v := m.host
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHost returns the old "host" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldHost(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHost is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHost requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHost: %w", err)
+	}
+	return oldValue.Host, nil
+}
+
+// ResetHost resets all changes to the "host" field.
+func (m *InstanceMetadataMutation) ResetHost() {
+	m.host = nil
+}
+
+// SetPublicKey sets the "publicKey" field.
+func (m *InstanceMetadataMutation) SetPublicKey(b []byte) {
+	m.publicKey = &b
+}
+
+// PublicKey returns the value of the "publicKey" field in the mutation.
+func (m *InstanceMetadataMutation) PublicKey() (r []byte, exists bool) {
+	v := m.publicKey
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicKey returns the old "publicKey" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldPublicKey(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicKey: %w", err)
+	}
+	return oldValue.PublicKey, nil
+}
+
+// ResetPublicKey resets all changes to the "publicKey" field.
+func (m *InstanceMetadataMutation) ResetPublicKey() {
+	m.publicKey = nil
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (m *InstanceMetadataMutation) SetPublicKeyAlgorithm(s string) {
+	m.publicKeyAlgorithm = &s
+}
+
+// PublicKeyAlgorithm returns the value of the "publicKeyAlgorithm" field in the mutation.
+func (m *InstanceMetadataMutation) PublicKeyAlgorithm() (r string, exists bool) {
+	v := m.publicKeyAlgorithm
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicKeyAlgorithm returns the old "publicKeyAlgorithm" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldPublicKeyAlgorithm(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicKeyAlgorithm is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicKeyAlgorithm requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicKeyAlgorithm: %w", err)
+	}
+	return oldValue.PublicKeyAlgorithm, nil
+}
+
+// ResetPublicKeyAlgorithm resets all changes to the "publicKeyAlgorithm" field.
+func (m *InstanceMetadataMutation) ResetPublicKeyAlgorithm() {
+	m.publicKeyAlgorithm = nil
+}
+
+// SetPrivateKey sets the "privateKey" field.
+func (m *InstanceMetadataMutation) SetPrivateKey(b []byte) {
+	m.privateKey = &b
+}
+
+// PrivateKey returns the value of the "privateKey" field in the mutation.
+func (m *InstanceMetadataMutation) PrivateKey() (r []byte, exists bool) {
+	v := m.privateKey
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrivateKey returns the old "privateKey" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldPrivateKey(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrivateKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrivateKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrivateKey: %w", err)
+	}
+	return oldValue.PrivateKey, nil
+}
+
+// ClearPrivateKey clears the value of the "privateKey" field.
+func (m *InstanceMetadataMutation) ClearPrivateKey() {
+	m.privateKey = nil
+	m.clearedFields[instancemetadata.FieldPrivateKey] = struct{}{}
+}
+
+// PrivateKeyCleared returns if the "privateKey" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) PrivateKeyCleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldPrivateKey]
+	return ok
+}
+
+// ResetPrivateKey resets all changes to the "privateKey" field.
+func (m *InstanceMetadataMutation) ResetPrivateKey() {
+	m.privateKey = nil
+	delete(m.clearedFields, instancemetadata.FieldPrivateKey)
+}
+
+// SetSoftwareName sets the "softwareName" field.
+func (m *InstanceMetadataMutation) SetSoftwareName(s string) {
+	m.softwareName = &s
+}
+
+// SoftwareName returns the value of the "softwareName" field in the mutation.
+func (m *InstanceMetadataMutation) SoftwareName() (r string, exists bool) {
+	v := m.softwareName
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSoftwareName returns the old "softwareName" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldSoftwareName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSoftwareName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSoftwareName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSoftwareName: %w", err)
+	}
+	return oldValue.SoftwareName, nil
+}
+
+// ResetSoftwareName resets all changes to the "softwareName" field.
+func (m *InstanceMetadataMutation) ResetSoftwareName() {
+	m.softwareName = nil
+}
+
+// SetSoftwareVersion sets the "softwareVersion" field.
+func (m *InstanceMetadataMutation) SetSoftwareVersion(s string) {
+	m.softwareVersion = &s
+}
+
+// SoftwareVersion returns the value of the "softwareVersion" field in the mutation.
+func (m *InstanceMetadataMutation) SoftwareVersion() (r string, exists bool) {
+	v := m.softwareVersion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSoftwareVersion returns the old "softwareVersion" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldSoftwareVersion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSoftwareVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSoftwareVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSoftwareVersion: %w", err)
+	}
+	return oldValue.SoftwareVersion, nil
+}
+
+// ResetSoftwareVersion resets all changes to the "softwareVersion" field.
+func (m *InstanceMetadataMutation) ResetSoftwareVersion() {
+	m.softwareVersion = nil
+}
+
+// SetSharedInboxURI sets the "sharedInboxURI" field.
+func (m *InstanceMetadataMutation) SetSharedInboxURI(s string) {
+	m.sharedInboxURI = &s
+}
+
+// SharedInboxURI returns the value of the "sharedInboxURI" field in the mutation.
+func (m *InstanceMetadataMutation) SharedInboxURI() (r string, exists bool) {
+	v := m.sharedInboxURI
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSharedInboxURI returns the old "sharedInboxURI" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldSharedInboxURI(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSharedInboxURI is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSharedInboxURI requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSharedInboxURI: %w", err)
+	}
+	return oldValue.SharedInboxURI, nil
+}
+
+// ResetSharedInboxURI resets all changes to the "sharedInboxURI" field.
+func (m *InstanceMetadataMutation) ResetSharedInboxURI() {
+	m.sharedInboxURI = nil
+}
+
+// SetModeratorsURI sets the "moderatorsURI" field.
+func (m *InstanceMetadataMutation) SetModeratorsURI(s string) {
+	m.moderatorsURI = &s
+}
+
+// ModeratorsURI returns the value of the "moderatorsURI" field in the mutation.
+func (m *InstanceMetadataMutation) ModeratorsURI() (r string, exists bool) {
+	v := m.moderatorsURI
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModeratorsURI returns the old "moderatorsURI" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldModeratorsURI(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModeratorsURI is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModeratorsURI requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModeratorsURI: %w", err)
+	}
+	return oldValue.ModeratorsURI, nil
+}
+
+// ClearModeratorsURI clears the value of the "moderatorsURI" field.
+func (m *InstanceMetadataMutation) ClearModeratorsURI() {
+	m.moderatorsURI = nil
+	m.clearedFields[instancemetadata.FieldModeratorsURI] = struct{}{}
+}
+
+// ModeratorsURICleared returns if the "moderatorsURI" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) ModeratorsURICleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldModeratorsURI]
+	return ok
+}
+
+// ResetModeratorsURI resets all changes to the "moderatorsURI" field.
+func (m *InstanceMetadataMutation) ResetModeratorsURI() {
+	m.moderatorsURI = nil
+	delete(m.clearedFields, instancemetadata.FieldModeratorsURI)
+}
+
+// SetAdminsURI sets the "adminsURI" field.
+func (m *InstanceMetadataMutation) SetAdminsURI(s string) {
+	m.adminsURI = &s
+}
+
+// AdminsURI returns the value of the "adminsURI" field in the mutation.
+func (m *InstanceMetadataMutation) AdminsURI() (r string, exists bool) {
+	v := m.adminsURI
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAdminsURI returns the old "adminsURI" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldAdminsURI(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAdminsURI is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAdminsURI requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAdminsURI: %w", err)
+	}
+	return oldValue.AdminsURI, nil
+}
+
+// ClearAdminsURI clears the value of the "adminsURI" field.
+func (m *InstanceMetadataMutation) ClearAdminsURI() {
+	m.adminsURI = nil
+	m.clearedFields[instancemetadata.FieldAdminsURI] = struct{}{}
+}
+
+// AdminsURICleared returns if the "adminsURI" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) AdminsURICleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldAdminsURI]
+	return ok
+}
+
+// ResetAdminsURI resets all changes to the "adminsURI" field.
+func (m *InstanceMetadataMutation) ResetAdminsURI() {
+	m.adminsURI = nil
+	delete(m.clearedFields, instancemetadata.FieldAdminsURI)
+}
+
+// SetLogoEndpoint sets the "logoEndpoint" field.
+func (m *InstanceMetadataMutation) SetLogoEndpoint(s string) {
+	m.logoEndpoint = &s
+}
+
+// LogoEndpoint returns the value of the "logoEndpoint" field in the mutation.
+func (m *InstanceMetadataMutation) LogoEndpoint() (r string, exists bool) {
+	v := m.logoEndpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogoEndpoint returns the old "logoEndpoint" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldLogoEndpoint(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogoEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogoEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogoEndpoint: %w", err)
+	}
+	return oldValue.LogoEndpoint, nil
+}
+
+// ClearLogoEndpoint clears the value of the "logoEndpoint" field.
+func (m *InstanceMetadataMutation) ClearLogoEndpoint() {
+	m.logoEndpoint = nil
+	m.clearedFields[instancemetadata.FieldLogoEndpoint] = struct{}{}
+}
+
+// LogoEndpointCleared returns if the "logoEndpoint" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) LogoEndpointCleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldLogoEndpoint]
+	return ok
+}
+
+// ResetLogoEndpoint resets all changes to the "logoEndpoint" field.
+func (m *InstanceMetadataMutation) ResetLogoEndpoint() {
+	m.logoEndpoint = nil
+	delete(m.clearedFields, instancemetadata.FieldLogoEndpoint)
+}
+
+// SetLogoMimeType sets the "logoMimeType" field.
+func (m *InstanceMetadataMutation) SetLogoMimeType(s string) {
+	m.logoMimeType = &s
+}
+
+// LogoMimeType returns the value of the "logoMimeType" field in the mutation.
+func (m *InstanceMetadataMutation) LogoMimeType() (r string, exists bool) {
+	v := m.logoMimeType
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogoMimeType returns the old "logoMimeType" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldLogoMimeType(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogoMimeType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogoMimeType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogoMimeType: %w", err)
+	}
+	return oldValue.LogoMimeType, nil
+}
+
+// ClearLogoMimeType clears the value of the "logoMimeType" field.
+func (m *InstanceMetadataMutation) ClearLogoMimeType() {
+	m.logoMimeType = nil
+	m.clearedFields[instancemetadata.FieldLogoMimeType] = struct{}{}
+}
+
+// LogoMimeTypeCleared returns if the "logoMimeType" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) LogoMimeTypeCleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldLogoMimeType]
+	return ok
+}
+
+// ResetLogoMimeType resets all changes to the "logoMimeType" field.
+func (m *InstanceMetadataMutation) ResetLogoMimeType() {
+	m.logoMimeType = nil
+	delete(m.clearedFields, instancemetadata.FieldLogoMimeType)
+}
+
+// SetBannerEndpoint sets the "bannerEndpoint" field.
+func (m *InstanceMetadataMutation) SetBannerEndpoint(s string) {
+	m.bannerEndpoint = &s
+}
+
+// BannerEndpoint returns the value of the "bannerEndpoint" field in the mutation.
+func (m *InstanceMetadataMutation) BannerEndpoint() (r string, exists bool) {
+	v := m.bannerEndpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBannerEndpoint returns the old "bannerEndpoint" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldBannerEndpoint(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBannerEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBannerEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBannerEndpoint: %w", err)
+	}
+	return oldValue.BannerEndpoint, nil
+}
+
+// ClearBannerEndpoint clears the value of the "bannerEndpoint" field.
+func (m *InstanceMetadataMutation) ClearBannerEndpoint() {
+	m.bannerEndpoint = nil
+	m.clearedFields[instancemetadata.FieldBannerEndpoint] = struct{}{}
+}
+
+// BannerEndpointCleared returns if the "bannerEndpoint" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) BannerEndpointCleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldBannerEndpoint]
+	return ok
+}
+
+// ResetBannerEndpoint resets all changes to the "bannerEndpoint" field.
+func (m *InstanceMetadataMutation) ResetBannerEndpoint() {
+	m.bannerEndpoint = nil
+	delete(m.clearedFields, instancemetadata.FieldBannerEndpoint)
+}
+
+// SetBannerMimeType sets the "bannerMimeType" field.
+func (m *InstanceMetadataMutation) SetBannerMimeType(s string) {
+	m.bannerMimeType = &s
+}
+
+// BannerMimeType returns the value of the "bannerMimeType" field in the mutation.
+func (m *InstanceMetadataMutation) BannerMimeType() (r string, exists bool) {
+	v := m.bannerMimeType
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBannerMimeType returns the old "bannerMimeType" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldBannerMimeType(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBannerMimeType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBannerMimeType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBannerMimeType: %w", err)
+	}
+	return oldValue.BannerMimeType, nil
+}
+
+// ClearBannerMimeType clears the value of the "bannerMimeType" field.
+func (m *InstanceMetadataMutation) ClearBannerMimeType() {
+	m.bannerMimeType = nil
+	m.clearedFields[instancemetadata.FieldBannerMimeType] = struct{}{}
+}
+
+// BannerMimeTypeCleared returns if the "bannerMimeType" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) BannerMimeTypeCleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldBannerMimeType]
+	return ok
+}
+
+// ResetBannerMimeType resets all changes to the "bannerMimeType" field.
+func (m *InstanceMetadataMutation) ResetBannerMimeType() {
+	m.bannerMimeType = nil
+	delete(m.clearedFields, instancemetadata.FieldBannerMimeType)
+}
+
+// SetSupportedVersions sets the "supportedVersions" field.
+func (m *InstanceMetadataMutation) SetSupportedVersions(s []string) {
+	m.supportedVersions = &s
+	m.appendsupportedVersions = nil
+}
+
+// SupportedVersions returns the value of the "supportedVersions" field in the mutation.
+func (m *InstanceMetadataMutation) SupportedVersions() (r []string, exists bool) {
+	v := m.supportedVersions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSupportedVersions returns the old "supportedVersions" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldSupportedVersions(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSupportedVersions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSupportedVersions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSupportedVersions: %w", err)
+	}
+	return oldValue.SupportedVersions, nil
+}
+
+// AppendSupportedVersions adds s to the "supportedVersions" field.
+func (m *InstanceMetadataMutation) AppendSupportedVersions(s []string) {
+	m.appendsupportedVersions = append(m.appendsupportedVersions, s...)
+}
+
+// AppendedSupportedVersions returns the list of values that were appended to the "supportedVersions" field in this mutation.
+func (m *InstanceMetadataMutation) AppendedSupportedVersions() ([]string, bool) {
+	if len(m.appendsupportedVersions) == 0 {
+		return nil, false
+	}
+	return m.appendsupportedVersions, true
+}
+
+// ResetSupportedVersions resets all changes to the "supportedVersions" field.
+func (m *InstanceMetadataMutation) ResetSupportedVersions() {
+	m.supportedVersions = nil
+	m.appendsupportedVersions = nil
+}
+
+// SetSupportedExtensions sets the "supportedExtensions" field.
+func (m *InstanceMetadataMutation) SetSupportedExtensions(s []string) {
+	m.supportedExtensions = &s
+	m.appendsupportedExtensions = nil
+}
+
+// SupportedExtensions returns the value of the "supportedExtensions" field in the mutation.
+func (m *InstanceMetadataMutation) SupportedExtensions() (r []string, exists bool) {
+	v := m.supportedExtensions
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSupportedExtensions returns the old "supportedExtensions" field's value of the InstanceMetadata entity.
+// If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMetadataMutation) OldSupportedExtensions(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSupportedExtensions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSupportedExtensions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSupportedExtensions: %w", err)
+	}
+	return oldValue.SupportedExtensions, nil
+}
+
+// AppendSupportedExtensions adds s to the "supportedExtensions" field.
+func (m *InstanceMetadataMutation) AppendSupportedExtensions(s []string) {
+	m.appendsupportedExtensions = append(m.appendsupportedExtensions, s...)
+}
+
+// AppendedSupportedExtensions returns the list of values that were appended to the "supportedExtensions" field in this mutation.
+func (m *InstanceMetadataMutation) AppendedSupportedExtensions() ([]string, bool) {
+	if len(m.appendsupportedExtensions) == 0 {
+		return nil, false
+	}
+	return m.appendsupportedExtensions, true
+}
+
+// ResetSupportedExtensions resets all changes to the "supportedExtensions" field.
+func (m *InstanceMetadataMutation) ResetSupportedExtensions() {
+	m.supportedExtensions = nil
+	m.appendsupportedExtensions = nil
+}
+
+// AddUserIDs adds the "users" edge to the User entity by ids.
+func (m *InstanceMetadataMutation) AddUserIDs(ids ...uuid.UUID) {
+	if m.users == nil {
+		m.users = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.users[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUsers clears the "users" edge to the User entity.
+func (m *InstanceMetadataMutation) ClearUsers() {
+	m.clearedusers = true
+}
+
+// UsersCleared reports if the "users" edge to the User entity was cleared.
+func (m *InstanceMetadataMutation) UsersCleared() bool {
+	return m.clearedusers
+}
+
+// RemoveUserIDs removes the "users" edge to the User entity by IDs.
+func (m *InstanceMetadataMutation) RemoveUserIDs(ids ...uuid.UUID) {
+	if m.removedusers == nil {
+		m.removedusers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.users, ids[i])
+		m.removedusers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUsers returns the removed IDs of the "users" edge to the User entity.
+func (m *InstanceMetadataMutation) RemovedUsersIDs() (ids []uuid.UUID) {
+	for id := range m.removedusers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UsersIDs returns the "users" edge IDs in the mutation.
+func (m *InstanceMetadataMutation) UsersIDs() (ids []uuid.UUID) {
+	for id := range m.users {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUsers resets all changes to the "users" edge.
+func (m *InstanceMetadataMutation) ResetUsers() {
+	m.users = nil
+	m.clearedusers = false
+	m.removedusers = nil
+}
+
+// AddModeratorIDs adds the "moderators" edge to the User entity by ids.
+func (m *InstanceMetadataMutation) AddModeratorIDs(ids ...uuid.UUID) {
+	if m.moderators == nil {
+		m.moderators = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.moderators[ids[i]] = struct{}{}
+	}
+}
+
+// ClearModerators clears the "moderators" edge to the User entity.
+func (m *InstanceMetadataMutation) ClearModerators() {
+	m.clearedmoderators = true
+}
+
+// ModeratorsCleared reports if the "moderators" edge to the User entity was cleared.
+func (m *InstanceMetadataMutation) ModeratorsCleared() bool {
+	return m.clearedmoderators
+}
+
+// RemoveModeratorIDs removes the "moderators" edge to the User entity by IDs.
+func (m *InstanceMetadataMutation) RemoveModeratorIDs(ids ...uuid.UUID) {
+	if m.removedmoderators == nil {
+		m.removedmoderators = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.moderators, ids[i])
+		m.removedmoderators[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedModerators returns the removed IDs of the "moderators" edge to the User entity.
+func (m *InstanceMetadataMutation) RemovedModeratorsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmoderators {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ModeratorsIDs returns the "moderators" edge IDs in the mutation.
+func (m *InstanceMetadataMutation) ModeratorsIDs() (ids []uuid.UUID) {
+	for id := range m.moderators {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetModerators resets all changes to the "moderators" edge.
+func (m *InstanceMetadataMutation) ResetModerators() {
+	m.moderators = nil
+	m.clearedmoderators = false
+	m.removedmoderators = nil
+}
+
+// AddAdminIDs adds the "admins" edge to the User entity by ids.
+func (m *InstanceMetadataMutation) AddAdminIDs(ids ...uuid.UUID) {
+	if m.admins == nil {
+		m.admins = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.admins[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAdmins clears the "admins" edge to the User entity.
+func (m *InstanceMetadataMutation) ClearAdmins() {
+	m.clearedadmins = true
+}
+
+// AdminsCleared reports if the "admins" edge to the User entity was cleared.
+func (m *InstanceMetadataMutation) AdminsCleared() bool {
+	return m.clearedadmins
+}
+
+// RemoveAdminIDs removes the "admins" edge to the User entity by IDs.
+func (m *InstanceMetadataMutation) RemoveAdminIDs(ids ...uuid.UUID) {
+	if m.removedadmins == nil {
+		m.removedadmins = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.admins, ids[i])
+		m.removedadmins[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAdmins returns the removed IDs of the "admins" edge to the User entity.
+func (m *InstanceMetadataMutation) RemovedAdminsIDs() (ids []uuid.UUID) {
+	for id := range m.removedadmins {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AdminsIDs returns the "admins" edge IDs in the mutation.
+func (m *InstanceMetadataMutation) AdminsIDs() (ids []uuid.UUID) {
+	for id := range m.admins {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAdmins resets all changes to the "admins" edge.
+func (m *InstanceMetadataMutation) ResetAdmins() {
+	m.admins = nil
+	m.clearedadmins = false
+	m.removedadmins = nil
+}
+
+// Where appends a list predicates to the InstanceMetadataMutation builder.
+func (m *InstanceMetadataMutation) Where(ps ...predicate.InstanceMetadata) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InstanceMetadataMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InstanceMetadataMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InstanceMetadata, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InstanceMetadataMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InstanceMetadataMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InstanceMetadata).
+func (m *InstanceMetadataMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InstanceMetadataMutation) Fields() []string {
+	fields := make([]string, 0, 22)
+	if m.isRemote != nil {
+		fields = append(fields, instancemetadata.FieldIsRemote)
+	}
+	if m.uri != nil {
+		fields = append(fields, instancemetadata.FieldURI)
+	}
+	if m.extensions != nil {
+		fields = append(fields, instancemetadata.FieldExtensions)
+	}
+	if m.created_at != nil {
+		fields = append(fields, instancemetadata.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, instancemetadata.FieldUpdatedAt)
+	}
+	if m.name != nil {
+		fields = append(fields, instancemetadata.FieldName)
+	}
+	if m.description != nil {
+		fields = append(fields, instancemetadata.FieldDescription)
+	}
+	if m.host != nil {
+		fields = append(fields, instancemetadata.FieldHost)
+	}
+	if m.publicKey != nil {
+		fields = append(fields, instancemetadata.FieldPublicKey)
+	}
+	if m.publicKeyAlgorithm != nil {
+		fields = append(fields, instancemetadata.FieldPublicKeyAlgorithm)
+	}
+	if m.privateKey != nil {
+		fields = append(fields, instancemetadata.FieldPrivateKey)
+	}
+	if m.softwareName != nil {
+		fields = append(fields, instancemetadata.FieldSoftwareName)
+	}
+	if m.softwareVersion != nil {
+		fields = append(fields, instancemetadata.FieldSoftwareVersion)
+	}
+	if m.sharedInboxURI != nil {
+		fields = append(fields, instancemetadata.FieldSharedInboxURI)
+	}
+	if m.moderatorsURI != nil {
+		fields = append(fields, instancemetadata.FieldModeratorsURI)
+	}
+	if m.adminsURI != nil {
+		fields = append(fields, instancemetadata.FieldAdminsURI)
+	}
+	if m.logoEndpoint != nil {
+		fields = append(fields, instancemetadata.FieldLogoEndpoint)
+	}
+	if m.logoMimeType != nil {
+		fields = append(fields, instancemetadata.FieldLogoMimeType)
+	}
+	if m.bannerEndpoint != nil {
+		fields = append(fields, instancemetadata.FieldBannerEndpoint)
+	}
+	if m.bannerMimeType != nil {
+		fields = append(fields, instancemetadata.FieldBannerMimeType)
+	}
+	if m.supportedVersions != nil {
+		fields = append(fields, instancemetadata.FieldSupportedVersions)
+	}
+	if m.supportedExtensions != nil {
+		fields = append(fields, instancemetadata.FieldSupportedExtensions)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InstanceMetadataMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case instancemetadata.FieldIsRemote:
+		return m.IsRemote()
+	case instancemetadata.FieldURI:
+		return m.URI()
+	case instancemetadata.FieldExtensions:
+		return m.Extensions()
+	case instancemetadata.FieldCreatedAt:
+		return m.CreatedAt()
+	case instancemetadata.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case instancemetadata.FieldName:
+		return m.Name()
+	case instancemetadata.FieldDescription:
+		return m.Description()
+	case instancemetadata.FieldHost:
+		return m.Host()
+	case instancemetadata.FieldPublicKey:
+		return m.PublicKey()
+	case instancemetadata.FieldPublicKeyAlgorithm:
+		return m.PublicKeyAlgorithm()
+	case instancemetadata.FieldPrivateKey:
+		return m.PrivateKey()
+	case instancemetadata.FieldSoftwareName:
+		return m.SoftwareName()
+	case instancemetadata.FieldSoftwareVersion:
+		return m.SoftwareVersion()
+	case instancemetadata.FieldSharedInboxURI:
+		return m.SharedInboxURI()
+	case instancemetadata.FieldModeratorsURI:
+		return m.ModeratorsURI()
+	case instancemetadata.FieldAdminsURI:
+		return m.AdminsURI()
+	case instancemetadata.FieldLogoEndpoint:
+		return m.LogoEndpoint()
+	case instancemetadata.FieldLogoMimeType:
+		return m.LogoMimeType()
+	case instancemetadata.FieldBannerEndpoint:
+		return m.BannerEndpoint()
+	case instancemetadata.FieldBannerMimeType:
+		return m.BannerMimeType()
+	case instancemetadata.FieldSupportedVersions:
+		return m.SupportedVersions()
+	case instancemetadata.FieldSupportedExtensions:
+		return m.SupportedExtensions()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InstanceMetadataMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case instancemetadata.FieldIsRemote:
+		return m.OldIsRemote(ctx)
+	case instancemetadata.FieldURI:
+		return m.OldURI(ctx)
+	case instancemetadata.FieldExtensions:
+		return m.OldExtensions(ctx)
+	case instancemetadata.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case instancemetadata.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case instancemetadata.FieldName:
+		return m.OldName(ctx)
+	case instancemetadata.FieldDescription:
+		return m.OldDescription(ctx)
+	case instancemetadata.FieldHost:
+		return m.OldHost(ctx)
+	case instancemetadata.FieldPublicKey:
+		return m.OldPublicKey(ctx)
+	case instancemetadata.FieldPublicKeyAlgorithm:
+		return m.OldPublicKeyAlgorithm(ctx)
+	case instancemetadata.FieldPrivateKey:
+		return m.OldPrivateKey(ctx)
+	case instancemetadata.FieldSoftwareName:
+		return m.OldSoftwareName(ctx)
+	case instancemetadata.FieldSoftwareVersion:
+		return m.OldSoftwareVersion(ctx)
+	case instancemetadata.FieldSharedInboxURI:
+		return m.OldSharedInboxURI(ctx)
+	case instancemetadata.FieldModeratorsURI:
+		return m.OldModeratorsURI(ctx)
+	case instancemetadata.FieldAdminsURI:
+		return m.OldAdminsURI(ctx)
+	case instancemetadata.FieldLogoEndpoint:
+		return m.OldLogoEndpoint(ctx)
+	case instancemetadata.FieldLogoMimeType:
+		return m.OldLogoMimeType(ctx)
+	case instancemetadata.FieldBannerEndpoint:
+		return m.OldBannerEndpoint(ctx)
+	case instancemetadata.FieldBannerMimeType:
+		return m.OldBannerMimeType(ctx)
+	case instancemetadata.FieldSupportedVersions:
+		return m.OldSupportedVersions(ctx)
+	case instancemetadata.FieldSupportedExtensions:
+		return m.OldSupportedExtensions(ctx)
+	}
+	return nil, fmt.Errorf("unknown InstanceMetadata field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InstanceMetadataMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case instancemetadata.FieldIsRemote:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsRemote(v)
+		return nil
+	case instancemetadata.FieldURI:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURI(v)
+		return nil
+	case instancemetadata.FieldExtensions:
+		v, ok := value.(lysand.Extensions)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExtensions(v)
+		return nil
+	case instancemetadata.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case instancemetadata.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case instancemetadata.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case instancemetadata.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case instancemetadata.FieldHost:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHost(v)
+		return nil
+	case instancemetadata.FieldPublicKey:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicKey(v)
+		return nil
+	case instancemetadata.FieldPublicKeyAlgorithm:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicKeyAlgorithm(v)
+		return nil
+	case instancemetadata.FieldPrivateKey:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrivateKey(v)
+		return nil
+	case instancemetadata.FieldSoftwareName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSoftwareName(v)
+		return nil
+	case instancemetadata.FieldSoftwareVersion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSoftwareVersion(v)
+		return nil
+	case instancemetadata.FieldSharedInboxURI:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSharedInboxURI(v)
+		return nil
+	case instancemetadata.FieldModeratorsURI:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModeratorsURI(v)
+		return nil
+	case instancemetadata.FieldAdminsURI:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAdminsURI(v)
+		return nil
+	case instancemetadata.FieldLogoEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogoEndpoint(v)
+		return nil
+	case instancemetadata.FieldLogoMimeType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogoMimeType(v)
+		return nil
+	case instancemetadata.FieldBannerEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBannerEndpoint(v)
+		return nil
+	case instancemetadata.FieldBannerMimeType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBannerMimeType(v)
+		return nil
+	case instancemetadata.FieldSupportedVersions:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSupportedVersions(v)
+		return nil
+	case instancemetadata.FieldSupportedExtensions:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSupportedExtensions(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InstanceMetadata field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InstanceMetadataMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InstanceMetadataMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InstanceMetadataMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InstanceMetadata numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InstanceMetadataMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(instancemetadata.FieldDescription) {
+		fields = append(fields, instancemetadata.FieldDescription)
+	}
+	if m.FieldCleared(instancemetadata.FieldPrivateKey) {
+		fields = append(fields, instancemetadata.FieldPrivateKey)
+	}
+	if m.FieldCleared(instancemetadata.FieldModeratorsURI) {
+		fields = append(fields, instancemetadata.FieldModeratorsURI)
+	}
+	if m.FieldCleared(instancemetadata.FieldAdminsURI) {
+		fields = append(fields, instancemetadata.FieldAdminsURI)
+	}
+	if m.FieldCleared(instancemetadata.FieldLogoEndpoint) {
+		fields = append(fields, instancemetadata.FieldLogoEndpoint)
+	}
+	if m.FieldCleared(instancemetadata.FieldLogoMimeType) {
+		fields = append(fields, instancemetadata.FieldLogoMimeType)
+	}
+	if m.FieldCleared(instancemetadata.FieldBannerEndpoint) {
+		fields = append(fields, instancemetadata.FieldBannerEndpoint)
+	}
+	if m.FieldCleared(instancemetadata.FieldBannerMimeType) {
+		fields = append(fields, instancemetadata.FieldBannerMimeType)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InstanceMetadataMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InstanceMetadataMutation) ClearField(name string) error {
+	switch name {
+	case instancemetadata.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case instancemetadata.FieldPrivateKey:
+		m.ClearPrivateKey()
+		return nil
+	case instancemetadata.FieldModeratorsURI:
+		m.ClearModeratorsURI()
+		return nil
+	case instancemetadata.FieldAdminsURI:
+		m.ClearAdminsURI()
+		return nil
+	case instancemetadata.FieldLogoEndpoint:
+		m.ClearLogoEndpoint()
+		return nil
+	case instancemetadata.FieldLogoMimeType:
+		m.ClearLogoMimeType()
+		return nil
+	case instancemetadata.FieldBannerEndpoint:
+		m.ClearBannerEndpoint()
+		return nil
+	case instancemetadata.FieldBannerMimeType:
+		m.ClearBannerMimeType()
+		return nil
+	}
+	return fmt.Errorf("unknown InstanceMetadata nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InstanceMetadataMutation) ResetField(name string) error {
+	switch name {
+	case instancemetadata.FieldIsRemote:
+		m.ResetIsRemote()
+		return nil
+	case instancemetadata.FieldURI:
+		m.ResetURI()
+		return nil
+	case instancemetadata.FieldExtensions:
+		m.ResetExtensions()
+		return nil
+	case instancemetadata.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case instancemetadata.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case instancemetadata.FieldName:
+		m.ResetName()
+		return nil
+	case instancemetadata.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case instancemetadata.FieldHost:
+		m.ResetHost()
+		return nil
+	case instancemetadata.FieldPublicKey:
+		m.ResetPublicKey()
+		return nil
+	case instancemetadata.FieldPublicKeyAlgorithm:
+		m.ResetPublicKeyAlgorithm()
+		return nil
+	case instancemetadata.FieldPrivateKey:
+		m.ResetPrivateKey()
+		return nil
+	case instancemetadata.FieldSoftwareName:
+		m.ResetSoftwareName()
+		return nil
+	case instancemetadata.FieldSoftwareVersion:
+		m.ResetSoftwareVersion()
+		return nil
+	case instancemetadata.FieldSharedInboxURI:
+		m.ResetSharedInboxURI()
+		return nil
+	case instancemetadata.FieldModeratorsURI:
+		m.ResetModeratorsURI()
+		return nil
+	case instancemetadata.FieldAdminsURI:
+		m.ResetAdminsURI()
+		return nil
+	case instancemetadata.FieldLogoEndpoint:
+		m.ResetLogoEndpoint()
+		return nil
+	case instancemetadata.FieldLogoMimeType:
+		m.ResetLogoMimeType()
+		return nil
+	case instancemetadata.FieldBannerEndpoint:
+		m.ResetBannerEndpoint()
+		return nil
+	case instancemetadata.FieldBannerMimeType:
+		m.ResetBannerMimeType()
+		return nil
+	case instancemetadata.FieldSupportedVersions:
+		m.ResetSupportedVersions()
+		return nil
+	case instancemetadata.FieldSupportedExtensions:
+		m.ResetSupportedExtensions()
+		return nil
+	}
+	return fmt.Errorf("unknown InstanceMetadata field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InstanceMetadataMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.users != nil {
+		edges = append(edges, instancemetadata.EdgeUsers)
+	}
+	if m.moderators != nil {
+		edges = append(edges, instancemetadata.EdgeModerators)
+	}
+	if m.admins != nil {
+		edges = append(edges, instancemetadata.EdgeAdmins)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InstanceMetadataMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case instancemetadata.EdgeUsers:
+		ids := make([]ent.Value, 0, len(m.users))
+		for id := range m.users {
+			ids = append(ids, id)
+		}
+		return ids
+	case instancemetadata.EdgeModerators:
+		ids := make([]ent.Value, 0, len(m.moderators))
+		for id := range m.moderators {
+			ids = append(ids, id)
+		}
+		return ids
+	case instancemetadata.EdgeAdmins:
+		ids := make([]ent.Value, 0, len(m.admins))
+		for id := range m.admins {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InstanceMetadataMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedusers != nil {
+		edges = append(edges, instancemetadata.EdgeUsers)
+	}
+	if m.removedmoderators != nil {
+		edges = append(edges, instancemetadata.EdgeModerators)
+	}
+	if m.removedadmins != nil {
+		edges = append(edges, instancemetadata.EdgeAdmins)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InstanceMetadataMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case instancemetadata.EdgeUsers:
+		ids := make([]ent.Value, 0, len(m.removedusers))
+		for id := range m.removedusers {
+			ids = append(ids, id)
+		}
+		return ids
+	case instancemetadata.EdgeModerators:
+		ids := make([]ent.Value, 0, len(m.removedmoderators))
+		for id := range m.removedmoderators {
+			ids = append(ids, id)
+		}
+		return ids
+	case instancemetadata.EdgeAdmins:
+		ids := make([]ent.Value, 0, len(m.removedadmins))
+		for id := range m.removedadmins {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InstanceMetadataMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedusers {
+		edges = append(edges, instancemetadata.EdgeUsers)
+	}
+	if m.clearedmoderators {
+		edges = append(edges, instancemetadata.EdgeModerators)
+	}
+	if m.clearedadmins {
+		edges = append(edges, instancemetadata.EdgeAdmins)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InstanceMetadataMutation) EdgeCleared(name string) bool {
+	switch name {
+	case instancemetadata.EdgeUsers:
+		return m.clearedusers
+	case instancemetadata.EdgeModerators:
+		return m.clearedmoderators
+	case instancemetadata.EdgeAdmins:
+		return m.clearedadmins
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InstanceMetadataMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InstanceMetadata unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InstanceMetadataMutation) ResetEdge(name string) error {
+	switch name {
+	case instancemetadata.EdgeUsers:
+		m.ResetUsers()
+		return nil
+	case instancemetadata.EdgeModerators:
+		m.ResetModerators()
+		return nil
+	case instancemetadata.EdgeAdmins:
+		m.ResetAdmins()
+		return nil
+	}
+	return fmt.Errorf("unknown InstanceMetadata edge %s", name)
+}
+
 // NoteMutation represents an operation that mutates the Note nodes in the graph.
 type NoteMutation struct {
 	config
@@ -3433,974 +5344,57 @@ func (m *NoteMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Note edge %s", name)
 }
 
-// ServerMetadataMutation represents an operation that mutates the ServerMetadata nodes in the graph.
-type ServerMetadataMutation struct {
-	config
-	op                        Op
-	typ                       string
-	id                        *uuid.UUID
-	isRemote                  *bool
-	uri                       *string
-	extensions                *lysand.Extensions
-	created_at                *time.Time
-	updated_at                *time.Time
-	name                      *string
-	description               *string
-	version                   *string
-	supportedExtensions       *[]string
-	appendsupportedExtensions []string
-	clearedFields             map[string]struct{}
-	follower                  *uuid.UUID
-	clearedfollower           bool
-	followee                  *uuid.UUID
-	clearedfollowee           bool
-	done                      bool
-	oldValue                  func(context.Context) (*ServerMetadata, error)
-	predicates                []predicate.ServerMetadata
-}
-
-var _ ent.Mutation = (*ServerMetadataMutation)(nil)
-
-// servermetadataOption allows management of the mutation configuration using functional options.
-type servermetadataOption func(*ServerMetadataMutation)
-
-// newServerMetadataMutation creates new mutation for the ServerMetadata entity.
-func newServerMetadataMutation(c config, op Op, opts ...servermetadataOption) *ServerMetadataMutation {
-	m := &ServerMetadataMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeServerMetadata,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withServerMetadataID sets the ID field of the mutation.
-func withServerMetadataID(id uuid.UUID) servermetadataOption {
-	return func(m *ServerMetadataMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ServerMetadata
-		)
-		m.oldValue = func(ctx context.Context) (*ServerMetadata, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ServerMetadata.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withServerMetadata sets the old ServerMetadata of the mutation.
-func withServerMetadata(node *ServerMetadata) servermetadataOption {
-	return func(m *ServerMetadataMutation) {
-		m.oldValue = func(context.Context) (*ServerMetadata, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ServerMetadataMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ServerMetadataMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ServerMetadata entities.
-func (m *ServerMetadataMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ServerMetadataMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ServerMetadataMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ServerMetadata.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetIsRemote sets the "isRemote" field.
-func (m *ServerMetadataMutation) SetIsRemote(b bool) {
-	m.isRemote = &b
-}
-
-// IsRemote returns the value of the "isRemote" field in the mutation.
-func (m *ServerMetadataMutation) IsRemote() (r bool, exists bool) {
-	v := m.isRemote
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsRemote returns the old "isRemote" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldIsRemote(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsRemote is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsRemote requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsRemote: %w", err)
-	}
-	return oldValue.IsRemote, nil
-}
-
-// ResetIsRemote resets all changes to the "isRemote" field.
-func (m *ServerMetadataMutation) ResetIsRemote() {
-	m.isRemote = nil
-}
-
-// SetURI sets the "uri" field.
-func (m *ServerMetadataMutation) SetURI(s string) {
-	m.uri = &s
-}
-
-// URI returns the value of the "uri" field in the mutation.
-func (m *ServerMetadataMutation) URI() (r string, exists bool) {
-	v := m.uri
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldURI returns the old "uri" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldURI(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldURI is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldURI requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldURI: %w", err)
-	}
-	return oldValue.URI, nil
-}
-
-// ResetURI resets all changes to the "uri" field.
-func (m *ServerMetadataMutation) ResetURI() {
-	m.uri = nil
-}
-
-// SetExtensions sets the "extensions" field.
-func (m *ServerMetadataMutation) SetExtensions(l lysand.Extensions) {
-	m.extensions = &l
-}
-
-// Extensions returns the value of the "extensions" field in the mutation.
-func (m *ServerMetadataMutation) Extensions() (r lysand.Extensions, exists bool) {
-	v := m.extensions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExtensions returns the old "extensions" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldExtensions(ctx context.Context) (v lysand.Extensions, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExtensions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExtensions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExtensions: %w", err)
-	}
-	return oldValue.Extensions, nil
-}
-
-// ResetExtensions resets all changes to the "extensions" field.
-func (m *ServerMetadataMutation) ResetExtensions() {
-	m.extensions = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *ServerMetadataMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ServerMetadataMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ServerMetadataMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *ServerMetadataMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *ServerMetadataMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *ServerMetadataMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetName sets the "name" field.
-func (m *ServerMetadataMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *ServerMetadataMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *ServerMetadataMutation) ResetName() {
-	m.name = nil
-}
-
-// SetDescription sets the "description" field.
-func (m *ServerMetadataMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *ServerMetadataMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldDescription(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *ServerMetadataMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[servermetadata.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *ServerMetadataMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[servermetadata.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *ServerMetadataMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, servermetadata.FieldDescription)
-}
-
-// SetVersion sets the "version" field.
-func (m *ServerMetadataMutation) SetVersion(s string) {
-	m.version = &s
-}
-
-// Version returns the value of the "version" field in the mutation.
-func (m *ServerMetadataMutation) Version() (r string, exists bool) {
-	v := m.version
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldVersion returns the old "version" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldVersion(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldVersion requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
-	}
-	return oldValue.Version, nil
-}
-
-// ResetVersion resets all changes to the "version" field.
-func (m *ServerMetadataMutation) ResetVersion() {
-	m.version = nil
-}
-
-// SetSupportedExtensions sets the "supportedExtensions" field.
-func (m *ServerMetadataMutation) SetSupportedExtensions(s []string) {
-	m.supportedExtensions = &s
-	m.appendsupportedExtensions = nil
-}
-
-// SupportedExtensions returns the value of the "supportedExtensions" field in the mutation.
-func (m *ServerMetadataMutation) SupportedExtensions() (r []string, exists bool) {
-	v := m.supportedExtensions
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSupportedExtensions returns the old "supportedExtensions" field's value of the ServerMetadata entity.
-// If the ServerMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServerMetadataMutation) OldSupportedExtensions(ctx context.Context) (v []string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSupportedExtensions is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSupportedExtensions requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSupportedExtensions: %w", err)
-	}
-	return oldValue.SupportedExtensions, nil
-}
-
-// AppendSupportedExtensions adds s to the "supportedExtensions" field.
-func (m *ServerMetadataMutation) AppendSupportedExtensions(s []string) {
-	m.appendsupportedExtensions = append(m.appendsupportedExtensions, s...)
-}
-
-// AppendedSupportedExtensions returns the list of values that were appended to the "supportedExtensions" field in this mutation.
-func (m *ServerMetadataMutation) AppendedSupportedExtensions() ([]string, bool) {
-	if len(m.appendsupportedExtensions) == 0 {
-		return nil, false
-	}
-	return m.appendsupportedExtensions, true
-}
-
-// ResetSupportedExtensions resets all changes to the "supportedExtensions" field.
-func (m *ServerMetadataMutation) ResetSupportedExtensions() {
-	m.supportedExtensions = nil
-	m.appendsupportedExtensions = nil
-}
-
-// SetFollowerID sets the "follower" edge to the User entity by id.
-func (m *ServerMetadataMutation) SetFollowerID(id uuid.UUID) {
-	m.follower = &id
-}
-
-// ClearFollower clears the "follower" edge to the User entity.
-func (m *ServerMetadataMutation) ClearFollower() {
-	m.clearedfollower = true
-}
-
-// FollowerCleared reports if the "follower" edge to the User entity was cleared.
-func (m *ServerMetadataMutation) FollowerCleared() bool {
-	return m.clearedfollower
-}
-
-// FollowerID returns the "follower" edge ID in the mutation.
-func (m *ServerMetadataMutation) FollowerID() (id uuid.UUID, exists bool) {
-	if m.follower != nil {
-		return *m.follower, true
-	}
-	return
-}
-
-// FollowerIDs returns the "follower" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// FollowerID instead. It exists only for internal usage by the builders.
-func (m *ServerMetadataMutation) FollowerIDs() (ids []uuid.UUID) {
-	if id := m.follower; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetFollower resets all changes to the "follower" edge.
-func (m *ServerMetadataMutation) ResetFollower() {
-	m.follower = nil
-	m.clearedfollower = false
-}
-
-// SetFolloweeID sets the "followee" edge to the User entity by id.
-func (m *ServerMetadataMutation) SetFolloweeID(id uuid.UUID) {
-	m.followee = &id
-}
-
-// ClearFollowee clears the "followee" edge to the User entity.
-func (m *ServerMetadataMutation) ClearFollowee() {
-	m.clearedfollowee = true
-}
-
-// FolloweeCleared reports if the "followee" edge to the User entity was cleared.
-func (m *ServerMetadataMutation) FolloweeCleared() bool {
-	return m.clearedfollowee
-}
-
-// FolloweeID returns the "followee" edge ID in the mutation.
-func (m *ServerMetadataMutation) FolloweeID() (id uuid.UUID, exists bool) {
-	if m.followee != nil {
-		return *m.followee, true
-	}
-	return
-}
-
-// FolloweeIDs returns the "followee" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// FolloweeID instead. It exists only for internal usage by the builders.
-func (m *ServerMetadataMutation) FolloweeIDs() (ids []uuid.UUID) {
-	if id := m.followee; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetFollowee resets all changes to the "followee" edge.
-func (m *ServerMetadataMutation) ResetFollowee() {
-	m.followee = nil
-	m.clearedfollowee = false
-}
-
-// Where appends a list predicates to the ServerMetadataMutation builder.
-func (m *ServerMetadataMutation) Where(ps ...predicate.ServerMetadata) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ServerMetadataMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ServerMetadataMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ServerMetadata, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ServerMetadataMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ServerMetadataMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ServerMetadata).
-func (m *ServerMetadataMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ServerMetadataMutation) Fields() []string {
-	fields := make([]string, 0, 9)
-	if m.isRemote != nil {
-		fields = append(fields, servermetadata.FieldIsRemote)
-	}
-	if m.uri != nil {
-		fields = append(fields, servermetadata.FieldURI)
-	}
-	if m.extensions != nil {
-		fields = append(fields, servermetadata.FieldExtensions)
-	}
-	if m.created_at != nil {
-		fields = append(fields, servermetadata.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, servermetadata.FieldUpdatedAt)
-	}
-	if m.name != nil {
-		fields = append(fields, servermetadata.FieldName)
-	}
-	if m.description != nil {
-		fields = append(fields, servermetadata.FieldDescription)
-	}
-	if m.version != nil {
-		fields = append(fields, servermetadata.FieldVersion)
-	}
-	if m.supportedExtensions != nil {
-		fields = append(fields, servermetadata.FieldSupportedExtensions)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ServerMetadataMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case servermetadata.FieldIsRemote:
-		return m.IsRemote()
-	case servermetadata.FieldURI:
-		return m.URI()
-	case servermetadata.FieldExtensions:
-		return m.Extensions()
-	case servermetadata.FieldCreatedAt:
-		return m.CreatedAt()
-	case servermetadata.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case servermetadata.FieldName:
-		return m.Name()
-	case servermetadata.FieldDescription:
-		return m.Description()
-	case servermetadata.FieldVersion:
-		return m.Version()
-	case servermetadata.FieldSupportedExtensions:
-		return m.SupportedExtensions()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ServerMetadataMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case servermetadata.FieldIsRemote:
-		return m.OldIsRemote(ctx)
-	case servermetadata.FieldURI:
-		return m.OldURI(ctx)
-	case servermetadata.FieldExtensions:
-		return m.OldExtensions(ctx)
-	case servermetadata.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case servermetadata.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case servermetadata.FieldName:
-		return m.OldName(ctx)
-	case servermetadata.FieldDescription:
-		return m.OldDescription(ctx)
-	case servermetadata.FieldVersion:
-		return m.OldVersion(ctx)
-	case servermetadata.FieldSupportedExtensions:
-		return m.OldSupportedExtensions(ctx)
-	}
-	return nil, fmt.Errorf("unknown ServerMetadata field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ServerMetadataMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case servermetadata.FieldIsRemote:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsRemote(v)
-		return nil
-	case servermetadata.FieldURI:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetURI(v)
-		return nil
-	case servermetadata.FieldExtensions:
-		v, ok := value.(lysand.Extensions)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetExtensions(v)
-		return nil
-	case servermetadata.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case servermetadata.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case servermetadata.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	case servermetadata.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case servermetadata.FieldVersion:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetVersion(v)
-		return nil
-	case servermetadata.FieldSupportedExtensions:
-		v, ok := value.([]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSupportedExtensions(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ServerMetadata field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ServerMetadataMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ServerMetadataMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ServerMetadataMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown ServerMetadata numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ServerMetadataMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(servermetadata.FieldDescription) {
-		fields = append(fields, servermetadata.FieldDescription)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ServerMetadataMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ServerMetadataMutation) ClearField(name string) error {
-	switch name {
-	case servermetadata.FieldDescription:
-		m.ClearDescription()
-		return nil
-	}
-	return fmt.Errorf("unknown ServerMetadata nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ServerMetadataMutation) ResetField(name string) error {
-	switch name {
-	case servermetadata.FieldIsRemote:
-		m.ResetIsRemote()
-		return nil
-	case servermetadata.FieldURI:
-		m.ResetURI()
-		return nil
-	case servermetadata.FieldExtensions:
-		m.ResetExtensions()
-		return nil
-	case servermetadata.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case servermetadata.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case servermetadata.FieldName:
-		m.ResetName()
-		return nil
-	case servermetadata.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case servermetadata.FieldVersion:
-		m.ResetVersion()
-		return nil
-	case servermetadata.FieldSupportedExtensions:
-		m.ResetSupportedExtensions()
-		return nil
-	}
-	return fmt.Errorf("unknown ServerMetadata field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ServerMetadataMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.follower != nil {
-		edges = append(edges, servermetadata.EdgeFollower)
-	}
-	if m.followee != nil {
-		edges = append(edges, servermetadata.EdgeFollowee)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ServerMetadataMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case servermetadata.EdgeFollower:
-		if id := m.follower; id != nil {
-			return []ent.Value{*id}
-		}
-	case servermetadata.EdgeFollowee:
-		if id := m.followee; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ServerMetadataMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ServerMetadataMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ServerMetadataMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedfollower {
-		edges = append(edges, servermetadata.EdgeFollower)
-	}
-	if m.clearedfollowee {
-		edges = append(edges, servermetadata.EdgeFollowee)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ServerMetadataMutation) EdgeCleared(name string) bool {
-	switch name {
-	case servermetadata.EdgeFollower:
-		return m.clearedfollower
-	case servermetadata.EdgeFollowee:
-		return m.clearedfollowee
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ServerMetadataMutation) ClearEdge(name string) error {
-	switch name {
-	case servermetadata.EdgeFollower:
-		m.ClearFollower()
-		return nil
-	case servermetadata.EdgeFollowee:
-		m.ClearFollowee()
-		return nil
-	}
-	return fmt.Errorf("unknown ServerMetadata unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ServerMetadataMutation) ResetEdge(name string) error {
-	switch name {
-	case servermetadata.EdgeFollower:
-		m.ResetFollower()
-		return nil
-	case servermetadata.EdgeFollowee:
-		m.ResetFollowee()
-		return nil
-	}
-	return fmt.Errorf("unknown ServerMetadata edge %s", name)
-}
-
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	isRemote              *bool
-	uri                   *string
-	extensions            *lysand.Extensions
-	created_at            *time.Time
-	updated_at            *time.Time
-	username              *string
-	passwordHash          *[]byte
-	displayName           *string
-	biography             *string
-	publicKey             *ed25519.PublicKey
-	privateKey            *ed25519.PrivateKey
-	indexable             *bool
-	privacyLevel          *user.PrivacyLevel
-	fields                *[]lysand.Field
-	appendfields          []lysand.Field
-	inbox                 *string
-	featured              *string
-	followers             *string
-	following             *string
-	outbox                *string
-	clearedFields         map[string]struct{}
-	avatarImage           *int
-	clearedavatarImage    bool
-	headerImage           *int
-	clearedheaderImage    bool
-	authoredNotes         map[uuid.UUID]struct{}
-	removedauthoredNotes  map[uuid.UUID]struct{}
-	clearedauthoredNotes  bool
-	mentionedNotes        map[uuid.UUID]struct{}
-	removedmentionedNotes map[uuid.UUID]struct{}
-	clearedmentionedNotes bool
-	done                  bool
-	oldValue              func(context.Context) (*User, error)
-	predicates            []predicate.User
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	isRemote                   *bool
+	uri                        *string
+	extensions                 *lysand.Extensions
+	created_at                 *time.Time
+	updated_at                 *time.Time
+	username                   *string
+	passwordHash               *[]byte
+	displayName                *string
+	biography                  *string
+	publicKey                  *[]byte
+	publicKeyActor             *string
+	publicKeyAlgorithm         *string
+	privateKey                 *[]byte
+	indexable                  *bool
+	privacyLevel               *user.PrivacyLevel
+	fields                     *[]lysand.Field
+	appendfields               []lysand.Field
+	inbox                      *string
+	featured                   *string
+	followers                  *string
+	following                  *string
+	outbox                     *string
+	clearedFields              map[string]struct{}
+	avatarImage                *int
+	clearedavatarImage         bool
+	headerImage                *int
+	clearedheaderImage         bool
+	authoredNotes              map[uuid.UUID]struct{}
+	removedauthoredNotes       map[uuid.UUID]struct{}
+	clearedauthoredNotes       bool
+	mentionedNotes             map[uuid.UUID]struct{}
+	removedmentionedNotes      map[uuid.UUID]struct{}
+	clearedmentionedNotes      bool
+	servers                    map[uuid.UUID]struct{}
+	removedservers             map[uuid.UUID]struct{}
+	clearedservers             bool
+	moderatedServers           map[uuid.UUID]struct{}
+	removedmoderatedServers    map[uuid.UUID]struct{}
+	clearedmoderatedServers    bool
+	administeredServers        map[uuid.UUID]struct{}
+	removedadministeredServers map[uuid.UUID]struct{}
+	clearedadministeredServers bool
+	done                       bool
+	oldValue                   func(context.Context) (*User, error)
+	predicates                 []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -4871,12 +5865,12 @@ func (m *UserMutation) ResetBiography() {
 }
 
 // SetPublicKey sets the "publicKey" field.
-func (m *UserMutation) SetPublicKey(ek ed25519.PublicKey) {
-	m.publicKey = &ek
+func (m *UserMutation) SetPublicKey(b []byte) {
+	m.publicKey = &b
 }
 
 // PublicKey returns the value of the "publicKey" field in the mutation.
-func (m *UserMutation) PublicKey() (r ed25519.PublicKey, exists bool) {
+func (m *UserMutation) PublicKey() (r []byte, exists bool) {
 	v := m.publicKey
 	if v == nil {
 		return
@@ -4887,7 +5881,7 @@ func (m *UserMutation) PublicKey() (r ed25519.PublicKey, exists bool) {
 // OldPublicKey returns the old "publicKey" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldPublicKey(ctx context.Context) (v ed25519.PublicKey, err error) {
+func (m *UserMutation) OldPublicKey(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPublicKey is only allowed on UpdateOne operations")
 	}
@@ -4906,13 +5900,85 @@ func (m *UserMutation) ResetPublicKey() {
 	m.publicKey = nil
 }
 
+// SetPublicKeyActor sets the "publicKeyActor" field.
+func (m *UserMutation) SetPublicKeyActor(s string) {
+	m.publicKeyActor = &s
+}
+
+// PublicKeyActor returns the value of the "publicKeyActor" field in the mutation.
+func (m *UserMutation) PublicKeyActor() (r string, exists bool) {
+	v := m.publicKeyActor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicKeyActor returns the old "publicKeyActor" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldPublicKeyActor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicKeyActor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicKeyActor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicKeyActor: %w", err)
+	}
+	return oldValue.PublicKeyActor, nil
+}
+
+// ResetPublicKeyActor resets all changes to the "publicKeyActor" field.
+func (m *UserMutation) ResetPublicKeyActor() {
+	m.publicKeyActor = nil
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (m *UserMutation) SetPublicKeyAlgorithm(s string) {
+	m.publicKeyAlgorithm = &s
+}
+
+// PublicKeyAlgorithm returns the value of the "publicKeyAlgorithm" field in the mutation.
+func (m *UserMutation) PublicKeyAlgorithm() (r string, exists bool) {
+	v := m.publicKeyAlgorithm
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicKeyAlgorithm returns the old "publicKeyAlgorithm" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldPublicKeyAlgorithm(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicKeyAlgorithm is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicKeyAlgorithm requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicKeyAlgorithm: %w", err)
+	}
+	return oldValue.PublicKeyAlgorithm, nil
+}
+
+// ResetPublicKeyAlgorithm resets all changes to the "publicKeyAlgorithm" field.
+func (m *UserMutation) ResetPublicKeyAlgorithm() {
+	m.publicKeyAlgorithm = nil
+}
+
 // SetPrivateKey sets the "privateKey" field.
-func (m *UserMutation) SetPrivateKey(ek ed25519.PrivateKey) {
-	m.privateKey = &ek
+func (m *UserMutation) SetPrivateKey(b []byte) {
+	m.privateKey = &b
 }
 
 // PrivateKey returns the value of the "privateKey" field in the mutation.
-func (m *UserMutation) PrivateKey() (r ed25519.PrivateKey, exists bool) {
+func (m *UserMutation) PrivateKey() (r []byte, exists bool) {
 	v := m.privateKey
 	if v == nil {
 		return
@@ -4923,7 +5989,7 @@ func (m *UserMutation) PrivateKey() (r ed25519.PrivateKey, exists bool) {
 // OldPrivateKey returns the old "privateKey" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldPrivateKey(ctx context.Context) (v ed25519.PrivateKey, err error) {
+func (m *UserMutation) OldPrivateKey(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPrivateKey is only allowed on UpdateOne operations")
 	}
@@ -5444,6 +6510,168 @@ func (m *UserMutation) ResetMentionedNotes() {
 	m.removedmentionedNotes = nil
 }
 
+// AddServerIDs adds the "servers" edge to the InstanceMetadata entity by ids.
+func (m *UserMutation) AddServerIDs(ids ...uuid.UUID) {
+	if m.servers == nil {
+		m.servers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.servers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearServers clears the "servers" edge to the InstanceMetadata entity.
+func (m *UserMutation) ClearServers() {
+	m.clearedservers = true
+}
+
+// ServersCleared reports if the "servers" edge to the InstanceMetadata entity was cleared.
+func (m *UserMutation) ServersCleared() bool {
+	return m.clearedservers
+}
+
+// RemoveServerIDs removes the "servers" edge to the InstanceMetadata entity by IDs.
+func (m *UserMutation) RemoveServerIDs(ids ...uuid.UUID) {
+	if m.removedservers == nil {
+		m.removedservers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.servers, ids[i])
+		m.removedservers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedServers returns the removed IDs of the "servers" edge to the InstanceMetadata entity.
+func (m *UserMutation) RemovedServersIDs() (ids []uuid.UUID) {
+	for id := range m.removedservers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ServersIDs returns the "servers" edge IDs in the mutation.
+func (m *UserMutation) ServersIDs() (ids []uuid.UUID) {
+	for id := range m.servers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetServers resets all changes to the "servers" edge.
+func (m *UserMutation) ResetServers() {
+	m.servers = nil
+	m.clearedservers = false
+	m.removedservers = nil
+}
+
+// AddModeratedServerIDs adds the "moderatedServers" edge to the InstanceMetadata entity by ids.
+func (m *UserMutation) AddModeratedServerIDs(ids ...uuid.UUID) {
+	if m.moderatedServers == nil {
+		m.moderatedServers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.moderatedServers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearModeratedServers clears the "moderatedServers" edge to the InstanceMetadata entity.
+func (m *UserMutation) ClearModeratedServers() {
+	m.clearedmoderatedServers = true
+}
+
+// ModeratedServersCleared reports if the "moderatedServers" edge to the InstanceMetadata entity was cleared.
+func (m *UserMutation) ModeratedServersCleared() bool {
+	return m.clearedmoderatedServers
+}
+
+// RemoveModeratedServerIDs removes the "moderatedServers" edge to the InstanceMetadata entity by IDs.
+func (m *UserMutation) RemoveModeratedServerIDs(ids ...uuid.UUID) {
+	if m.removedmoderatedServers == nil {
+		m.removedmoderatedServers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.moderatedServers, ids[i])
+		m.removedmoderatedServers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedModeratedServers returns the removed IDs of the "moderatedServers" edge to the InstanceMetadata entity.
+func (m *UserMutation) RemovedModeratedServersIDs() (ids []uuid.UUID) {
+	for id := range m.removedmoderatedServers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ModeratedServersIDs returns the "moderatedServers" edge IDs in the mutation.
+func (m *UserMutation) ModeratedServersIDs() (ids []uuid.UUID) {
+	for id := range m.moderatedServers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetModeratedServers resets all changes to the "moderatedServers" edge.
+func (m *UserMutation) ResetModeratedServers() {
+	m.moderatedServers = nil
+	m.clearedmoderatedServers = false
+	m.removedmoderatedServers = nil
+}
+
+// AddAdministeredServerIDs adds the "administeredServers" edge to the InstanceMetadata entity by ids.
+func (m *UserMutation) AddAdministeredServerIDs(ids ...uuid.UUID) {
+	if m.administeredServers == nil {
+		m.administeredServers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.administeredServers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAdministeredServers clears the "administeredServers" edge to the InstanceMetadata entity.
+func (m *UserMutation) ClearAdministeredServers() {
+	m.clearedadministeredServers = true
+}
+
+// AdministeredServersCleared reports if the "administeredServers" edge to the InstanceMetadata entity was cleared.
+func (m *UserMutation) AdministeredServersCleared() bool {
+	return m.clearedadministeredServers
+}
+
+// RemoveAdministeredServerIDs removes the "administeredServers" edge to the InstanceMetadata entity by IDs.
+func (m *UserMutation) RemoveAdministeredServerIDs(ids ...uuid.UUID) {
+	if m.removedadministeredServers == nil {
+		m.removedadministeredServers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.administeredServers, ids[i])
+		m.removedadministeredServers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAdministeredServers returns the removed IDs of the "administeredServers" edge to the InstanceMetadata entity.
+func (m *UserMutation) RemovedAdministeredServersIDs() (ids []uuid.UUID) {
+	for id := range m.removedadministeredServers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AdministeredServersIDs returns the "administeredServers" edge IDs in the mutation.
+func (m *UserMutation) AdministeredServersIDs() (ids []uuid.UUID) {
+	for id := range m.administeredServers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAdministeredServers resets all changes to the "administeredServers" edge.
+func (m *UserMutation) ResetAdministeredServers() {
+	m.administeredServers = nil
+	m.clearedadministeredServers = false
+	m.removedadministeredServers = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -5478,7 +6706,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 21)
 	if m.isRemote != nil {
 		fields = append(fields, user.FieldIsRemote)
 	}
@@ -5508,6 +6736,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.publicKey != nil {
 		fields = append(fields, user.FieldPublicKey)
+	}
+	if m.publicKeyActor != nil {
+		fields = append(fields, user.FieldPublicKeyActor)
+	}
+	if m.publicKeyAlgorithm != nil {
+		fields = append(fields, user.FieldPublicKeyAlgorithm)
 	}
 	if m.privateKey != nil {
 		fields = append(fields, user.FieldPrivateKey)
@@ -5564,6 +6798,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Biography()
 	case user.FieldPublicKey:
 		return m.PublicKey()
+	case user.FieldPublicKeyActor:
+		return m.PublicKeyActor()
+	case user.FieldPublicKeyAlgorithm:
+		return m.PublicKeyAlgorithm()
 	case user.FieldPrivateKey:
 		return m.PrivateKey()
 	case user.FieldIndexable:
@@ -5611,6 +6849,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldBiography(ctx)
 	case user.FieldPublicKey:
 		return m.OldPublicKey(ctx)
+	case user.FieldPublicKeyActor:
+		return m.OldPublicKeyActor(ctx)
+	case user.FieldPublicKeyAlgorithm:
+		return m.OldPublicKeyAlgorithm(ctx)
 	case user.FieldPrivateKey:
 		return m.OldPrivateKey(ctx)
 	case user.FieldIndexable:
@@ -5702,14 +6944,28 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetBiography(v)
 		return nil
 	case user.FieldPublicKey:
-		v, ok := value.(ed25519.PublicKey)
+		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPublicKey(v)
 		return nil
+	case user.FieldPublicKeyActor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicKeyActor(v)
+		return nil
+	case user.FieldPublicKeyAlgorithm:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicKeyAlgorithm(v)
+		return nil
 	case user.FieldPrivateKey:
-		v, ok := value.(ed25519.PrivateKey)
+		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -5877,6 +7133,12 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldPublicKey:
 		m.ResetPublicKey()
 		return nil
+	case user.FieldPublicKeyActor:
+		m.ResetPublicKeyActor()
+		return nil
+	case user.FieldPublicKeyAlgorithm:
+		m.ResetPublicKeyAlgorithm()
+		return nil
 	case user.FieldPrivateKey:
 		m.ResetPrivateKey()
 		return nil
@@ -5910,7 +7172,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 7)
 	if m.avatarImage != nil {
 		edges = append(edges, user.EdgeAvatarImage)
 	}
@@ -5922,6 +7184,15 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.mentionedNotes != nil {
 		edges = append(edges, user.EdgeMentionedNotes)
+	}
+	if m.servers != nil {
+		edges = append(edges, user.EdgeServers)
+	}
+	if m.moderatedServers != nil {
+		edges = append(edges, user.EdgeModeratedServers)
+	}
+	if m.administeredServers != nil {
+		edges = append(edges, user.EdgeAdministeredServers)
 	}
 	return edges
 }
@@ -5950,18 +7221,45 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeServers:
+		ids := make([]ent.Value, 0, len(m.servers))
+		for id := range m.servers {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeModeratedServers:
+		ids := make([]ent.Value, 0, len(m.moderatedServers))
+		for id := range m.moderatedServers {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeAdministeredServers:
+		ids := make([]ent.Value, 0, len(m.administeredServers))
+		for id := range m.administeredServers {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 7)
 	if m.removedauthoredNotes != nil {
 		edges = append(edges, user.EdgeAuthoredNotes)
 	}
 	if m.removedmentionedNotes != nil {
 		edges = append(edges, user.EdgeMentionedNotes)
+	}
+	if m.removedservers != nil {
+		edges = append(edges, user.EdgeServers)
+	}
+	if m.removedmoderatedServers != nil {
+		edges = append(edges, user.EdgeModeratedServers)
+	}
+	if m.removedadministeredServers != nil {
+		edges = append(edges, user.EdgeAdministeredServers)
 	}
 	return edges
 }
@@ -5982,13 +7280,31 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeServers:
+		ids := make([]ent.Value, 0, len(m.removedservers))
+		for id := range m.removedservers {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeModeratedServers:
+		ids := make([]ent.Value, 0, len(m.removedmoderatedServers))
+		for id := range m.removedmoderatedServers {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeAdministeredServers:
+		ids := make([]ent.Value, 0, len(m.removedadministeredServers))
+		for id := range m.removedadministeredServers {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 7)
 	if m.clearedavatarImage {
 		edges = append(edges, user.EdgeAvatarImage)
 	}
@@ -6000,6 +7316,15 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedmentionedNotes {
 		edges = append(edges, user.EdgeMentionedNotes)
+	}
+	if m.clearedservers {
+		edges = append(edges, user.EdgeServers)
+	}
+	if m.clearedmoderatedServers {
+		edges = append(edges, user.EdgeModeratedServers)
+	}
+	if m.clearedadministeredServers {
+		edges = append(edges, user.EdgeAdministeredServers)
 	}
 	return edges
 }
@@ -6016,6 +7341,12 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedauthoredNotes
 	case user.EdgeMentionedNotes:
 		return m.clearedmentionedNotes
+	case user.EdgeServers:
+		return m.clearedservers
+	case user.EdgeModeratedServers:
+		return m.clearedmoderatedServers
+	case user.EdgeAdministeredServers:
+		return m.clearedadministeredServers
 	}
 	return false
 }
@@ -6049,6 +7380,15 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeMentionedNotes:
 		m.ResetMentionedNotes()
+		return nil
+	case user.EdgeServers:
+		m.ResetServers()
+		return nil
+	case user.EdgeModeratedServers:
+		m.ResetModeratedServers()
+		return nil
+	case user.EdgeAdministeredServers:
+		m.ResetAdministeredServers()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

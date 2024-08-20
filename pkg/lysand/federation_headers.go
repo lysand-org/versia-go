@@ -25,6 +25,14 @@ func (f *FederationHeaders) Inject(h http.Header) {
 	h.Set("x-signature", base64.StdEncoding.EncodeToString(f.Signature))
 }
 
+func (f *FederationHeaders) Headers() map[string]string {
+	return map[string]string{
+		"x-signed-by": f.SignedBy.String(),
+		"x-nonce":     f.Nonce,
+		"x-signature": base64.StdEncoding.EncodeToString(f.Signature),
+	}
+}
+
 func ExtractFederationHeaders(h http.Header) (*FederationHeaders, error) {
 	signedBy := h.Get("x-signed-by")
 	if signedBy == "" {
@@ -41,14 +49,19 @@ func ExtractFederationHeaders(h http.Header) (*FederationHeaders, error) {
 		return nil, fmt.Errorf("missing x-nonce header")
 	}
 
-	signature := h.Get("x-signature")
-	if signature == "" {
+	rawSignature := h.Get("x-signature")
+	if rawSignature == "" {
 		return nil, fmt.Errorf("missing x-signature header")
+	}
+
+	signature, err := base64.StdEncoding.DecodeString(rawSignature)
+	if err != nil {
+		return nil, err
 	}
 
 	return &FederationHeaders{
 		SignedBy:  u,
 		Nonce:     nonce,
-		Signature: []byte(signature),
+		Signature: signature,
 	}, nil
 }

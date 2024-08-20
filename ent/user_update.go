@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"crypto/ed25519"
 	"errors"
 	"fmt"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
@@ -141,14 +141,42 @@ func (uu *UserUpdate) ClearBiography() *UserUpdate {
 }
 
 // SetPublicKey sets the "publicKey" field.
-func (uu *UserUpdate) SetPublicKey(ek ed25519.PublicKey) *UserUpdate {
-	uu.mutation.SetPublicKey(ek)
+func (uu *UserUpdate) SetPublicKey(b []byte) *UserUpdate {
+	uu.mutation.SetPublicKey(b)
+	return uu
+}
+
+// SetPublicKeyActor sets the "publicKeyActor" field.
+func (uu *UserUpdate) SetPublicKeyActor(s string) *UserUpdate {
+	uu.mutation.SetPublicKeyActor(s)
+	return uu
+}
+
+// SetNillablePublicKeyActor sets the "publicKeyActor" field if the given value is not nil.
+func (uu *UserUpdate) SetNillablePublicKeyActor(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetPublicKeyActor(*s)
+	}
+	return uu
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (uu *UserUpdate) SetPublicKeyAlgorithm(s string) *UserUpdate {
+	uu.mutation.SetPublicKeyAlgorithm(s)
+	return uu
+}
+
+// SetNillablePublicKeyAlgorithm sets the "publicKeyAlgorithm" field if the given value is not nil.
+func (uu *UserUpdate) SetNillablePublicKeyAlgorithm(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetPublicKeyAlgorithm(*s)
+	}
 	return uu
 }
 
 // SetPrivateKey sets the "privateKey" field.
-func (uu *UserUpdate) SetPrivateKey(ek ed25519.PrivateKey) *UserUpdate {
-	uu.mutation.SetPrivateKey(ek)
+func (uu *UserUpdate) SetPrivateKey(b []byte) *UserUpdate {
+	uu.mutation.SetPrivateKey(b)
 	return uu
 }
 
@@ -336,6 +364,51 @@ func (uu *UserUpdate) AddMentionedNotes(n ...*Note) *UserUpdate {
 	return uu.AddMentionedNoteIDs(ids...)
 }
 
+// AddServerIDs adds the "servers" edge to the InstanceMetadata entity by IDs.
+func (uu *UserUpdate) AddServerIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddServerIDs(ids...)
+	return uu
+}
+
+// AddServers adds the "servers" edges to the InstanceMetadata entity.
+func (uu *UserUpdate) AddServers(i ...*InstanceMetadata) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.AddServerIDs(ids...)
+}
+
+// AddModeratedServerIDs adds the "moderatedServers" edge to the InstanceMetadata entity by IDs.
+func (uu *UserUpdate) AddModeratedServerIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddModeratedServerIDs(ids...)
+	return uu
+}
+
+// AddModeratedServers adds the "moderatedServers" edges to the InstanceMetadata entity.
+func (uu *UserUpdate) AddModeratedServers(i ...*InstanceMetadata) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.AddModeratedServerIDs(ids...)
+}
+
+// AddAdministeredServerIDs adds the "administeredServers" edge to the InstanceMetadata entity by IDs.
+func (uu *UserUpdate) AddAdministeredServerIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddAdministeredServerIDs(ids...)
+	return uu
+}
+
+// AddAdministeredServers adds the "administeredServers" edges to the InstanceMetadata entity.
+func (uu *UserUpdate) AddAdministeredServers(i ...*InstanceMetadata) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.AddAdministeredServerIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -393,6 +466,69 @@ func (uu *UserUpdate) RemoveMentionedNotes(n ...*Note) *UserUpdate {
 		ids[i] = n[i].ID
 	}
 	return uu.RemoveMentionedNoteIDs(ids...)
+}
+
+// ClearServers clears all "servers" edges to the InstanceMetadata entity.
+func (uu *UserUpdate) ClearServers() *UserUpdate {
+	uu.mutation.ClearServers()
+	return uu
+}
+
+// RemoveServerIDs removes the "servers" edge to InstanceMetadata entities by IDs.
+func (uu *UserUpdate) RemoveServerIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveServerIDs(ids...)
+	return uu
+}
+
+// RemoveServers removes "servers" edges to InstanceMetadata entities.
+func (uu *UserUpdate) RemoveServers(i ...*InstanceMetadata) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.RemoveServerIDs(ids...)
+}
+
+// ClearModeratedServers clears all "moderatedServers" edges to the InstanceMetadata entity.
+func (uu *UserUpdate) ClearModeratedServers() *UserUpdate {
+	uu.mutation.ClearModeratedServers()
+	return uu
+}
+
+// RemoveModeratedServerIDs removes the "moderatedServers" edge to InstanceMetadata entities by IDs.
+func (uu *UserUpdate) RemoveModeratedServerIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveModeratedServerIDs(ids...)
+	return uu
+}
+
+// RemoveModeratedServers removes "moderatedServers" edges to InstanceMetadata entities.
+func (uu *UserUpdate) RemoveModeratedServers(i ...*InstanceMetadata) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.RemoveModeratedServerIDs(ids...)
+}
+
+// ClearAdministeredServers clears all "administeredServers" edges to the InstanceMetadata entity.
+func (uu *UserUpdate) ClearAdministeredServers() *UserUpdate {
+	uu.mutation.ClearAdministeredServers()
+	return uu
+}
+
+// RemoveAdministeredServerIDs removes the "administeredServers" edge to InstanceMetadata entities by IDs.
+func (uu *UserUpdate) RemoveAdministeredServerIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveAdministeredServerIDs(ids...)
+	return uu
+}
+
+// RemoveAdministeredServers removes "administeredServers" edges to InstanceMetadata entities.
+func (uu *UserUpdate) RemoveAdministeredServers(i ...*InstanceMetadata) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.RemoveAdministeredServerIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -528,6 +664,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.PublicKey(); ok {
 		_spec.SetField(user.FieldPublicKey, field.TypeBytes, value)
+	}
+	if value, ok := uu.mutation.PublicKeyActor(); ok {
+		_spec.SetField(user.FieldPublicKeyActor, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.PublicKeyAlgorithm(); ok {
+		_spec.SetField(user.FieldPublicKeyAlgorithm, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.PrivateKey(); ok {
 		_spec.SetField(user.FieldPrivateKey, field.TypeBytes, value)
@@ -712,6 +854,141 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.ServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ServersTable,
+			Columns: user.ServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedServersIDs(); len(nodes) > 0 && !uu.mutation.ServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ServersTable,
+			Columns: user.ServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ServersTable,
+			Columns: user.ServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.ModeratedServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ModeratedServersTable,
+			Columns: user.ModeratedServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedModeratedServersIDs(); len(nodes) > 0 && !uu.mutation.ModeratedServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ModeratedServersTable,
+			Columns: user.ModeratedServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ModeratedServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ModeratedServersTable,
+			Columns: user.ModeratedServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.AdministeredServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AdministeredServersTable,
+			Columns: user.AdministeredServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedAdministeredServersIDs(); len(nodes) > 0 && !uu.mutation.AdministeredServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AdministeredServersTable,
+			Columns: user.AdministeredServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.AdministeredServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AdministeredServersTable,
+			Columns: user.AdministeredServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -839,14 +1116,42 @@ func (uuo *UserUpdateOne) ClearBiography() *UserUpdateOne {
 }
 
 // SetPublicKey sets the "publicKey" field.
-func (uuo *UserUpdateOne) SetPublicKey(ek ed25519.PublicKey) *UserUpdateOne {
-	uuo.mutation.SetPublicKey(ek)
+func (uuo *UserUpdateOne) SetPublicKey(b []byte) *UserUpdateOne {
+	uuo.mutation.SetPublicKey(b)
+	return uuo
+}
+
+// SetPublicKeyActor sets the "publicKeyActor" field.
+func (uuo *UserUpdateOne) SetPublicKeyActor(s string) *UserUpdateOne {
+	uuo.mutation.SetPublicKeyActor(s)
+	return uuo
+}
+
+// SetNillablePublicKeyActor sets the "publicKeyActor" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillablePublicKeyActor(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetPublicKeyActor(*s)
+	}
+	return uuo
+}
+
+// SetPublicKeyAlgorithm sets the "publicKeyAlgorithm" field.
+func (uuo *UserUpdateOne) SetPublicKeyAlgorithm(s string) *UserUpdateOne {
+	uuo.mutation.SetPublicKeyAlgorithm(s)
+	return uuo
+}
+
+// SetNillablePublicKeyAlgorithm sets the "publicKeyAlgorithm" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillablePublicKeyAlgorithm(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetPublicKeyAlgorithm(*s)
+	}
 	return uuo
 }
 
 // SetPrivateKey sets the "privateKey" field.
-func (uuo *UserUpdateOne) SetPrivateKey(ek ed25519.PrivateKey) *UserUpdateOne {
-	uuo.mutation.SetPrivateKey(ek)
+func (uuo *UserUpdateOne) SetPrivateKey(b []byte) *UserUpdateOne {
+	uuo.mutation.SetPrivateKey(b)
 	return uuo
 }
 
@@ -1034,6 +1339,51 @@ func (uuo *UserUpdateOne) AddMentionedNotes(n ...*Note) *UserUpdateOne {
 	return uuo.AddMentionedNoteIDs(ids...)
 }
 
+// AddServerIDs adds the "servers" edge to the InstanceMetadata entity by IDs.
+func (uuo *UserUpdateOne) AddServerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddServerIDs(ids...)
+	return uuo
+}
+
+// AddServers adds the "servers" edges to the InstanceMetadata entity.
+func (uuo *UserUpdateOne) AddServers(i ...*InstanceMetadata) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.AddServerIDs(ids...)
+}
+
+// AddModeratedServerIDs adds the "moderatedServers" edge to the InstanceMetadata entity by IDs.
+func (uuo *UserUpdateOne) AddModeratedServerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddModeratedServerIDs(ids...)
+	return uuo
+}
+
+// AddModeratedServers adds the "moderatedServers" edges to the InstanceMetadata entity.
+func (uuo *UserUpdateOne) AddModeratedServers(i ...*InstanceMetadata) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.AddModeratedServerIDs(ids...)
+}
+
+// AddAdministeredServerIDs adds the "administeredServers" edge to the InstanceMetadata entity by IDs.
+func (uuo *UserUpdateOne) AddAdministeredServerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddAdministeredServerIDs(ids...)
+	return uuo
+}
+
+// AddAdministeredServers adds the "administeredServers" edges to the InstanceMetadata entity.
+func (uuo *UserUpdateOne) AddAdministeredServers(i ...*InstanceMetadata) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.AddAdministeredServerIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -1091,6 +1441,69 @@ func (uuo *UserUpdateOne) RemoveMentionedNotes(n ...*Note) *UserUpdateOne {
 		ids[i] = n[i].ID
 	}
 	return uuo.RemoveMentionedNoteIDs(ids...)
+}
+
+// ClearServers clears all "servers" edges to the InstanceMetadata entity.
+func (uuo *UserUpdateOne) ClearServers() *UserUpdateOne {
+	uuo.mutation.ClearServers()
+	return uuo
+}
+
+// RemoveServerIDs removes the "servers" edge to InstanceMetadata entities by IDs.
+func (uuo *UserUpdateOne) RemoveServerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveServerIDs(ids...)
+	return uuo
+}
+
+// RemoveServers removes "servers" edges to InstanceMetadata entities.
+func (uuo *UserUpdateOne) RemoveServers(i ...*InstanceMetadata) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.RemoveServerIDs(ids...)
+}
+
+// ClearModeratedServers clears all "moderatedServers" edges to the InstanceMetadata entity.
+func (uuo *UserUpdateOne) ClearModeratedServers() *UserUpdateOne {
+	uuo.mutation.ClearModeratedServers()
+	return uuo
+}
+
+// RemoveModeratedServerIDs removes the "moderatedServers" edge to InstanceMetadata entities by IDs.
+func (uuo *UserUpdateOne) RemoveModeratedServerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveModeratedServerIDs(ids...)
+	return uuo
+}
+
+// RemoveModeratedServers removes "moderatedServers" edges to InstanceMetadata entities.
+func (uuo *UserUpdateOne) RemoveModeratedServers(i ...*InstanceMetadata) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.RemoveModeratedServerIDs(ids...)
+}
+
+// ClearAdministeredServers clears all "administeredServers" edges to the InstanceMetadata entity.
+func (uuo *UserUpdateOne) ClearAdministeredServers() *UserUpdateOne {
+	uuo.mutation.ClearAdministeredServers()
+	return uuo
+}
+
+// RemoveAdministeredServerIDs removes the "administeredServers" edge to InstanceMetadata entities by IDs.
+func (uuo *UserUpdateOne) RemoveAdministeredServerIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveAdministeredServerIDs(ids...)
+	return uuo
+}
+
+// RemoveAdministeredServers removes "administeredServers" edges to InstanceMetadata entities.
+func (uuo *UserUpdateOne) RemoveAdministeredServers(i ...*InstanceMetadata) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.RemoveAdministeredServerIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1256,6 +1669,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.PublicKey(); ok {
 		_spec.SetField(user.FieldPublicKey, field.TypeBytes, value)
+	}
+	if value, ok := uuo.mutation.PublicKeyActor(); ok {
+		_spec.SetField(user.FieldPublicKeyActor, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.PublicKeyAlgorithm(); ok {
+		_spec.SetField(user.FieldPublicKeyAlgorithm, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.PrivateKey(); ok {
 		_spec.SetField(user.FieldPrivateKey, field.TypeBytes, value)
@@ -1433,6 +1852,141 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(note.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ServersTable,
+			Columns: user.ServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedServersIDs(); len(nodes) > 0 && !uuo.mutation.ServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ServersTable,
+			Columns: user.ServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ServersTable,
+			Columns: user.ServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ModeratedServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ModeratedServersTable,
+			Columns: user.ModeratedServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedModeratedServersIDs(); len(nodes) > 0 && !uuo.mutation.ModeratedServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ModeratedServersTable,
+			Columns: user.ModeratedServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ModeratedServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ModeratedServersTable,
+			Columns: user.ModeratedServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.AdministeredServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AdministeredServersTable,
+			Columns: user.AdministeredServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedAdministeredServersIDs(); len(nodes) > 0 && !uuo.mutation.AdministeredServersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AdministeredServersTable,
+			Columns: user.AdministeredServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.AdministeredServersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.AdministeredServersTable,
+			Columns: user.AdministeredServersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(instancemetadata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

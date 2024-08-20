@@ -14,10 +14,18 @@ func (Attachment) Fields() []ent.Field {
 		field.Bytes("sha256"),
 		field.Int("size"),
 
-		field.String("blurhash").Optional().Nillable(),
-		field.Int("height").Optional().Nillable(),
-		field.Int("width").Optional().Nillable(),
-		field.Int("fps").Optional().Nillable(),
+		field.String("blurhash").
+			Optional().
+			Nillable(),
+		field.Int("height").
+			Optional().
+			Nillable(),
+		field.Int("width").
+			Optional().
+			Nillable(),
+		field.Int("fps").
+			Optional().
+			Nillable(),
 
 		field.String("mimeType"),
 	}

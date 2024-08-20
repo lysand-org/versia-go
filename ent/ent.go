@@ -15,8 +15,8 @@ import (
 	"github.com/lysand-org/versia-go/ent/attachment"
 	"github.com/lysand-org/versia-go/ent/follow"
 	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
-	"github.com/lysand-org/versia-go/ent/servermetadata"
 	"github.com/lysand-org/versia-go/ent/user"
 )
 
@@ -78,12 +78,12 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			attachment.Table:     attachment.ValidColumn,
-			follow.Table:         follow.ValidColumn,
-			image.Table:          image.ValidColumn,
-			note.Table:           note.ValidColumn,
-			servermetadata.Table: servermetadata.ValidColumn,
-			user.Table:           user.ValidColumn,
+			attachment.Table:       attachment.ValidColumn,
+			follow.Table:           follow.ValidColumn,
+			image.Table:            image.ValidColumn,
+			instancemetadata.Table: instancemetadata.ValidColumn,
+			note.Table:             note.ValidColumn,
+			user.Table:             user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

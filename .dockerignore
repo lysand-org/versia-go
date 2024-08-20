@@ -1,0 +1,8 @@
+*.pem
+*.db
+.env*
+node_modules
+compose.yml
+Dockerfile
+.dockerignore
+.gitignore

@@ -37,6 +37,10 @@ const (
 	FieldBiography = "biography"
 	// FieldPublicKey holds the string denoting the publickey field in the database.
 	FieldPublicKey = "public_key"
+	// FieldPublicKeyActor holds the string denoting the publickeyactor field in the database.
+	FieldPublicKeyActor = "public_key_actor"
+	// FieldPublicKeyAlgorithm holds the string denoting the publickeyalgorithm field in the database.
+	FieldPublicKeyAlgorithm = "public_key_algorithm"
 	// FieldPrivateKey holds the string denoting the privatekey field in the database.
 	FieldPrivateKey = "private_key"
 	// FieldIndexable holds the string denoting the indexable field in the database.
@@ -63,6 +67,12 @@ const (
 	EdgeAuthoredNotes = "authoredNotes"
 	// EdgeMentionedNotes holds the string denoting the mentionednotes edge name in mutations.
 	EdgeMentionedNotes = "mentionedNotes"
+	// EdgeServers holds the string denoting the servers edge name in mutations.
+	EdgeServers = "servers"
+	// EdgeModeratedServers holds the string denoting the moderatedservers edge name in mutations.
+	EdgeModeratedServers = "moderatedServers"
+	// EdgeAdministeredServers holds the string denoting the administeredservers edge name in mutations.
+	EdgeAdministeredServers = "administeredServers"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// AvatarImageTable is the table that holds the avatarImage relation/edge.
@@ -91,6 +101,21 @@ const (
 	// MentionedNotesInverseTable is the table name for the Note entity.
 	// It exists in this package in order to avoid circular dependency with the "note" package.
 	MentionedNotesInverseTable = "notes"
+	// ServersTable is the table that holds the servers relation/edge. The primary key declared below.
+	ServersTable = "instance_metadata_users"
+	// ServersInverseTable is the table name for the InstanceMetadata entity.
+	// It exists in this package in order to avoid circular dependency with the "instancemetadata" package.
+	ServersInverseTable = "instance_metadata"
+	// ModeratedServersTable is the table that holds the moderatedServers relation/edge. The primary key declared below.
+	ModeratedServersTable = "instance_metadata_moderators"
+	// ModeratedServersInverseTable is the table name for the InstanceMetadata entity.
+	// It exists in this package in order to avoid circular dependency with the "instancemetadata" package.
+	ModeratedServersInverseTable = "instance_metadata"
+	// AdministeredServersTable is the table that holds the administeredServers relation/edge. The primary key declared below.
+	AdministeredServersTable = "instance_metadata_admins"
+	// AdministeredServersInverseTable is the table name for the InstanceMetadata entity.
+	// It exists in this package in order to avoid circular dependency with the "instancemetadata" package.
+	AdministeredServersInverseTable = "instance_metadata"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -106,6 +131,8 @@ var Columns = []string{
 	FieldDisplayName,
 	FieldBiography,
 	FieldPublicKey,
+	FieldPublicKeyActor,
+	FieldPublicKeyAlgorithm,
 	FieldPrivateKey,
 	FieldIndexable,
 	FieldPrivacyLevel,
@@ -128,6 +155,15 @@ var (
 	// MentionedNotesPrimaryKey and MentionedNotesColumn2 are the table columns denoting the
 	// primary key for the mentionedNotes relation (M2M).
 	MentionedNotesPrimaryKey = []string{"note_id", "user_id"}
+	// ServersPrimaryKey and ServersColumn2 are the table columns denoting the
+	// primary key for the servers relation (M2M).
+	ServersPrimaryKey = []string{"instance_metadata_id", "user_id"}
+	// ModeratedServersPrimaryKey and ModeratedServersColumn2 are the table columns denoting the
+	// primary key for the moderatedServers relation (M2M).
+	ModeratedServersPrimaryKey = []string{"instance_metadata_id", "user_id"}
+	// AdministeredServersPrimaryKey and AdministeredServersColumn2 are the table columns denoting the
+	// primary key for the administeredServers relation (M2M).
+	AdministeredServersPrimaryKey = []string{"instance_metadata_id", "user_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -248,6 +284,16 @@ func ByBiography(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBiography, opts...).ToFunc()
 }
 
+// ByPublicKeyActor orders the results by the publicKeyActor field.
+func ByPublicKeyActor(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPublicKeyActor, opts...).ToFunc()
+}
+
+// ByPublicKeyAlgorithm orders the results by the publicKeyAlgorithm field.
+func ByPublicKeyAlgorithm(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPublicKeyAlgorithm, opts...).ToFunc()
+}
+
 // ByIndexable orders the results by the indexable field.
 func ByIndexable(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIndexable, opts...).ToFunc()
@@ -324,6 +370,48 @@ func ByMentionedNotes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newMentionedNotesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByServersCount orders the results by servers count.
+func ByServersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newServersStep(), opts...)
+	}
+}
+
+// ByServers orders the results by servers terms.
+func ByServers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newServersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByModeratedServersCount orders the results by moderatedServers count.
+func ByModeratedServersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newModeratedServersStep(), opts...)
+	}
+}
+
+// ByModeratedServers orders the results by moderatedServers terms.
+func ByModeratedServers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModeratedServersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAdministeredServersCount orders the results by administeredServers count.
+func ByAdministeredServersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAdministeredServersStep(), opts...)
+	}
+}
+
+// ByAdministeredServers orders the results by administeredServers terms.
+func ByAdministeredServers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAdministeredServersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAvatarImageStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -350,5 +438,26 @@ func newMentionedNotesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MentionedNotesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, MentionedNotesTable, MentionedNotesPrimaryKey...),
+	)
+}
+func newServersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ServersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ServersTable, ServersPrimaryKey...),
+	)
+}
+func newModeratedServersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModeratedServersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ModeratedServersTable, ModeratedServersPrimaryKey...),
+	)
+}
+func newAdministeredServersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AdministeredServersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, AdministeredServersTable, AdministeredServersPrimaryKey...),
 	)
 }

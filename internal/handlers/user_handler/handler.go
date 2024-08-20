@@ -8,9 +8,11 @@ import (
 )
 
 type Handler struct {
-	userService       service.UserService
 	federationService service.FederationService
-	inboxService      service.InboxService
+	requestSigner     service.RequestSigner
+
+	userService  service.UserService
+	inboxService service.InboxService
 
 	bodyValidator    validators.BodyValidator
 	requestValidator validators.RequestValidator
@@ -18,11 +20,13 @@ type Handler struct {
 	log logr.Logger
 }
 
-func New(userService service.UserService, federationService service.FederationService, inboxService service.InboxService, bodyValidator validators.BodyValidator, requestValidator validators.RequestValidator, log logr.Logger) *Handler {
+func New(federationService service.FederationService, requestSigner service.RequestSigner, userService service.UserService, inboxService service.InboxService, bodyValidator validators.BodyValidator, requestValidator validators.RequestValidator, log logr.Logger) *Handler {
 	return &Handler{
-		userService:       userService,
 		federationService: federationService,
-		inboxService:      inboxService,
+		requestSigner:     requestSigner,
+
+		userService:  userService,
+		inboxService: inboxService,
 
 		bodyValidator:    bodyValidator,
 		requestValidator: requestValidator,
@@ -41,6 +45,7 @@ func (i *Handler) Register(r fiber.Router) {
 	r.Get("/api/app/users/:id", i.GetUser)
 	r.Post("/api/app/users/", i.CreateUser)
 
+	r.Get("/api/users/search", i.SearchUser)
 	r.Get("/api/users/:id", i.GetLysandUser)
 	r.Post("/api/users/:id/inbox", i.LysandInbox)
 }

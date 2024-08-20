@@ -3,7 +3,6 @@
 package user
 
 import (
-	"crypto/ed25519"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -98,15 +97,23 @@ func Biography(v string) predicate.User {
 }
 
 // PublicKey applies equality check predicate on the "publicKey" field. It's identical to PublicKeyEQ.
-func PublicKey(v ed25519.PublicKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldEQ(FieldPublicKey, vc))
+func PublicKey(v []byte) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPublicKey, v))
+}
+
+// PublicKeyActor applies equality check predicate on the "publicKeyActor" field. It's identical to PublicKeyActorEQ.
+func PublicKeyActor(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPublicKeyActor, v))
+}
+
+// PublicKeyAlgorithm applies equality check predicate on the "publicKeyAlgorithm" field. It's identical to PublicKeyAlgorithmEQ.
+func PublicKeyAlgorithm(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPublicKeyAlgorithm, v))
 }
 
 // PrivateKey applies equality check predicate on the "privateKey" field. It's identical to PrivateKeyEQ.
-func PrivateKey(v ed25519.PrivateKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldEQ(FieldPrivateKey, vc))
+func PrivateKey(v []byte) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPrivateKey, v))
 }
 
 // Indexable applies equality check predicate on the "indexable" field. It's identical to IndexableEQ.
@@ -560,111 +567,213 @@ func BiographyContainsFold(v string) predicate.User {
 }
 
 // PublicKeyEQ applies the EQ predicate on the "publicKey" field.
-func PublicKeyEQ(v ed25519.PublicKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldEQ(FieldPublicKey, vc))
+func PublicKeyEQ(v []byte) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPublicKey, v))
 }
 
 // PublicKeyNEQ applies the NEQ predicate on the "publicKey" field.
-func PublicKeyNEQ(v ed25519.PublicKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldNEQ(FieldPublicKey, vc))
+func PublicKeyNEQ(v []byte) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldPublicKey, v))
 }
 
 // PublicKeyIn applies the In predicate on the "publicKey" field.
-func PublicKeyIn(vs ...ed25519.PublicKey) predicate.User {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = []byte(vs[i])
-	}
-	return predicate.User(sql.FieldIn(FieldPublicKey, v...))
+func PublicKeyIn(vs ...[]byte) predicate.User {
+	return predicate.User(sql.FieldIn(FieldPublicKey, vs...))
 }
 
 // PublicKeyNotIn applies the NotIn predicate on the "publicKey" field.
-func PublicKeyNotIn(vs ...ed25519.PublicKey) predicate.User {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = []byte(vs[i])
-	}
-	return predicate.User(sql.FieldNotIn(FieldPublicKey, v...))
+func PublicKeyNotIn(vs ...[]byte) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldPublicKey, vs...))
 }
 
 // PublicKeyGT applies the GT predicate on the "publicKey" field.
-func PublicKeyGT(v ed25519.PublicKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldGT(FieldPublicKey, vc))
+func PublicKeyGT(v []byte) predicate.User {
+	return predicate.User(sql.FieldGT(FieldPublicKey, v))
 }
 
 // PublicKeyGTE applies the GTE predicate on the "publicKey" field.
-func PublicKeyGTE(v ed25519.PublicKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldGTE(FieldPublicKey, vc))
+func PublicKeyGTE(v []byte) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldPublicKey, v))
 }
 
 // PublicKeyLT applies the LT predicate on the "publicKey" field.
-func PublicKeyLT(v ed25519.PublicKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldLT(FieldPublicKey, vc))
+func PublicKeyLT(v []byte) predicate.User {
+	return predicate.User(sql.FieldLT(FieldPublicKey, v))
 }
 
 // PublicKeyLTE applies the LTE predicate on the "publicKey" field.
-func PublicKeyLTE(v ed25519.PublicKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldLTE(FieldPublicKey, vc))
+func PublicKeyLTE(v []byte) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldPublicKey, v))
+}
+
+// PublicKeyActorEQ applies the EQ predicate on the "publicKeyActor" field.
+func PublicKeyActorEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorNEQ applies the NEQ predicate on the "publicKeyActor" field.
+func PublicKeyActorNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorIn applies the In predicate on the "publicKeyActor" field.
+func PublicKeyActorIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldPublicKeyActor, vs...))
+}
+
+// PublicKeyActorNotIn applies the NotIn predicate on the "publicKeyActor" field.
+func PublicKeyActorNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldPublicKeyActor, vs...))
+}
+
+// PublicKeyActorGT applies the GT predicate on the "publicKeyActor" field.
+func PublicKeyActorGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorGTE applies the GTE predicate on the "publicKeyActor" field.
+func PublicKeyActorGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorLT applies the LT predicate on the "publicKeyActor" field.
+func PublicKeyActorLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorLTE applies the LTE predicate on the "publicKeyActor" field.
+func PublicKeyActorLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorContains applies the Contains predicate on the "publicKeyActor" field.
+func PublicKeyActorContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorHasPrefix applies the HasPrefix predicate on the "publicKeyActor" field.
+func PublicKeyActorHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorHasSuffix applies the HasSuffix predicate on the "publicKeyActor" field.
+func PublicKeyActorHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorEqualFold applies the EqualFold predicate on the "publicKeyActor" field.
+func PublicKeyActorEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldPublicKeyActor, v))
+}
+
+// PublicKeyActorContainsFold applies the ContainsFold predicate on the "publicKeyActor" field.
+func PublicKeyActorContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldPublicKeyActor, v))
+}
+
+// PublicKeyAlgorithmEQ applies the EQ predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmNEQ applies the NEQ predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmIn applies the In predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldPublicKeyAlgorithm, vs...))
+}
+
+// PublicKeyAlgorithmNotIn applies the NotIn predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldPublicKeyAlgorithm, vs...))
+}
+
+// PublicKeyAlgorithmGT applies the GT predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmGTE applies the GTE predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmLT applies the LT predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmLTE applies the LTE predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmContains applies the Contains predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmHasPrefix applies the HasPrefix predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmHasSuffix applies the HasSuffix predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmEqualFold applies the EqualFold predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldPublicKeyAlgorithm, v))
+}
+
+// PublicKeyAlgorithmContainsFold applies the ContainsFold predicate on the "publicKeyAlgorithm" field.
+func PublicKeyAlgorithmContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldPublicKeyAlgorithm, v))
 }
 
 // PrivateKeyEQ applies the EQ predicate on the "privateKey" field.
-func PrivateKeyEQ(v ed25519.PrivateKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldEQ(FieldPrivateKey, vc))
+func PrivateKeyEQ(v []byte) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldPrivateKey, v))
 }
 
 // PrivateKeyNEQ applies the NEQ predicate on the "privateKey" field.
-func PrivateKeyNEQ(v ed25519.PrivateKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldNEQ(FieldPrivateKey, vc))
+func PrivateKeyNEQ(v []byte) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldPrivateKey, v))
 }
 
 // PrivateKeyIn applies the In predicate on the "privateKey" field.
-func PrivateKeyIn(vs ...ed25519.PrivateKey) predicate.User {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = []byte(vs[i])
-	}
-	return predicate.User(sql.FieldIn(FieldPrivateKey, v...))
+func PrivateKeyIn(vs ...[]byte) predicate.User {
+	return predicate.User(sql.FieldIn(FieldPrivateKey, vs...))
 }
 
 // PrivateKeyNotIn applies the NotIn predicate on the "privateKey" field.
-func PrivateKeyNotIn(vs ...ed25519.PrivateKey) predicate.User {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = []byte(vs[i])
-	}
-	return predicate.User(sql.FieldNotIn(FieldPrivateKey, v...))
+func PrivateKeyNotIn(vs ...[]byte) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldPrivateKey, vs...))
 }
 
 // PrivateKeyGT applies the GT predicate on the "privateKey" field.
-func PrivateKeyGT(v ed25519.PrivateKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldGT(FieldPrivateKey, vc))
+func PrivateKeyGT(v []byte) predicate.User {
+	return predicate.User(sql.FieldGT(FieldPrivateKey, v))
 }
 
 // PrivateKeyGTE applies the GTE predicate on the "privateKey" field.
-func PrivateKeyGTE(v ed25519.PrivateKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldGTE(FieldPrivateKey, vc))
+func PrivateKeyGTE(v []byte) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldPrivateKey, v))
 }
 
 // PrivateKeyLT applies the LT predicate on the "privateKey" field.
-func PrivateKeyLT(v ed25519.PrivateKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldLT(FieldPrivateKey, vc))
+func PrivateKeyLT(v []byte) predicate.User {
+	return predicate.User(sql.FieldLT(FieldPrivateKey, v))
 }
 
 // PrivateKeyLTE applies the LTE predicate on the "privateKey" field.
-func PrivateKeyLTE(v ed25519.PrivateKey) predicate.User {
-	vc := []byte(v)
-	return predicate.User(sql.FieldLTE(FieldPrivateKey, vc))
+func PrivateKeyLTE(v []byte) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldPrivateKey, v))
 }
 
 // PrivateKeyIsNil applies the IsNil predicate on the "privateKey" field.
@@ -1116,6 +1225,75 @@ func HasMentionedNotes() predicate.User {
 func HasMentionedNotesWith(preds ...predicate.Note) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newMentionedNotesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasServers applies the HasEdge predicate on the "servers" edge.
+func HasServers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ServersTable, ServersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasServersWith applies the HasEdge predicate on the "servers" edge with a given conditions (other predicates).
+func HasServersWith(preds ...predicate.InstanceMetadata) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newServersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasModeratedServers applies the HasEdge predicate on the "moderatedServers" edge.
+func HasModeratedServers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ModeratedServersTable, ModeratedServersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModeratedServersWith applies the HasEdge predicate on the "moderatedServers" edge with a given conditions (other predicates).
+func HasModeratedServersWith(preds ...predicate.InstanceMetadata) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newModeratedServersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAdministeredServers applies the HasEdge predicate on the "administeredServers" edge.
+func HasAdministeredServers() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, AdministeredServersTable, AdministeredServersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAdministeredServersWith applies the HasEdge predicate on the "administeredServers" edge with a given conditions (other predicates).
+func HasAdministeredServersWith(preds ...predicate.InstanceMetadata) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newAdministeredServersStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
