@@ -70,7 +70,7 @@ func (User) Edges() []ent.Edge {
 	}
 }
 
-func (User) Mixin() []ent.Mixin { return []ent.Mixin{LysandEntityMixin{}} }
+func (User) Mixin() []ent.Mixin { return []ent.Mixin{VersiaEntityMixin{}} }
 
 func ValidateUsername(username string) error {
 	if !usernameRegex.MatchString(username) {

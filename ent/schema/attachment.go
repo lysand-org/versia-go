@@ -38,5 +38,5 @@ func (Attachment) Edges() []ent.Edge {
 }
 
 func (Attachment) Mixin() []ent.Mixin {
-	return []ent.Mixin{LysandEntityMixin{}}
+	return []ent.Mixin{VersiaEntityMixin{}}
 }

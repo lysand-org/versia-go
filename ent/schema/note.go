@@ -28,5 +28,5 @@ func (Note) Edges() []ent.Edge {
 }
 
 func (Note) Mixin() []ent.Mixin {
-	return []ent.Mixin{LysandEntityMixin{}}
+	return []ent.Mixin{VersiaEntityMixin{}}
 }

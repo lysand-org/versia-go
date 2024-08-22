@@ -10,7 +10,7 @@ type User struct {
 	Username string    `json:"username"`
 }
 
-type LysandUser versia.User
+type VersiaUser versia.User
 
 type FetchUserResponse = APIResponse[User]
 

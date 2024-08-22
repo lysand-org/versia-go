@@ -31,5 +31,5 @@ func (Follow) Indexes() []ent.Index {
 }
 
 func (Follow) Mixin() []ent.Mixin {
-	return []ent.Mixin{LysandEntityMixin{}}
+	return []ent.Mixin{VersiaEntityMixin{}}
 }

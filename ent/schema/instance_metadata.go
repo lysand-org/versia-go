@@ -67,5 +67,5 @@ func (InstanceMetadata) Edges() []ent.Edge {
 }
 
 func (InstanceMetadata) Mixin() []ent.Mixin {
-	return []ent.Mixin{LysandEntityMixin{}}
+	return []ent.Mixin{VersiaEntityMixin{}}
 }

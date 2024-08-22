@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-type LysandEntityMixin struct{ mixin.Schema }
+type VersiaEntityMixin struct{ mixin.Schema }
 
-var _ ent.Mixin = (*LysandEntityMixin)(nil)
+var _ ent.Mixin = (*VersiaEntityMixin)(nil)
 
-func (LysandEntityMixin) Fields() []ent.Field {
+func (VersiaEntityMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).

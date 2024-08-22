@@ -47,5 +47,5 @@ func (i *Handler) SearchUser(c *fiber.Ctx) error {
 		return api_schema.ErrInternalServerError(nil)
 	}
 
-	return c.JSON((*api_schema.LysandUser)(u.ToLysand()))
+	return c.JSON((*api_schema.VersiaUser)(u.ToLysand()))
 }
