@@ -1,4 +1,4 @@
-package lysand
+package versia
 
 // Attachment is a file or other piece of content that is attached to a post. For more information, see the [Spec].
 //

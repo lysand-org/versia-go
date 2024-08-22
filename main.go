@@ -16,6 +16,7 @@ import (
 	"github.com/lysand-org/versia-go/internal/repository/repo_impls"
 	"github.com/lysand-org/versia-go/internal/service/svc_impls"
 	"github.com/lysand-org/versia-go/internal/validators/val_impls"
+	"github.com/lysand-org/versia-go/pkg/versia"
 	"net/http"
 	"os"
 	"os/signal"
@@ -37,7 +38,6 @@ import (
 	"github.com/lysand-org/versia-go/internal/handlers/user_handler"
 	"github.com/lysand-org/versia-go/internal/tasks"
 	"github.com/lysand-org/versia-go/internal/utils"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 	"github.com/lysand-org/versia-go/pkg/taskqueue"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
@@ -73,9 +73,9 @@ func main() {
 		),
 	}
 
-	federationClient := lysand.NewClient(
-		lysand.WithHTTPClient(httpClient),
-		lysand.WithLogger(zerologr.New(&log.Logger).WithName("federation-client")),
+	federationClient := versia.NewClient(
+		versia.WithHTTPClient(httpClient),
+		versia.WithLogger(zerologr.New(&log.Logger).WithName("federation-client")),
 	)
 
 	log.Debug().Msg("Opening database connection")

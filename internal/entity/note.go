@@ -2,30 +2,31 @@ package entity
 
 import (
 	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 )
 
 type Note struct {
 	*ent.Note
-	URI         *lysand.URL
-	Content     lysand.TextContentTypeMap
+	URI         *versiautils.URL
+	Content     versiautils.TextContentTypeMap
 	Author      *User
 	Mentions    []User
-	MentionURIs []lysand.URL
+	MentionURIs []versiautils.URL
 }
 
 func NewNote(dbNote *ent.Note) (*Note, error) {
 	n := &Note{
 		Note: dbNote,
-		Content: lysand.TextContentTypeMap{
-			"text/plain": lysand.TextContent{Content: dbNote.Content},
+		Content: versiautils.TextContentTypeMap{
+			"text/plain": versiautils.TextContent{Content: dbNote.Content},
 		},
 		Mentions:    make([]User, 0, len(dbNote.Edges.Mentions)),
-		MentionURIs: make([]lysand.URL, 0, len(dbNote.Edges.Mentions)),
+		MentionURIs: make([]versiautils.URL, 0, len(dbNote.Edges.Mentions)),
 	}
 
 	var err error
-	if n.URI, err = lysand.ParseURL(dbNote.URI); err != nil {
+	if n.URI, err = versiautils.ParseURL(dbNote.URI); err != nil {
 		return nil, err
 	}
 	if n.Author, err = NewUser(dbNote.Edges.Author); err != nil {
@@ -45,12 +46,12 @@ func NewNote(dbNote *ent.Note) (*Note, error) {
 	return n, nil
 }
 
-func (n Note) ToLysand() lysand.Note {
-	return lysand.Note{
-		Entity: lysand.Entity{
+func (n Note) ToLysand() versia.Note {
+	return versia.Note{
+		Entity: versia.Entity{
 			ID:         n.ID,
 			URI:        n.URI,
-			CreatedAt:  lysand.TimeFromStd(n.CreatedAt),
+			CreatedAt:  versiautils.Time(n.CreatedAt),
 			Extensions: n.Extensions,
 		},
 		Author:      n.Author.URI,
@@ -65,6 +66,6 @@ func (n Note) ToLysand() lysand.Note {
 		Mentions:    n.MentionURIs,
 		Subject:     n.Subject,
 		IsSensitive: &n.IsSensitive,
-		Visibility:  lysand.PublicationVisibility(n.Visibility),
+		Visibility:  versia.NoteVisibility(n.Visibility),
 	}
 }

@@ -9,7 +9,8 @@ import (
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/utils"
 	"github.com/lysand-org/versia-go/internal/validators"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 	"net/http"
 )
 
@@ -42,13 +43,13 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 
 	r = r.WithContext(ctx)
 
-	fedHeaders, err := lysand.ExtractFederationHeaders(r.Header)
+	fedHeaders, err := versiacrypto.ExtractFederationHeaders(r.Header)
 	if err != nil {
 		return err
 	}
 
 	// TODO: Fetch user from database instead of using the URI
-	user, err := i.repositories.Users().Resolve(ctx, lysand.URLFromStd(fedHeaders.SignedBy))
+	user, err := i.repositories.Users().Resolve(ctx, versiautils.URLFromStd(fedHeaders.SignedBy))
 	if err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 		return err
 	}
 
-	if !(lysand.Verifier{PublicKey: user.PublicKey.Key}).Verify(r.Method, r.URL, body, fedHeaders) {
+	if !(versiacrypto.Verifier{PublicKey: user.PublicKey.Key}).Verify(r.Method, r.URL, body, fedHeaders) {
 		i.log.WithCallDepth(1).Info("signature verification failed", "user", user.URI, "url", r.URL.Path)
 		s.CaptureError(ErrInvalidSignature)
 

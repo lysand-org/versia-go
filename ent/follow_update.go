@@ -15,7 +15,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/follow"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // FollowUpdate is the builder for updating Follow entities.
@@ -60,8 +60,8 @@ func (fu *FollowUpdate) SetNillableURI(s *string) *FollowUpdate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (fu *FollowUpdate) SetExtensions(l lysand.Extensions) *FollowUpdate {
-	fu.mutation.SetExtensions(l)
+func (fu *FollowUpdate) SetExtensions(v versia.Extensions) *FollowUpdate {
+	fu.mutation.SetExtensions(v)
 	return fu
 }
 
@@ -315,8 +315,8 @@ func (fuo *FollowUpdateOne) SetNillableURI(s *string) *FollowUpdateOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (fuo *FollowUpdateOne) SetExtensions(l lysand.Extensions) *FollowUpdateOne {
-	fuo.mutation.SetExtensions(l)
+func (fuo *FollowUpdateOne) SetExtensions(v versia.Extensions) *FollowUpdateOne {
+	fuo.mutation.SetExtensions(v)
 	return fuo
 }
 

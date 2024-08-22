@@ -1,4 +1,4 @@
-package lysand
+package versiacrypto
 
 import (
 	"crypto"
@@ -7,49 +7,6 @@ import (
 	"encoding/json"
 )
 
-// UserPublicKey represents a public key for a user. For more information, see the [Spec].
-//
-// [Spec]: https://lysand.org/security/keys#public-key-cryptography
-type UserPublicKey struct {
-	Actor *URL `json:"actor"`
-
-	// Algorithm can only be `ed25519` for now
-	Algorithm string `json:"algorithm"`
-
-	Key    *SPKIPublicKey  `json:"-"`
-	RawKey json.RawMessage `json:"key"`
-}
-
-func (k *UserPublicKey) UnmarshalJSON(raw []byte) error {
-	type t UserPublicKey
-	k2 := (*t)(k)
-
-	if err := json.Unmarshal(raw, k2); err != nil {
-		return err
-	}
-
-	var err error
-	if k2.Key, err = unmarshalSPKIPubKey(k2.Algorithm, k2.RawKey); err != nil {
-		return err
-	}
-
-	*k = UserPublicKey(*k2)
-
-	return nil
-}
-
-func (k UserPublicKey) MarshalJSON() ([]byte, error) {
-	type t UserPublicKey
-	k2 := t(k)
-
-	var err error
-	if k2.RawKey, err = k2.Key.MarshalJSON(); err != nil {
-		return nil, err
-	}
-
-	return json.Marshal(k2)
-}
-
 // SPKIPublicKey is a type that represents a [ed25519.PublicKey] in the SPKI
 // format.
 type SPKIPublicKey struct {
@@ -57,7 +14,7 @@ type SPKIPublicKey struct {
 	Algorithm string
 }
 
-func unmarshalSPKIPubKey(algorithm string, raw []byte) (*SPKIPublicKey, error) {
+func UnmarshalSPKIPubKey(algorithm string, raw []byte) (*SPKIPublicKey, error) {
 	rawStr := ""
 	if err := json.Unmarshal(raw, &rawStr); err != nil {
 		return nil, err

@@ -1,7 +1,9 @@
-package lysand
+package versia
 
 import (
 	"encoding/json"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 )
 
 // InstanceMetadata represents the metadata of a Lysand instance. For more information, see the [Spec].
@@ -29,19 +31,19 @@ type InstanceMetadata struct {
 	PublicKey InstancePublicKey `json:"public_key"`
 
 	// SharedInbox is the URL to the instance's shared inbox
-	SharedInbox *URL `json:"shared_inbox,omitempty"`
+	SharedInbox *versiautils.URL `json:"shared_inbox,omitempty"`
 
 	// Moderators is a URL to a collection of moderators
-	Moderators *URL `json:"moderators,omitempty"`
+	Moderators *versiautils.URL `json:"moderators,omitempty"`
 
 	// Admins is a URL to a collection of administrators
-	Admins *URL `json:"admins,omitempty"`
+	Admins *versiautils.URL `json:"admins,omitempty"`
 
 	// Logo is the URL to the instance's logo
-	Logo *ImageContentTypeMap `json:"logo,omitempty"`
+	Logo *versiautils.ImageContentTypeMap `json:"logo,omitempty"`
 
 	// Banner is the URL to the instance's banner
-	Banner *ImageContentTypeMap `json:"banner,omitempty"`
+	Banner *versiautils.ImageContentTypeMap `json:"banner,omitempty"`
 
 	// Software is information about the instance software
 	Software InstanceSoftware `json:"software"`
@@ -79,8 +81,8 @@ type InstancePublicKey struct {
 	// Algorithm can only be `ed25519` for now
 	Algorithm string `json:"algorithm"`
 
-	Key    *SPKIPublicKey  `json:"-"`
-	RawKey json.RawMessage `json:"key"`
+	Key    *versiacrypto.SPKIPublicKey `json:"-"`
+	RawKey json.RawMessage             `json:"key"`
 }
 
 func (k *InstancePublicKey) UnmarshalJSON(raw []byte) error {
@@ -91,7 +93,7 @@ func (k *InstancePublicKey) UnmarshalJSON(raw []byte) error {
 	}
 
 	var err error
-	if k2.Key, err = unmarshalSPKIPubKey(k2.Algorithm, k2.RawKey); err != nil {
+	if k2.Key, err = versiacrypto.UnmarshalSPKIPubKey(k2.Algorithm, k2.RawKey); err != nil {
 		return nil
 	}
 

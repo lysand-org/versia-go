@@ -4,12 +4,12 @@ import (
 	"context"
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/service"
+	"github.com/lysand-org/versia-go/pkg/versia"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 )
 
 var _ service.FollowService = (*FollowServiceImpl)(nil)
@@ -69,7 +69,7 @@ func (i FollowServiceImpl) GetFollow(ctx context.Context, id uuid.UUID) (*entity
 	return f, nil
 }
 
-func (i FollowServiceImpl) ImportLysandFollow(ctx context.Context, lFollow *lysand.Follow) (*entity.Follow, error) {
+func (i FollowServiceImpl) ImportLysandFollow(ctx context.Context, lFollow *versia.Follow) (*entity.Follow, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FollowServiceImpl.ImportLysandFollow").
 		AddAttribute("uri", lFollow.URI.String())
 	defer s.End()

@@ -4,11 +4,13 @@ import (
 	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/lysand-org/versia-go/internal/repository"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/internal/api_schema"
 	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 	"github.com/lysand-org/versia-go/pkg/webfinger"
 )
 
@@ -26,10 +28,10 @@ type UserService interface {
 
 type FederationService interface {
 	SendToInbox(ctx context.Context, author *entity.User, target *entity.User, object any) ([]byte, error)
-	GetUser(ctx context.Context, uri *lysand.URL) (*lysand.User, error)
+	GetUser(ctx context.Context, uri *versiautils.URL) (*versia.User, error)
 
 	DiscoverUser(ctx context.Context, baseURL, username string) (*webfinger.User, error)
-	DiscoverInstance(ctx context.Context, baseURL string) (*lysand.InstanceMetadata, error)
+	DiscoverInstance(ctx context.Context, baseURL string) (*versia.InstanceMetadata, error)
 }
 
 type InboxService interface {
@@ -40,14 +42,14 @@ type NoteService interface {
 	CreateNote(ctx context.Context, req api_schema.CreateNoteRequest) (*entity.Note, error)
 	GetNote(ctx context.Context, id uuid.UUID) (*entity.Note, error)
 
-	ImportLysandNote(ctx context.Context, lNote *lysand.Note) (*entity.Note, error)
+	ImportLysandNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error)
 }
 
 type FollowService interface {
 	NewFollow(ctx context.Context, follower, followee *entity.User) (*entity.Follow, error)
 	GetFollow(ctx context.Context, id uuid.UUID) (*entity.Follow, error)
 
-	ImportLysandFollow(ctx context.Context, lFollow *lysand.Follow) (*entity.Follow, error)
+	ImportLysandFollow(ctx context.Context, lFollow *versia.Follow) (*entity.Follow, error)
 }
 
 type InstanceMetadataService interface {
@@ -59,5 +61,5 @@ type TaskService interface {
 }
 
 type RequestSigner interface {
-	Sign(c *fiber.Ctx, signer lysand.Signer, body any) error
+	Sign(c *fiber.Ctx, signer versiacrypto.Signer, body any) error
 }

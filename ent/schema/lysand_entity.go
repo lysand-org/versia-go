@@ -1,14 +1,13 @@
 package schema
 
 import (
-	"net/url"
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	"net/url"
+	"time"
 )
 
 type LysandEntityMixin struct{ mixin.Schema }
@@ -23,7 +22,7 @@ func (LysandEntityMixin) Fields() []ent.Field {
 		field.Bool("isRemote"),
 		field.String("uri").Validate(ValidateURI),
 
-		field.JSON("extensions", lysand.Extensions{}).Default(lysand.Extensions{}),
+		field.JSON("extensions", versia.Extensions{}).Default(versia.Extensions{}),
 
 		field.Time("created_at").
 			Immutable().

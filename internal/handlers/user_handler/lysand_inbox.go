@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lysand-org/versia-go/internal/validators/val_impls"
+	"github.com/lysand-org/versia-go/pkg/versia"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/internal/api_schema"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 )
 
 func (i *Handler) LysandInbox(c *fiber.Ctx) error {
@@ -29,13 +29,13 @@ func (i *Handler) LysandInbox(c *fiber.Ctx) error {
 		return api_schema.ErrBadRequest(nil)
 	}
 
-	obj, err := lysand.ParseInboxObject(raw)
+	obj, err := versia.ParseInboxObject(raw)
 	if err != nil {
 		i.log.Error(err, "Failed to parse inbox object")
 
-		if errors.Is(err, lysand.ErrUnknownType{}) {
+		if errors.Is(err, versia.UnknownEntityTypeError{}) {
 			return api_schema.ErrNotFound(map[string]any{
-				"error": fmt.Sprintf("Unknown object type: %s", err.(lysand.ErrUnknownType).Type),
+				"error": fmt.Sprintf("Unknown object type: %s", err.(versia.UnknownEntityTypeError).Type),
 			})
 		}
 

@@ -17,7 +17,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // UserCreate is the builder for creating a User entity.
@@ -41,8 +41,8 @@ func (uc *UserCreate) SetURI(s string) *UserCreate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (uc *UserCreate) SetExtensions(l lysand.Extensions) *UserCreate {
-	uc.mutation.SetExtensions(l)
+func (uc *UserCreate) SetExtensions(v versia.Extensions) *UserCreate {
+	uc.mutation.SetExtensions(v)
 	return uc
 }
 
@@ -167,8 +167,8 @@ func (uc *UserCreate) SetNillablePrivacyLevel(ul *user.PrivacyLevel) *UserCreate
 }
 
 // SetFields sets the "fields" field.
-func (uc *UserCreate) SetFields(l []lysand.Field) *UserCreate {
-	uc.mutation.SetFields(l)
+func (uc *UserCreate) SetFields(vf []versia.UserField) *UserCreate {
+	uc.mutation.SetFields(vf)
 	return uc
 }
 
@@ -803,7 +803,7 @@ func (u *UserUpsert) UpdateURI() *UserUpsert {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *UserUpsert) SetExtensions(v lysand.Extensions) *UserUpsert {
+func (u *UserUpsert) SetExtensions(v versia.Extensions) *UserUpsert {
 	u.Set(user.FieldExtensions, v)
 	return u
 }
@@ -971,7 +971,7 @@ func (u *UserUpsert) UpdatePrivacyLevel() *UserUpsert {
 }
 
 // SetFields sets the "fields" field.
-func (u *UserUpsert) SetFields(v []lysand.Field) *UserUpsert {
+func (u *UserUpsert) SetFields(v []versia.UserField) *UserUpsert {
 	u.Set(user.FieldFields, v)
 	return u
 }
@@ -1122,7 +1122,7 @@ func (u *UserUpsertOne) UpdateURI() *UserUpsertOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *UserUpsertOne) SetExtensions(v lysand.Extensions) *UserUpsertOne {
+func (u *UserUpsertOne) SetExtensions(v versia.Extensions) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.SetExtensions(v)
 	})
@@ -1318,7 +1318,7 @@ func (u *UserUpsertOne) UpdatePrivacyLevel() *UserUpsertOne {
 }
 
 // SetFields sets the "fields" field.
-func (u *UserUpsertOne) SetFields(v []lysand.Field) *UserUpsertOne {
+func (u *UserUpsertOne) SetFields(v []versia.UserField) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.SetFields(v)
 	})
@@ -1648,7 +1648,7 @@ func (u *UserUpsertBulk) UpdateURI() *UserUpsertBulk {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *UserUpsertBulk) SetExtensions(v lysand.Extensions) *UserUpsertBulk {
+func (u *UserUpsertBulk) SetExtensions(v versia.Extensions) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.SetExtensions(v)
 	})
@@ -1844,7 +1844,7 @@ func (u *UserUpsertBulk) UpdatePrivacyLevel() *UserUpsertBulk {
 }
 
 // SetFields sets the "fields" field.
-func (u *UserUpsertBulk) SetFields(v []lysand.Field) *UserUpsertBulk {
+func (u *UserUpsertBulk) SetFields(v []versia.UserField) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.SetFields(v)
 	})

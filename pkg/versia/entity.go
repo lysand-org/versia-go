@@ -1,7 +1,8 @@
-package lysand
+package versia
 
 import (
 	"github.com/google/uuid"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 )
 
 // Entity is the base type for all Lysand entities.  For more information, see the [Spec].
@@ -15,10 +16,10 @@ type Entity struct {
 	ID uuid.UUID `json:"id"`
 
 	// URI is the URL to the entity
-	URI *URL `json:"uri"`
+	URI *versiautils.URL `json:"uri"`
 
 	// CreatedAt is the time the entity was created
-	CreatedAt Time `json:"created_at"`
+	CreatedAt versiautils.Time `json:"created_at"`
 
 	// Extensions is a map of active extensions
 	// https://lysand.org/objects/server-metadata#extensions

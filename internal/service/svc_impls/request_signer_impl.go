@@ -8,8 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/gofiber/fiber/v2"
 	"github.com/lysand-org/versia-go/internal/service"
-	"github.com/lysand-org/versia-go/pkg/lysand"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/lysand/crypto"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
 	"net/url"
 )
 
@@ -28,7 +27,7 @@ func NewRequestSignerImpl(telemetry *unitel.Telemetry, log logr.Logger) *Request
 	}
 }
 
-func (i *RequestSignerImpl) Sign(c *fiber.Ctx, signer lysand.Signer, body any) error {
+func (i *RequestSignerImpl) Sign(c *fiber.Ctx, signer versiacrypto.Signer, body any) error {
 	s := i.telemetry.StartSpan(c.UserContext(), "function", "svc_impls/RequestSignerImpl.Sign")
 	defer s.End()
 
@@ -50,7 +49,7 @@ func (i *RequestSignerImpl) Sign(c *fiber.Ctx, signer lysand.Signer, body any) e
 
 	digest := versiacrypto.SHA256(j)
 
-	d := lysand.NewSignatureData(c.Method(), nonce, uri, digest)
+	d := versiacrypto.NewSignatureData(c.Method(), nonce, uri, digest)
 
 	signed := signer.Sign(*d)
 	for k, v := range signed.Headers() {

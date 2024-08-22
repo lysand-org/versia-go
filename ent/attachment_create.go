@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/attachment"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // AttachmentCreate is the builder for creating a Attachment entity.
@@ -39,8 +39,8 @@ func (ac *AttachmentCreate) SetURI(s string) *AttachmentCreate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (ac *AttachmentCreate) SetExtensions(l lysand.Extensions) *AttachmentCreate {
-	ac.mutation.SetExtensions(l)
+func (ac *AttachmentCreate) SetExtensions(v versia.Extensions) *AttachmentCreate {
+	ac.mutation.SetExtensions(v)
 	return ac
 }
 
@@ -454,7 +454,7 @@ func (u *AttachmentUpsert) UpdateURI() *AttachmentUpsert {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *AttachmentUpsert) SetExtensions(v lysand.Extensions) *AttachmentUpsert {
+func (u *AttachmentUpsert) SetExtensions(v versia.Extensions) *AttachmentUpsert {
 	u.Set(attachment.FieldExtensions, v)
 	return u
 }
@@ -701,7 +701,7 @@ func (u *AttachmentUpsertOne) UpdateURI() *AttachmentUpsertOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *AttachmentUpsertOne) SetExtensions(v lysand.Extensions) *AttachmentUpsertOne {
+func (u *AttachmentUpsertOne) SetExtensions(v versia.Extensions) *AttachmentUpsertOne {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.SetExtensions(v)
 	})
@@ -1143,7 +1143,7 @@ func (u *AttachmentUpsertBulk) UpdateURI() *AttachmentUpsertBulk {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *AttachmentUpsertBulk) SetExtensions(v lysand.Extensions) *AttachmentUpsertBulk {
+func (u *AttachmentUpsertBulk) SetExtensions(v versia.Extensions) *AttachmentUpsertBulk {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.SetExtensions(v)
 	})

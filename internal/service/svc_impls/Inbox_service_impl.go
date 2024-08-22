@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/service"
+	"github.com/lysand-org/versia-go/pkg/versia"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
@@ -12,7 +13,6 @@ import (
 	"github.com/lysand-org/versia-go/ent/user"
 	"github.com/lysand-org/versia-go/internal/api_schema"
 	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 )
 
 var _ service.InboxService = (*InboxServiceImpl)(nil)
@@ -63,22 +63,17 @@ func (i InboxServiceImpl) Handle(ctx context.Context, obj any, userId uuid.UUID)
 
 		// TODO: Implement more types
 		switch o := obj.(type) {
-		case lysand.Note:
+		case versia.Note:
 			i.log.Info("Received note", "note", o)
 			if err := i.handleNote(ctx, o, u); err != nil {
 				i.log.Error(err, "Failed to handle note", "note", o)
 				return err
 			}
-
-		case lysand.Patch:
-			i.log.Info("Received patch", "patch", o)
-		case lysand.Follow:
+		case versia.Follow:
 			if err := i.handleFollow(ctx, o, u); err != nil {
 				i.log.Error(err, "Failed to handle follow", "follow", o)
 				return err
 			}
-		case lysand.Undo:
-			i.log.Info("Received undo", "undo", o)
 		default:
 			i.log.Info("Unimplemented object type", "object", obj)
 			return api_schema.ErrNotImplemented(nil)
@@ -88,7 +83,7 @@ func (i InboxServiceImpl) Handle(ctx context.Context, obj any, userId uuid.UUID)
 	})
 }
 
-func (i InboxServiceImpl) handleFollow(ctx context.Context, o lysand.Follow, u *entity.User) error {
+func (i InboxServiceImpl) handleFollow(ctx context.Context, o versia.Follow, u *entity.User) error {
 	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/InboxServiceImpl.handleFollow")
 	defer s.End()
 	ctx = s.Context()
@@ -130,7 +125,7 @@ func (i InboxServiceImpl) handleFollow(ctx context.Context, o lysand.Follow, u *
 	return nil
 }
 
-func (i InboxServiceImpl) handleNote(ctx context.Context, o lysand.Note, u *entity.User) error {
+func (i InboxServiceImpl) handleNote(ctx context.Context, o versia.Note, u *entity.User) error {
 	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/InboxServiceImpl.handleNote")
 	defer s.End()
 	ctx = s.Context()

@@ -18,7 +18,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -63,8 +63,8 @@ func (uu *UserUpdate) SetNillableURI(s *string) *UserUpdate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (uu *UserUpdate) SetExtensions(l lysand.Extensions) *UserUpdate {
-	uu.mutation.SetExtensions(l)
+func (uu *UserUpdate) SetExtensions(v versia.Extensions) *UserUpdate {
+	uu.mutation.SetExtensions(v)
 	return uu
 }
 
@@ -215,14 +215,14 @@ func (uu *UserUpdate) SetNillablePrivacyLevel(ul *user.PrivacyLevel) *UserUpdate
 }
 
 // SetFields sets the "fields" field.
-func (uu *UserUpdate) SetFields(l []lysand.Field) *UserUpdate {
-	uu.mutation.SetFields(l)
+func (uu *UserUpdate) SetFields(vf []versia.UserField) *UserUpdate {
+	uu.mutation.SetFields(vf)
 	return uu
 }
 
-// AppendFields appends l to the "fields" field.
-func (uu *UserUpdate) AppendFields(l []lysand.Field) *UserUpdate {
-	uu.mutation.AppendFields(l)
+// AppendFields appends vf to the "fields" field.
+func (uu *UserUpdate) AppendFields(vf []versia.UserField) *UserUpdate {
+	uu.mutation.AppendFields(vf)
 	return uu
 }
 
@@ -1038,8 +1038,8 @@ func (uuo *UserUpdateOne) SetNillableURI(s *string) *UserUpdateOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (uuo *UserUpdateOne) SetExtensions(l lysand.Extensions) *UserUpdateOne {
-	uuo.mutation.SetExtensions(l)
+func (uuo *UserUpdateOne) SetExtensions(v versia.Extensions) *UserUpdateOne {
+	uuo.mutation.SetExtensions(v)
 	return uuo
 }
 
@@ -1190,14 +1190,14 @@ func (uuo *UserUpdateOne) SetNillablePrivacyLevel(ul *user.PrivacyLevel) *UserUp
 }
 
 // SetFields sets the "fields" field.
-func (uuo *UserUpdateOne) SetFields(l []lysand.Field) *UserUpdateOne {
-	uuo.mutation.SetFields(l)
+func (uuo *UserUpdateOne) SetFields(vf []versia.UserField) *UserUpdateOne {
+	uuo.mutation.SetFields(vf)
 	return uuo
 }
 
-// AppendFields appends l to the "fields" field.
-func (uuo *UserUpdateOne) AppendFields(l []lysand.Field) *UserUpdateOne {
-	uuo.mutation.AppendFields(l)
+// AppendFields appends vf to the "fields" field.
+func (uuo *UserUpdateOne) AppendFields(vf []versia.UserField) *UserUpdateOne {
+	uuo.mutation.AppendFields(vf)
 	return uuo
 }
 

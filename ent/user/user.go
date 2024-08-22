@@ -9,7 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 const (
@@ -185,7 +185,7 @@ var (
 	// URIValidator is a validator for the "uri" field. It is called by the builders before save.
 	URIValidator func(string) error
 	// DefaultExtensions holds the default value on creation for the "extensions" field.
-	DefaultExtensions lysand.Extensions
+	DefaultExtensions versia.Extensions
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -199,7 +199,7 @@ var (
 	// DefaultIndexable holds the default value on creation for the "indexable" field.
 	DefaultIndexable bool
 	// DefaultFields holds the default value on creation for the "fields" field.
-	DefaultFields []lysand.Field
+	DefaultFields []versia.UserField
 	// InboxValidator is a validator for the "inbox" field. It is called by the builders before save.
 	InboxValidator func(string) error
 	// FeaturedValidator is a validator for the "featured" field. It is called by the builders before save.

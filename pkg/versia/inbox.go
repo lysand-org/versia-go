@@ -1,4 +1,4 @@
-package lysand
+package versia
 
 import (
 	"encoding/json"
@@ -16,20 +16,14 @@ func ParseInboxObject(raw json.RawMessage) (any, error) {
 	}
 
 	switch i.Type {
-	case "Publication":
-		m := Publication{}
-		if err := json.Unmarshal(raw, &m); err != nil {
-			return nil, err
-		}
-		return m, nil
 	case "Note":
 		m := Note{}
 		if err := json.Unmarshal(raw, &m); err != nil {
 			return nil, err
 		}
 		return m, nil
-	case "Patch":
-		m := Patch{}
+	case "Group":
+		m := Group{}
 		if err := json.Unmarshal(raw, &m); err != nil {
 			return nil, err
 		}
@@ -52,21 +46,21 @@ func ParseInboxObject(raw json.RawMessage) (any, error) {
 			return nil, err
 		}
 		return m, nil
-	case "Undo":
-		m := Undo{}
+	case "Unfollow":
+		m := Unfollow{}
 		if err := json.Unmarshal(raw, &m); err != nil {
 			return nil, err
 		}
 		return m, nil
 	default:
-		return nil, ErrUnknownType{Type: i.Type}
+		return nil, UnknownEntityTypeError{Type: i.Type}
 	}
 }
 
-type ErrUnknownType struct {
+type UnknownEntityTypeError struct {
 	Type string
 }
 
-func (e ErrUnknownType) Error() string {
-	return fmt.Sprintf("unknown inbox object type: %s", e.Type)
+func (e UnknownEntityTypeError) Error() string {
+	return fmt.Sprintf("unknown entity type: %s", e.Type)
 }

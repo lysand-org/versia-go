@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // InstanceMetadataCreate is the builder for creating a InstanceMetadata entity.
@@ -39,8 +39,8 @@ func (imc *InstanceMetadataCreate) SetURI(s string) *InstanceMetadataCreate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (imc *InstanceMetadataCreate) SetExtensions(l lysand.Extensions) *InstanceMetadataCreate {
-	imc.mutation.SetExtensions(l)
+func (imc *InstanceMetadataCreate) SetExtensions(v versia.Extensions) *InstanceMetadataCreate {
+	imc.mutation.SetExtensions(v)
 	return imc
 }
 
@@ -703,7 +703,7 @@ func (u *InstanceMetadataUpsert) UpdateURI() *InstanceMetadataUpsert {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *InstanceMetadataUpsert) SetExtensions(v lysand.Extensions) *InstanceMetadataUpsert {
+func (u *InstanceMetadataUpsert) SetExtensions(v versia.Extensions) *InstanceMetadataUpsert {
 	u.Set(instancemetadata.FieldExtensions, v)
 	return u
 }
@@ -1058,7 +1058,7 @@ func (u *InstanceMetadataUpsertOne) UpdateURI() *InstanceMetadataUpsertOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *InstanceMetadataUpsertOne) SetExtensions(v lysand.Extensions) *InstanceMetadataUpsertOne {
+func (u *InstanceMetadataUpsertOne) SetExtensions(v versia.Extensions) *InstanceMetadataUpsertOne {
 	return u.Update(func(s *InstanceMetadataUpsert) {
 		s.SetExtensions(v)
 	})
@@ -1626,7 +1626,7 @@ func (u *InstanceMetadataUpsertBulk) UpdateURI() *InstanceMetadataUpsertBulk {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *InstanceMetadataUpsertBulk) SetExtensions(v lysand.Extensions) *InstanceMetadataUpsertBulk {
+func (u *InstanceMetadataUpsertBulk) SetExtensions(v versia.Extensions) *InstanceMetadataUpsertBulk {
 	return u.Update(func(s *InstanceMetadataUpsert) {
 		s.SetExtensions(v)
 	})

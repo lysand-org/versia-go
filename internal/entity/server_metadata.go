@@ -2,31 +2,32 @@ package entity
 
 import (
 	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/pkg/lysand"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/lysand/crypto"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 )
 
 type InstanceMetadata struct {
 	*ent.InstanceMetadata
 
 	Moderators           []User
-	ModeratorsCollection *lysand.URL
+	ModeratorsCollection *versiautils.URL
 
 	Admins           []User
-	AdminsCollection *lysand.URL
+	AdminsCollection *versiautils.URL
 
-	SharedInbox *lysand.URL
+	SharedInbox *versiautils.URL
 
-	PublicKey *lysand.SPKIPublicKey
+	PublicKey *versiacrypto.SPKIPublicKey
 
-	Logo   *lysand.ImageContentTypeMap
-	Banner *lysand.ImageContentTypeMap
+	Logo   *versiautils.ImageContentTypeMap
+	Banner *versiautils.ImageContentTypeMap
 }
 
 func NewInstanceMetadata(dbData *ent.InstanceMetadata) (*InstanceMetadata, error) {
 	n := &InstanceMetadata{
 		InstanceMetadata: dbData,
-		PublicKey:        &lysand.SPKIPublicKey{},
+		PublicKey:        &versiacrypto.SPKIPublicKey{},
 	}
 
 	var err error
@@ -34,16 +35,16 @@ func NewInstanceMetadata(dbData *ent.InstanceMetadata) (*InstanceMetadata, error
 		return nil, err
 	}
 
-	if n.SharedInbox, err = lysand.ParseURL(dbData.SharedInboxURI); err != nil {
+	if n.SharedInbox, err = versiautils.ParseURL(dbData.SharedInboxURI); err != nil {
 		return nil, err
 	}
 	if dbData.ModeratorsURI != nil {
-		if n.ModeratorsCollection, err = lysand.ParseURL(*dbData.ModeratorsURI); err != nil {
+		if n.ModeratorsCollection, err = versiautils.ParseURL(*dbData.ModeratorsURI); err != nil {
 			return nil, err
 		}
 	}
 	if dbData.AdminsURI != nil {
-		if n.AdminsCollection, err = lysand.ParseURL(*dbData.AdminsURI); err != nil {
+		if n.AdminsCollection, err = versiautils.ParseURL(*dbData.AdminsURI); err != nil {
 			return nil, err
 		}
 	}
@@ -69,8 +70,8 @@ func NewInstanceMetadata(dbData *ent.InstanceMetadata) (*InstanceMetadata, error
 	return n, nil
 }
 
-func (m InstanceMetadata) ToLysand() lysand.InstanceMetadata {
-	return lysand.InstanceMetadata{
+func (m InstanceMetadata) ToLysand() versia.InstanceMetadata {
+	return versia.InstanceMetadata{
 		Extensions:  m.Extensions,
 		Name:        m.Name,
 		Description: m.Description,
@@ -80,15 +81,15 @@ func (m InstanceMetadata) ToLysand() lysand.InstanceMetadata {
 		Admins:      m.AdminsCollection,
 		Logo:        m.Logo,
 		Banner:      m.Banner,
-		PublicKey: lysand.InstancePublicKey{
+		PublicKey: versia.InstancePublicKey{
 			Algorithm: m.PublicKeyAlgorithm,
 			Key:       m.PublicKey,
 		},
-		Software: lysand.InstanceSoftware{
+		Software: versia.InstanceSoftware{
 			Name:    m.SoftwareName,
 			Version: m.SoftwareVersion,
 		},
-		Compatibility: lysand.InstanceCompatibility{
+		Compatibility: versia.InstanceCompatibility{
 			Versions:   m.SupportedVersions,
 			Extensions: m.SupportedExtensions,
 		},

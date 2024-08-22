@@ -1,4 +1,4 @@
-package lysand
+package versiautils
 
 import (
 	"encoding/json"

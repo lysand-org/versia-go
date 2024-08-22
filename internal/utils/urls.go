@@ -2,11 +2,10 @@ package utils
 
 import (
 	"fmt"
-	"net/url"
-
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/config"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"net/url"
 )
 
 var dicebearURL = &url.URL{
@@ -15,81 +14,81 @@ var dicebearURL = &url.URL{
 	Path:   "9.x/adventurer/svg",
 }
 
-func UserAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: fmt.Sprintf("/api/users/%s/", uuid.String())}
-	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+	return versiautils.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }
 
-func DefaultAvatarURL(uuid uuid.UUID) *lysand.URL {
+func DefaultAvatarURL(uuid uuid.UUID) *versiautils.URL {
 	u := &url.URL{}
 	q := u.Query()
 	q.Set("seed", uuid.String())
 	u.RawQuery = q.Encode()
 
-	return lysand.URLFromStd(dicebearURL.ResolveReference(u))
+	return versiautils.URLFromStd(dicebearURL.ResolveReference(u))
 }
 
-func UserInboxAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserInboxAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: "./inbox"}
 	return UserAPIURL(uuid).ResolveReference(newPath)
 }
 
-func UserOutboxAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserOutboxAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: "./outbox"}
 	return UserAPIURL(uuid).ResolveReference(newPath)
 }
 
-func UserFollowersAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserFollowersAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: "./followers"}
 	return UserAPIURL(uuid).ResolveReference(newPath)
 }
 
-func UserFollowingAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserFollowingAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: "./following"}
 	return UserAPIURL(uuid).ResolveReference(newPath)
 }
 
-func UserFeaturedAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserFeaturedAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: "./featured"}
 	return UserAPIURL(uuid).ResolveReference(newPath)
 }
 
-func UserLikesAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserLikesAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: "./likes"}
 	return UserAPIURL(uuid).ResolveReference(newPath)
 }
 
-func UserDislikesAPIURL(uuid uuid.UUID) *lysand.URL {
+func UserDislikesAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: "./dislikes"}
 	return UserAPIURL(uuid).ResolveReference(newPath)
 }
 
-func FollowAPIURL(uuid uuid.UUID) *lysand.URL {
+func FollowAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: fmt.Sprintf("/api/follows/%s/", uuid.String())}
-	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+	return versiautils.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }
 
-func NoteAPIURL(uuid uuid.UUID) *lysand.URL {
+func NoteAPIURL(uuid uuid.UUID) *versiautils.URL {
 	newPath := &url.URL{Path: fmt.Sprintf("/api/notes/%s/", uuid.String())}
-	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+	return versiautils.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }
 
-func InstanceMetadataAPIURL() *lysand.URL {
+func InstanceMetadataAPIURL() *versiautils.URL {
 	newPath := &url.URL{Path: "/.well-known/versia/"}
-	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+	return versiautils.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }
 
-func InstanceMetadataAdminsAPIURL() *lysand.URL {
+func InstanceMetadataAdminsAPIURL() *versiautils.URL {
 	newPath := &url.URL{Path: "/.well-known/versia/admins/"}
-	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+	return versiautils.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }
 
-func InstanceMetadataModeratorsAPIURL() *lysand.URL {
+func InstanceMetadataModeratorsAPIURL() *versiautils.URL {
 	newPath := &url.URL{Path: "/.well-known/versia/moderators/"}
-	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+	return versiautils.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }
 
-func SharedInboxAPIURL() *lysand.URL {
+func SharedInboxAPIURL() *versiautils.URL {
 	newPath := &url.URL{Path: "/api/inbox/"}
-	return lysand.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
+	return versiautils.URLFromStd(config.C.PublicAddress.ResolveReference(newPath))
 }

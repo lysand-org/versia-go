@@ -2,7 +2,7 @@ package api_schema
 
 import (
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 type User struct {
@@ -10,7 +10,7 @@ type User struct {
 	Username string    `json:"username"`
 }
 
-type LysandUser lysand.User
+type LysandUser versia.User
 
 type FetchUserResponse = APIResponse[User]
 
@@ -23,3 +23,32 @@ type SearchUserRequest struct {
 	Username string  `query:"username" validate:"required,username_regex,min=1,max=32"`
 	Domain   *string `query:"domain" validate:"domain_regex"`
 }
+
+//var ErrInvalidUserMention = errors.New("invalid user mention")
+//func (r *SearchUserRequest) UnmarshalJSON(raw []byte) error {
+//	var s string
+//	if err := json.Unmarshal(raw, &s); err != nil {
+//		return err
+//	}
+//
+//	s = strings.TrimPrefix(s, "@")
+//	spl := strings.Split(s, "@")
+//
+//	if len(spl) > 2 {
+//		return ErrInvalidUserMention
+//	}
+//
+//	username := spl[0]
+//
+//	var domain *string
+//	if len(spl) > 1 {
+//		domain = &spl[1]
+//	}
+//
+//	*r = SearchUserRequest{
+//		Username: username,
+//		Domain:   domain,
+//	}
+//
+//	return nil
+//}

@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/follow"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // FollowCreate is the builder for creating a Follow entity.
@@ -39,8 +39,8 @@ func (fc *FollowCreate) SetURI(s string) *FollowCreate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (fc *FollowCreate) SetExtensions(l lysand.Extensions) *FollowCreate {
-	fc.mutation.SetExtensions(l)
+func (fc *FollowCreate) SetExtensions(v versia.Extensions) *FollowCreate {
+	fc.mutation.SetExtensions(v)
 	return fc
 }
 
@@ -386,7 +386,7 @@ func (u *FollowUpsert) UpdateURI() *FollowUpsert {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *FollowUpsert) SetExtensions(v lysand.Extensions) *FollowUpsert {
+func (u *FollowUpsert) SetExtensions(v versia.Extensions) *FollowUpsert {
 	u.Set(follow.FieldExtensions, v)
 	return u
 }
@@ -501,7 +501,7 @@ func (u *FollowUpsertOne) UpdateURI() *FollowUpsertOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *FollowUpsertOne) SetExtensions(v lysand.Extensions) *FollowUpsertOne {
+func (u *FollowUpsertOne) SetExtensions(v versia.Extensions) *FollowUpsertOne {
 	return u.Update(func(s *FollowUpsert) {
 		s.SetExtensions(v)
 	})
@@ -789,7 +789,7 @@ func (u *FollowUpsertBulk) UpdateURI() *FollowUpsertBulk {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *FollowUpsertBulk) SetExtensions(v lysand.Extensions) *FollowUpsertBulk {
+func (u *FollowUpsertBulk) SetExtensions(v versia.Extensions) *FollowUpsertBulk {
 	return u.Update(func(s *FollowUpsert) {
 		s.SetExtensions(v)
 	})

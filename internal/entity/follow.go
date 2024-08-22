@@ -2,15 +2,16 @@ package entity
 
 import (
 	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 )
 
 type Follow struct {
 	*ent.Follow
 
-	URI         *lysand.URL
-	FollowerURI *lysand.URL
-	FolloweeURI *lysand.URL
+	URI         *versiautils.URL
+	FollowerURI *versiautils.URL
+	FolloweeURI *versiautils.URL
 }
 
 func NewFollow(dbFollow *ent.Follow) (*Follow, error) {
@@ -18,17 +19,17 @@ func NewFollow(dbFollow *ent.Follow) (*Follow, error) {
 
 	var err error
 
-	f.URI, err = lysand.ParseURL(dbFollow.URI)
+	f.URI, err = versiautils.ParseURL(dbFollow.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	f.FollowerURI, err = lysand.ParseURL(dbFollow.Edges.Follower.URI)
+	f.FollowerURI, err = versiautils.ParseURL(dbFollow.Edges.Follower.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	f.FolloweeURI, err = lysand.ParseURL(dbFollow.Edges.Followee.URI)
+	f.FolloweeURI, err = versiautils.ParseURL(dbFollow.Edges.Followee.URI)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +37,12 @@ func NewFollow(dbFollow *ent.Follow) (*Follow, error) {
 	return f, nil
 }
 
-func (f Follow) ToLysand() *lysand.Follow {
-	return &lysand.Follow{
-		Entity: lysand.Entity{
+func (f Follow) ToLysand() *versia.Follow {
+	return &versia.Follow{
+		Entity: versia.Entity{
 			ID:         f.ID,
 			URI:        f.URI,
-			CreatedAt:  lysand.TimeFromStd(f.CreatedAt),
+			CreatedAt:  versiautils.Time(f.CreatedAt),
 			Extensions: f.Extensions,
 		},
 		Author:   f.FollowerURI,
@@ -49,12 +50,12 @@ func (f Follow) ToLysand() *lysand.Follow {
 	}
 }
 
-func (f Follow) ToLysandAccept() *lysand.FollowAccept {
-	return &lysand.FollowAccept{
-		Entity: lysand.Entity{
+func (f Follow) ToLysandAccept() *versia.FollowAccept {
+	return &versia.FollowAccept{
+		Entity: versia.Entity{
 			ID:         f.ID,
 			URI:        f.URI,
-			CreatedAt:  lysand.TimeFromStd(f.CreatedAt),
+			CreatedAt:  versiautils.Time(f.CreatedAt),
 			Extensions: f.Extensions,
 		},
 		Author:   f.FolloweeURI,
@@ -62,12 +63,12 @@ func (f Follow) ToLysandAccept() *lysand.FollowAccept {
 	}
 }
 
-func (f Follow) ToLysandReject() *lysand.FollowReject {
-	return &lysand.FollowReject{
-		Entity: lysand.Entity{
+func (f Follow) ToLysandReject() *versia.FollowReject {
+	return &versia.FollowReject{
+		Entity: versia.Entity{
 			ID:         f.ID,
 			URI:        f.URI,
-			CreatedAt:  lysand.TimeFromStd(f.CreatedAt),
+			CreatedAt:  versiautils.Time(f.CreatedAt),
 			Extensions: f.Extensions,
 		},
 		Author:   f.FolloweeURI,

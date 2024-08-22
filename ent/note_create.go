@@ -16,7 +16,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/attachment"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // NoteCreate is the builder for creating a Note entity.
@@ -40,8 +40,8 @@ func (nc *NoteCreate) SetURI(s string) *NoteCreate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (nc *NoteCreate) SetExtensions(l lysand.Extensions) *NoteCreate {
-	nc.mutation.SetExtensions(l)
+func (nc *NoteCreate) SetExtensions(v versia.Extensions) *NoteCreate {
+	nc.mutation.SetExtensions(v)
 	return nc
 }
 
@@ -479,7 +479,7 @@ func (u *NoteUpsert) UpdateURI() *NoteUpsert {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *NoteUpsert) SetExtensions(v lysand.Extensions) *NoteUpsert {
+func (u *NoteUpsert) SetExtensions(v versia.Extensions) *NoteUpsert {
 	u.Set(note.FieldExtensions, v)
 	return u
 }
@@ -636,7 +636,7 @@ func (u *NoteUpsertOne) UpdateURI() *NoteUpsertOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *NoteUpsertOne) SetExtensions(v lysand.Extensions) *NoteUpsertOne {
+func (u *NoteUpsertOne) SetExtensions(v versia.Extensions) *NoteUpsertOne {
 	return u.Update(func(s *NoteUpsert) {
 		s.SetExtensions(v)
 	})
@@ -973,7 +973,7 @@ func (u *NoteUpsertBulk) UpdateURI() *NoteUpsertBulk {
 }
 
 // SetExtensions sets the "extensions" field.
-func (u *NoteUpsertBulk) SetExtensions(v lysand.Extensions) *NoteUpsertBulk {
+func (u *NoteUpsertBulk) SetExtensions(v versia.Extensions) *NoteUpsertBulk {
 	return u.Update(func(s *NoteUpsert) {
 		s.SetExtensions(v)
 	})

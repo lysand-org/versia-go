@@ -15,7 +15,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/attachment"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // AttachmentUpdate is the builder for updating Attachment entities.
@@ -60,8 +60,8 @@ func (au *AttachmentUpdate) SetNillableURI(s *string) *AttachmentUpdate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (au *AttachmentUpdate) SetExtensions(l lysand.Extensions) *AttachmentUpdate {
-	au.mutation.SetExtensions(l)
+func (au *AttachmentUpdate) SetExtensions(v versia.Extensions) *AttachmentUpdate {
+	au.mutation.SetExtensions(v)
 	return au
 }
 
@@ -453,8 +453,8 @@ func (auo *AttachmentUpdateOne) SetNillableURI(s *string) *AttachmentUpdateOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (auo *AttachmentUpdateOne) SetExtensions(l lysand.Extensions) *AttachmentUpdateOne {
-	auo.mutation.SetExtensions(l)
+func (auo *AttachmentUpdateOne) SetExtensions(v versia.Extensions) *AttachmentUpdateOne {
+	auo.mutation.SetExtensions(v)
 	return auo
 }
 

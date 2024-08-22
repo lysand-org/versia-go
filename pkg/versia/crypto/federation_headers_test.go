@@ -1,4 +1,4 @@
-package lysand
+package versiacrypto
 
 import (
 	"github.com/stretchr/testify/assert"

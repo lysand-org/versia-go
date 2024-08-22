@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // Note is the model entity for the Note schema.
@@ -26,7 +26,7 @@ type Note struct {
 	// URI holds the value of the "uri" field.
 	URI string `json:"uri,omitempty"`
 	// Extensions holds the value of the "extensions" field.
-	Extensions lysand.Extensions `json:"extensions,omitempty"`
+	Extensions versia.Extensions `json:"extensions,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.

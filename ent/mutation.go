@@ -19,7 +19,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 const (
@@ -47,7 +47,7 @@ type AttachmentMutation struct {
 	id            *uuid.UUID
 	isRemote      *bool
 	uri           *string
-	extensions    *lysand.Extensions
+	extensions    *versia.Extensions
 	created_at    *time.Time
 	updated_at    *time.Time
 	description   *string
@@ -247,12 +247,12 @@ func (m *AttachmentMutation) ResetURI() {
 }
 
 // SetExtensions sets the "extensions" field.
-func (m *AttachmentMutation) SetExtensions(l lysand.Extensions) {
-	m.extensions = &l
+func (m *AttachmentMutation) SetExtensions(v versia.Extensions) {
+	m.extensions = &v
 }
 
 // Extensions returns the value of the "extensions" field in the mutation.
-func (m *AttachmentMutation) Extensions() (r lysand.Extensions, exists bool) {
+func (m *AttachmentMutation) Extensions() (r versia.Extensions, exists bool) {
 	v := m.extensions
 	if v == nil {
 		return
@@ -263,7 +263,7 @@ func (m *AttachmentMutation) Extensions() (r lysand.Extensions, exists bool) {
 // OldExtensions returns the old "extensions" field's value of the Attachment entity.
 // If the Attachment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AttachmentMutation) OldExtensions(ctx context.Context) (v lysand.Extensions, err error) {
+func (m *AttachmentMutation) OldExtensions(ctx context.Context) (v versia.Extensions, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldExtensions is only allowed on UpdateOne operations")
 	}
@@ -983,7 +983,7 @@ func (m *AttachmentMutation) SetField(name string, value ent.Value) error {
 		m.SetURI(v)
 		return nil
 	case attachment.FieldExtensions:
-		v, ok := value.(lysand.Extensions)
+		v, ok := value.(versia.Extensions)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1311,7 +1311,7 @@ type FollowMutation struct {
 	id              *uuid.UUID
 	isRemote        *bool
 	uri             *string
-	extensions      *lysand.Extensions
+	extensions      *versia.Extensions
 	created_at      *time.Time
 	updated_at      *time.Time
 	status          *follow.Status
@@ -1502,12 +1502,12 @@ func (m *FollowMutation) ResetURI() {
 }
 
 // SetExtensions sets the "extensions" field.
-func (m *FollowMutation) SetExtensions(l lysand.Extensions) {
-	m.extensions = &l
+func (m *FollowMutation) SetExtensions(v versia.Extensions) {
+	m.extensions = &v
 }
 
 // Extensions returns the value of the "extensions" field in the mutation.
-func (m *FollowMutation) Extensions() (r lysand.Extensions, exists bool) {
+func (m *FollowMutation) Extensions() (r versia.Extensions, exists bool) {
 	v := m.extensions
 	if v == nil {
 		return
@@ -1518,7 +1518,7 @@ func (m *FollowMutation) Extensions() (r lysand.Extensions, exists bool) {
 // OldExtensions returns the old "extensions" field's value of the Follow entity.
 // If the Follow object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FollowMutation) OldExtensions(ctx context.Context) (v lysand.Extensions, err error) {
+func (m *FollowMutation) OldExtensions(ctx context.Context) (v versia.Extensions, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldExtensions is only allowed on UpdateOne operations")
 	}
@@ -1841,7 +1841,7 @@ func (m *FollowMutation) SetField(name string, value ent.Value) error {
 		m.SetURI(v)
 		return nil
 	case follow.FieldExtensions:
-		v, ok := value.(lysand.Extensions)
+		v, ok := value.(versia.Extensions)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2419,7 +2419,7 @@ type InstanceMetadataMutation struct {
 	id                        *uuid.UUID
 	isRemote                  *bool
 	uri                       *string
-	extensions                *lysand.Extensions
+	extensions                *versia.Extensions
 	created_at                *time.Time
 	updated_at                *time.Time
 	name                      *string
@@ -2633,12 +2633,12 @@ func (m *InstanceMetadataMutation) ResetURI() {
 }
 
 // SetExtensions sets the "extensions" field.
-func (m *InstanceMetadataMutation) SetExtensions(l lysand.Extensions) {
-	m.extensions = &l
+func (m *InstanceMetadataMutation) SetExtensions(v versia.Extensions) {
+	m.extensions = &v
 }
 
 // Extensions returns the value of the "extensions" field in the mutation.
-func (m *InstanceMetadataMutation) Extensions() (r lysand.Extensions, exists bool) {
+func (m *InstanceMetadataMutation) Extensions() (r versia.Extensions, exists bool) {
 	v := m.extensions
 	if v == nil {
 		return
@@ -2649,7 +2649,7 @@ func (m *InstanceMetadataMutation) Extensions() (r lysand.Extensions, exists boo
 // OldExtensions returns the old "extensions" field's value of the InstanceMetadata entity.
 // If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMetadataMutation) OldExtensions(ctx context.Context) (v lysand.Extensions, err error) {
+func (m *InstanceMetadataMutation) OldExtensions(ctx context.Context) (v versia.Extensions, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldExtensions is only allowed on UpdateOne operations")
 	}
@@ -3878,7 +3878,7 @@ func (m *InstanceMetadataMutation) SetField(name string, value ent.Value) error 
 		m.SetURI(v)
 		return nil
 	case instancemetadata.FieldExtensions:
-		v, ok := value.(lysand.Extensions)
+		v, ok := value.(versia.Extensions)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -4331,7 +4331,7 @@ type NoteMutation struct {
 	id                 *uuid.UUID
 	isRemote           *bool
 	uri                *string
-	extensions         *lysand.Extensions
+	extensions         *versia.Extensions
 	created_at         *time.Time
 	updated_at         *time.Time
 	subject            *string
@@ -4529,12 +4529,12 @@ func (m *NoteMutation) ResetURI() {
 }
 
 // SetExtensions sets the "extensions" field.
-func (m *NoteMutation) SetExtensions(l lysand.Extensions) {
-	m.extensions = &l
+func (m *NoteMutation) SetExtensions(v versia.Extensions) {
+	m.extensions = &v
 }
 
 // Extensions returns the value of the "extensions" field in the mutation.
-func (m *NoteMutation) Extensions() (r lysand.Extensions, exists bool) {
+func (m *NoteMutation) Extensions() (r versia.Extensions, exists bool) {
 	v := m.extensions
 	if v == nil {
 		return
@@ -4545,7 +4545,7 @@ func (m *NoteMutation) Extensions() (r lysand.Extensions, exists bool) {
 // OldExtensions returns the old "extensions" field's value of the Note entity.
 // If the Note object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NoteMutation) OldExtensions(ctx context.Context) (v lysand.Extensions, err error) {
+func (m *NoteMutation) OldExtensions(ctx context.Context) (v versia.Extensions, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldExtensions is only allowed on UpdateOne operations")
 	}
@@ -5079,7 +5079,7 @@ func (m *NoteMutation) SetField(name string, value ent.Value) error {
 		m.SetURI(v)
 		return nil
 	case note.FieldExtensions:
-		v, ok := value.(lysand.Extensions)
+		v, ok := value.(versia.Extensions)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -5352,7 +5352,7 @@ type UserMutation struct {
 	id                         *uuid.UUID
 	isRemote                   *bool
 	uri                        *string
-	extensions                 *lysand.Extensions
+	extensions                 *versia.Extensions
 	created_at                 *time.Time
 	updated_at                 *time.Time
 	username                   *string
@@ -5365,8 +5365,8 @@ type UserMutation struct {
 	privateKey                 *[]byte
 	indexable                  *bool
 	privacyLevel               *user.PrivacyLevel
-	fields                     *[]lysand.Field
-	appendfields               []lysand.Field
+	fields                     *[]versia.UserField
+	appendfields               []versia.UserField
 	inbox                      *string
 	featured                   *string
 	followers                  *string
@@ -5574,12 +5574,12 @@ func (m *UserMutation) ResetURI() {
 }
 
 // SetExtensions sets the "extensions" field.
-func (m *UserMutation) SetExtensions(l lysand.Extensions) {
-	m.extensions = &l
+func (m *UserMutation) SetExtensions(v versia.Extensions) {
+	m.extensions = &v
 }
 
 // Extensions returns the value of the "extensions" field in the mutation.
-func (m *UserMutation) Extensions() (r lysand.Extensions, exists bool) {
+func (m *UserMutation) Extensions() (r versia.Extensions, exists bool) {
 	v := m.extensions
 	if v == nil {
 		return
@@ -5590,7 +5590,7 @@ func (m *UserMutation) Extensions() (r lysand.Extensions, exists bool) {
 // OldExtensions returns the old "extensions" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldExtensions(ctx context.Context) (v lysand.Extensions, err error) {
+func (m *UserMutation) OldExtensions(ctx context.Context) (v versia.Extensions, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldExtensions is only allowed on UpdateOne operations")
 	}
@@ -6094,13 +6094,13 @@ func (m *UserMutation) ResetPrivacyLevel() {
 }
 
 // SetFields sets the "fields" field.
-func (m *UserMutation) SetFields(l []lysand.Field) {
-	m.fields = &l
+func (m *UserMutation) SetFields(vf []versia.UserField) {
+	m.fields = &vf
 	m.appendfields = nil
 }
 
 // GetFields returns the value of the "fields" field in the mutation.
-func (m *UserMutation) GetFields() (r []lysand.Field, exists bool) {
+func (m *UserMutation) GetFields() (r []versia.UserField, exists bool) {
 	v := m.fields
 	if v == nil {
 		return
@@ -6111,7 +6111,7 @@ func (m *UserMutation) GetFields() (r []lysand.Field, exists bool) {
 // OldFields returns the old "fields" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldFields(ctx context.Context) (v []lysand.Field, err error) {
+func (m *UserMutation) OldFields(ctx context.Context) (v []versia.UserField, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFields is only allowed on UpdateOne operations")
 	}
@@ -6125,13 +6125,13 @@ func (m *UserMutation) OldFields(ctx context.Context) (v []lysand.Field, err err
 	return oldValue.Fields, nil
 }
 
-// AppendFields adds l to the "fields" field.
-func (m *UserMutation) AppendFields(l []lysand.Field) {
-	m.appendfields = append(m.appendfields, l...)
+// AppendFields adds vf to the "fields" field.
+func (m *UserMutation) AppendFields(vf []versia.UserField) {
+	m.appendfields = append(m.appendfields, vf...)
 }
 
 // AppendedFields returns the list of values that were appended to the "fields" field in this mutation.
-func (m *UserMutation) AppendedFields() ([]lysand.Field, bool) {
+func (m *UserMutation) AppendedFields() ([]versia.UserField, bool) {
 	if len(m.appendfields) == 0 {
 		return nil, false
 	}
@@ -6895,7 +6895,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetURI(v)
 		return nil
 	case user.FieldExtensions:
-		v, ok := value.(lysand.Extensions)
+		v, ok := value.(versia.Extensions)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -6986,7 +6986,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetPrivacyLevel(v)
 		return nil
 	case user.FieldFields:
-		v, ok := value.([]lysand.Field)
+		v, ok := value.([]versia.UserField)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

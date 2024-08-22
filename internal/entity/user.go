@@ -2,36 +2,37 @@ package entity
 
 import (
 	"github.com/lysand-org/versia-go/internal/helpers"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/lysand/crypto"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 	"net/url"
 
 	"github.com/lysand-org/versia-go/ent"
 	"github.com/lysand-org/versia-go/internal/utils"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 )
 
 type User struct {
 	*ent.User
 
-	URI        *lysand.URL
-	PKActorURI *lysand.URL
-	PublicKey  *lysand.SPKIPublicKey
-	Inbox      *lysand.URL
-	Outbox     *lysand.URL
-	Featured   *lysand.URL
-	Followers  *lysand.URL
-	Following  *lysand.URL
+	URI        *versiautils.URL
+	PKActorURI *versiautils.URL
+	PublicKey  *versiacrypto.SPKIPublicKey
+	Inbox      *versiautils.URL
+	Outbox     *versiautils.URL
+	Featured   *versiautils.URL
+	Followers  *versiautils.URL
+	Following  *versiautils.URL
 
 	DisplayName     string
-	LysandAvatar    lysand.ImageContentTypeMap
-	LysandBiography lysand.TextContentTypeMap
-	Signer          lysand.Signer
+	LysandAvatar    versiautils.ImageContentTypeMap
+	LysandBiography versiautils.TextContentTypeMap
+	Signer          versiacrypto.Signer
 }
 
 func NewUser(dbData *ent.User) (*User, error) {
 	u := &User{
 		User: dbData,
-		PublicKey: &lysand.SPKIPublicKey{
+		PublicKey: &versiacrypto.SPKIPublicKey{
 			Key:       nil,
 			Algorithm: dbData.PublicKeyAlgorithm,
 		},
@@ -50,29 +51,29 @@ func NewUser(dbData *ent.User) (*User, error) {
 		return nil, err
 	}
 
-	if u.URI, err = lysand.ParseURL(dbData.URI); err != nil {
+	if u.URI, err = versiautils.ParseURL(dbData.URI); err != nil {
 		return nil, err
 	}
-	if u.PKActorURI, err = lysand.ParseURL(dbData.PublicKeyActor); err != nil {
+	if u.PKActorURI, err = versiautils.ParseURL(dbData.PublicKeyActor); err != nil {
 		return nil, err
 	}
-	if u.Inbox, err = lysand.ParseURL(dbData.Inbox); err != nil {
+	if u.Inbox, err = versiautils.ParseURL(dbData.Inbox); err != nil {
 		return nil, err
 	}
-	if u.Outbox, err = lysand.ParseURL(dbData.Outbox); err != nil {
+	if u.Outbox, err = versiautils.ParseURL(dbData.Outbox); err != nil {
 		return nil, err
 	}
-	if u.Featured, err = lysand.ParseURL(dbData.Featured); err != nil {
+	if u.Featured, err = versiautils.ParseURL(dbData.Featured); err != nil {
 		return nil, err
 	}
-	if u.Followers, err = lysand.ParseURL(dbData.Followers); err != nil {
+	if u.Followers, err = versiautils.ParseURL(dbData.Followers); err != nil {
 		return nil, err
 	}
-	if u.Following, err = lysand.ParseURL(dbData.Following); err != nil {
+	if u.Following, err = versiautils.ParseURL(dbData.Following); err != nil {
 		return nil, err
 	}
 
-	u.Signer = lysand.Signer{
+	u.Signer = versiacrypto.Signer{
 		PrivateKey: dbData.PrivateKey,
 		UserURL:    u.URI.ToStd(),
 	}
@@ -80,12 +81,12 @@ func NewUser(dbData *ent.User) (*User, error) {
 	return u, nil
 }
 
-func (u User) ToLysand() *lysand.User {
-	return &lysand.User{
-		Entity: lysand.Entity{
+func (u User) ToLysand() *versia.User {
+	return &versia.User{
+		Entity: versia.Entity{
 			ID:         u.ID,
 			URI:        u.URI,
-			CreatedAt:  lysand.TimeFromStd(u.CreatedAt),
+			CreatedAt:  versiautils.Time(u.CreatedAt),
 			Extensions: u.Extensions,
 		},
 		DisplayName: helpers.StringPtr(u.DisplayName),
@@ -93,7 +94,7 @@ func (u User) ToLysand() *lysand.User {
 		Avatar:      u.LysandAvatar,
 		Header:      imageMap(u.Edges.HeaderImage),
 		Indexable:   u.Indexable,
-		PublicKey: lysand.UserPublicKey{
+		PublicKey: versia.UserPublicKey{
 			Actor:     u.PKActorURI,
 			Algorithm: u.PublicKeyAlgorithm,
 			Key:       u.PublicKey,
@@ -109,33 +110,33 @@ func (u User) ToLysand() *lysand.User {
 	}
 }
 
-func lysandAvatar(u *ent.User) lysand.ImageContentTypeMap {
+func lysandAvatar(u *ent.User) versiautils.ImageContentTypeMap {
 	if avatar := imageMap(u.Edges.AvatarImage); avatar != nil {
 		return avatar
 	}
 
-	return lysand.ImageContentTypeMap{
-		"image/svg+xml": lysand.ImageContent{
+	return versiautils.ImageContentTypeMap{
+		"image/svg+xml": versiautils.ImageContent{
 			Content: utils.DefaultAvatarURL(u.ID),
 		},
 	}
 }
 
-func lysandBiography(u *ent.User) lysand.TextContentTypeMap {
+func lysandBiography(u *ent.User) versiautils.TextContentTypeMap {
 	if u.Biography == nil {
 		return nil
 	}
 
 	// TODO: Render HTML
 
-	return lysand.TextContentTypeMap{
-		"text/html": lysand.TextContent{
+	return versiautils.TextContentTypeMap{
+		"text/html": versiautils.TextContent{
 			Content: *u.Biography,
 		},
 	}
 }
 
-func imageMap(i *ent.Image) lysand.ImageContentTypeMap {
+func imageMap(i *ent.Image) versiautils.ImageContentTypeMap {
 	if i == nil {
 		return nil
 	}
@@ -145,9 +146,9 @@ func imageMap(i *ent.Image) lysand.ImageContentTypeMap {
 		return nil
 	}
 
-	return lysand.ImageContentTypeMap{
+	return versiautils.ImageContentTypeMap{
 		i.MimeType: {
-			Content: (*lysand.URL)(u),
+			Content: (*versiautils.URL)(u),
 		},
 	}
 }

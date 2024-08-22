@@ -1,13 +1,12 @@
 package schema
 
 import (
-	"errors"
-	"regexp"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"errors"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	"regexp"
 )
 
 var (
@@ -45,7 +44,7 @@ func (User) Fields() []ent.Field {
 			Values("public", "restricted", "private").
 			Default("public"),
 
-		field.JSON("fields", []lysand.Field{}).Default([]lysand.Field{}),
+		field.JSON("fields", []versia.UserField{}).Default([]versia.UserField{}),
 
 		field.String("inbox").Validate(ValidateURI),
 

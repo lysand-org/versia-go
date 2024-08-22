@@ -16,7 +16,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // NoteUpdate is the builder for updating Note entities.
@@ -61,8 +61,8 @@ func (nu *NoteUpdate) SetNillableURI(s *string) *NoteUpdate {
 }
 
 // SetExtensions sets the "extensions" field.
-func (nu *NoteUpdate) SetExtensions(l lysand.Extensions) *NoteUpdate {
-	nu.mutation.SetExtensions(l)
+func (nu *NoteUpdate) SetExtensions(v versia.Extensions) *NoteUpdate {
+	nu.mutation.SetExtensions(v)
 	return nu
 }
 
@@ -494,8 +494,8 @@ func (nuo *NoteUpdateOne) SetNillableURI(s *string) *NoteUpdateOne {
 }
 
 // SetExtensions sets the "extensions" field.
-func (nuo *NoteUpdateOne) SetExtensions(l lysand.Extensions) *NoteUpdateOne {
-	nuo.mutation.SetExtensions(l)
+func (nuo *NoteUpdateOne) SetExtensions(v versia.Extensions) *NoteUpdateOne {
+	nuo.mutation.SetExtensions(v)
 	return nuo
 }
 

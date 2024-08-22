@@ -2,7 +2,8 @@ package api_schema
 
 import (
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 )
 
 type Note struct {
@@ -12,7 +13,7 @@ type Note struct {
 type FetchNoteResponse = APIResponse[Note]
 
 type CreateNoteRequest struct {
-	Content    string                       `json:"content" validate:"required,min=1,max=1024"`
-	Visibility lysand.PublicationVisibility `json:"visibility" validate:"required,oneof=public private direct"`
-	Mentions   []lysand.URL                 `json:"mentions"`
+	Content    string                `json:"content" validate:"required,min=1,max=1024"`
+	Visibility versia.NoteVisibility `json:"visibility" validate:"required,oneof=public unlisted private direct"`
+	Mentions   []versiautils.URL     `json:"mentions"`
 }

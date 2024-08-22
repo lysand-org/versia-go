@@ -1,4 +1,4 @@
-package lysand
+package versia
 
 import (
 	"fmt"

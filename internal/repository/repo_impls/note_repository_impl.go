@@ -3,6 +3,7 @@ package repo_impls
 import (
 	"context"
 	"github.com/lysand-org/versia-go/internal/repository"
+	"github.com/lysand-org/versia-go/pkg/versia"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
@@ -11,7 +12,6 @@ import (
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/internal/entity"
 	"github.com/lysand-org/versia-go/internal/utils"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 )
 
 var _ repository.NoteRepository = (*NoteRepositoryImpl)(nil)
@@ -62,7 +62,7 @@ func (i *NoteRepositoryImpl) NewNote(ctx context.Context, author *entity.User, c
 	return entity.NewNote(n)
 }
 
-func (i *NoteRepositoryImpl) ImportLysandNote(ctx context.Context, lNote *lysand.Note) (*entity.Note, error) {
+func (i *NoteRepositoryImpl) ImportLysandNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/NoteRepositoryImpl.ImportLysandNote")
 	defer s.End()
 	ctx = s.Context()

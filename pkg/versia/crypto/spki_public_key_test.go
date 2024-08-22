@@ -1,4 +1,4 @@
-package lysand
+package versiacrypto
 
 import (
 	"crypto/ed25519"

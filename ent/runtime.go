@@ -13,7 +13,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/note"
 	"github.com/lysand-org/versia-go/ent/schema"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -32,7 +32,7 @@ func init() {
 	// attachmentDescExtensions is the schema descriptor for extensions field.
 	attachmentDescExtensions := attachmentMixinFields0[3].Descriptor()
 	// attachment.DefaultExtensions holds the default value on creation for the extensions field.
-	attachment.DefaultExtensions = attachmentDescExtensions.Default.(lysand.Extensions)
+	attachment.DefaultExtensions = attachmentDescExtensions.Default.(versia.Extensions)
 	// attachmentDescCreatedAt is the schema descriptor for created_at field.
 	attachmentDescCreatedAt := attachmentMixinFields0[4].Descriptor()
 	// attachment.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -63,7 +63,7 @@ func init() {
 	// followDescExtensions is the schema descriptor for extensions field.
 	followDescExtensions := followMixinFields0[3].Descriptor()
 	// follow.DefaultExtensions holds the default value on creation for the extensions field.
-	follow.DefaultExtensions = followDescExtensions.Default.(lysand.Extensions)
+	follow.DefaultExtensions = followDescExtensions.Default.(versia.Extensions)
 	// followDescCreatedAt is the schema descriptor for created_at field.
 	followDescCreatedAt := followMixinFields0[4].Descriptor()
 	// follow.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -96,7 +96,7 @@ func init() {
 	// instancemetadataDescExtensions is the schema descriptor for extensions field.
 	instancemetadataDescExtensions := instancemetadataMixinFields0[3].Descriptor()
 	// instancemetadata.DefaultExtensions holds the default value on creation for the extensions field.
-	instancemetadata.DefaultExtensions = instancemetadataDescExtensions.Default.(lysand.Extensions)
+	instancemetadata.DefaultExtensions = instancemetadataDescExtensions.Default.(versia.Extensions)
 	// instancemetadataDescCreatedAt is the schema descriptor for created_at field.
 	instancemetadataDescCreatedAt := instancemetadataMixinFields0[4].Descriptor()
 	// instancemetadata.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -175,7 +175,7 @@ func init() {
 	// noteDescExtensions is the schema descriptor for extensions field.
 	noteDescExtensions := noteMixinFields0[3].Descriptor()
 	// note.DefaultExtensions holds the default value on creation for the extensions field.
-	note.DefaultExtensions = noteDescExtensions.Default.(lysand.Extensions)
+	note.DefaultExtensions = noteDescExtensions.Default.(versia.Extensions)
 	// noteDescCreatedAt is the schema descriptor for created_at field.
 	noteDescCreatedAt := noteMixinFields0[4].Descriptor()
 	// note.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -210,7 +210,7 @@ func init() {
 	// userDescExtensions is the schema descriptor for extensions field.
 	userDescExtensions := userMixinFields0[3].Descriptor()
 	// user.DefaultExtensions holds the default value on creation for the extensions field.
-	user.DefaultExtensions = userDescExtensions.Default.(lysand.Extensions)
+	user.DefaultExtensions = userDescExtensions.Default.(versia.Extensions)
 	// userDescCreatedAt is the schema descriptor for created_at field.
 	userDescCreatedAt := userMixinFields0[4].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -250,7 +250,7 @@ func init() {
 	// userDescFields is the schema descriptor for fields field.
 	userDescFields := userFields[10].Descriptor()
 	// user.DefaultFields holds the default value on creation for the fields field.
-	user.DefaultFields = userDescFields.Default.([]lysand.Field)
+	user.DefaultFields = userDescFields.Default.([]versia.UserField)
 	// userDescInbox is the schema descriptor for inbox field.
 	userDescInbox := userFields[11].Descriptor()
 	// user.InboxValidator is a validator for the "inbox" field. It is called by the builders before save.

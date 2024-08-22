@@ -9,7 +9,7 @@ import (
 	"github.com/lysand-org/versia-go/internal/entity"
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/service"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 )
 
 var _ repository.InstanceMetadataRepository = (*InstanceMetadataRepositoryImpl)(nil)
@@ -50,7 +50,7 @@ func (i *InstanceMetadataRepositoryImpl) GetByHost(ctx context.Context, host str
 	return entity.NewInstanceMetadata(m)
 }
 
-func (i *InstanceMetadataRepositoryImpl) ImportFromLysandByURI(ctx context.Context, uri *lysand.URL) (*entity.InstanceMetadata, error) {
+func (i *InstanceMetadataRepositoryImpl) ImportFromLysandByURI(ctx context.Context, uri *versiautils.URL) (*entity.InstanceMetadata, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/InstanceMetadataRepositoryImpl.ImportFromLysandByURI").
 		AddAttribute("uri", uri.String())
 	defer s.End()

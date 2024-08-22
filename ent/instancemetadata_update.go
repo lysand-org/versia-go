@@ -16,7 +16,7 @@ import (
 	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/ent/predicate"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // InstanceMetadataUpdate is the builder for updating InstanceMetadata entities.
@@ -61,8 +61,8 @@ func (imu *InstanceMetadataUpdate) SetNillableURI(s *string) *InstanceMetadataUp
 }
 
 // SetExtensions sets the "extensions" field.
-func (imu *InstanceMetadataUpdate) SetExtensions(l lysand.Extensions) *InstanceMetadataUpdate {
-	imu.mutation.SetExtensions(l)
+func (imu *InstanceMetadataUpdate) SetExtensions(v versia.Extensions) *InstanceMetadataUpdate {
+	imu.mutation.SetExtensions(v)
 	return imu
 }
 
@@ -845,8 +845,8 @@ func (imuo *InstanceMetadataUpdateOne) SetNillableURI(s *string) *InstanceMetada
 }
 
 // SetExtensions sets the "extensions" field.
-func (imuo *InstanceMetadataUpdateOne) SetExtensions(l lysand.Extensions) *InstanceMetadataUpdateOne {
-	imuo.mutation.SetExtensions(l)
+func (imuo *InstanceMetadataUpdateOne) SetExtensions(v versia.Extensions) *InstanceMetadataUpdateOne {
+	imuo.mutation.SetExtensions(v)
 	return imuo
 }
 

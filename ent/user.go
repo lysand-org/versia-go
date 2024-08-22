@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/lysand-org/versia-go/ent/image"
 	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/lysand"
+	"github.com/lysand-org/versia-go/pkg/versia"
 )
 
 // User is the model entity for the User schema.
@@ -26,7 +26,7 @@ type User struct {
 	// URI holds the value of the "uri" field.
 	URI string `json:"uri,omitempty"`
 	// Extensions holds the value of the "extensions" field.
-	Extensions lysand.Extensions `json:"extensions,omitempty"`
+	Extensions versia.Extensions `json:"extensions,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -52,7 +52,7 @@ type User struct {
 	// PrivacyLevel holds the value of the "privacyLevel" field.
 	PrivacyLevel user.PrivacyLevel `json:"privacyLevel,omitempty"`
 	// Fields holds the value of the "fields" field.
-	Fields []lysand.Field `json:"fields,omitempty"`
+	Fields []versia.UserField `json:"fields,omitempty"`
 	// Inbox holds the value of the "inbox" field.
 	Inbox string `json:"inbox,omitempty"`
 	// Featured holds the value of the "featured" field.

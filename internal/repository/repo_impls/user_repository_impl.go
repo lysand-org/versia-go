@@ -7,6 +7,7 @@ import (
 	"github.com/lysand-org/versia-go/config"
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/service"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 	"golang.org/x/crypto/bcrypt"
 
 	"git.devminer.xyz/devminer/unitel"
@@ -17,7 +18,6 @@ import (
 	"github.com/lysand-org/versia-go/ent/user"
 	"github.com/lysand-org/versia-go/internal/entity"
 	"github.com/lysand-org/versia-go/internal/utils"
-	"github.com/lysand-org/versia-go/pkg/lysand"
 )
 
 const bcryptCost = 12
@@ -84,7 +84,7 @@ func (i *UserRepositoryImpl) NewUser(ctx context.Context, username, password str
 	return entity.NewUser(u)
 }
 
-func (i *UserRepositoryImpl) ImportLysandUserByURI(ctx context.Context, uri *lysand.URL) (*entity.User, error) {
+func (i *UserRepositoryImpl) ImportLysandUserByURI(ctx context.Context, uri *versiautils.URL) (*entity.User, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.ImportLysandUserByURI")
 	defer s.End()
 	ctx = s.Context()
@@ -163,7 +163,7 @@ func (i *UserRepositoryImpl) Discover(ctx context.Context, domain, username stri
 
 		l.V(2).Info("Found remote user", "userURI", wf.URI)
 
-		u, err := i.Resolve(ctx, lysand.URLFromStd(wf.URI))
+		u, err := i.Resolve(ctx, versiautils.URLFromStd(wf.URI))
 		if err != nil {
 			l.Error(err, "Failed to resolve user")
 			return nil, err
@@ -185,7 +185,7 @@ func (i *UserRepositoryImpl) Discover(ctx context.Context, domain, username stri
 	return u, nil
 }
 
-func (i *UserRepositoryImpl) Resolve(ctx context.Context, uri *lysand.URL) (*entity.User, error) {
+func (i *UserRepositoryImpl) Resolve(ctx context.Context, uri *versiautils.URL) (*entity.User, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.Resolve")
 	defer s.End()
 	ctx = s.Context()
@@ -215,7 +215,7 @@ func (i *UserRepositoryImpl) Resolve(ctx context.Context, uri *lysand.URL) (*ent
 	return u, nil
 }
 
-func (i *UserRepositoryImpl) ResolveMultiple(ctx context.Context, uris []lysand.URL) ([]*entity.User, error) {
+func (i *UserRepositoryImpl) ResolveMultiple(ctx context.Context, uris []versiautils.URL) ([]*entity.User, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.ResolveMultiple")
 	defer s.End()
 	ctx = s.Context()
@@ -340,7 +340,7 @@ func (i *UserRepositoryImpl) GetLocalByUsername(ctx context.Context, username st
 	return entity.NewUser(u)
 }
 
-func (i *UserRepositoryImpl) LookupByURI(ctx context.Context, uri *lysand.URL) (*entity.User, error) {
+func (i *UserRepositoryImpl) LookupByURI(ctx context.Context, uri *versiautils.URL) (*entity.User, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.LookupByURI")
 	defer s.End()
 	ctx = s.Context()
@@ -367,7 +367,7 @@ func (i *UserRepositoryImpl) LookupByURI(ctx context.Context, uri *lysand.URL) (
 	return entity.NewUser(u)
 }
 
-func (i *UserRepositoryImpl) LookupByURIs(ctx context.Context, uris []lysand.URL) ([]*entity.User, error) {
+func (i *UserRepositoryImpl) LookupByURIs(ctx context.Context, uris []versiautils.URL) ([]*entity.User, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.LookupByURIs")
 	defer s.End()
 	ctx = s.Context()

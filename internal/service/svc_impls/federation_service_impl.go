@@ -12,9 +12,10 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/lysand-org/versia-go/internal/entity"
 	"github.com/lysand-org/versia-go/internal/service"
-	"github.com/lysand-org/versia-go/pkg/lysand"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/lysand/crypto"
 	"github.com/lysand-org/versia-go/pkg/protoretry"
+	"github.com/lysand-org/versia-go/pkg/versia"
+	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
+	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 	"github.com/lysand-org/versia-go/pkg/webfinger"
 	"net/http"
 	"net/url"
@@ -29,14 +30,14 @@ var (
 type FederationServiceImpl struct {
 	httpC *protoretry.Client
 
-	federationClient *lysand.FederationClient
+	federationClient *versia.FederationClient
 
 	telemetry *unitel.Telemetry
 
 	log logr.Logger
 }
 
-func NewFederationServiceImpl(httpClient *http.Client, federationClient *lysand.FederationClient, telemetry *unitel.Telemetry, log logr.Logger) *FederationServiceImpl {
+func NewFederationServiceImpl(httpClient *http.Client, federationClient *versia.FederationClient, telemetry *unitel.Telemetry, log logr.Logger) *FederationServiceImpl {
 	return &FederationServiceImpl{
 		httpC:            protoretry.New(httpClient),
 		federationClient: federationClient,
@@ -45,7 +46,7 @@ func NewFederationServiceImpl(httpClient *http.Client, federationClient *lysand.
 	}
 }
 
-func (i *FederationServiceImpl) GetUser(ctx context.Context, uri *lysand.URL) (*lysand.User, error) {
+func (i *FederationServiceImpl) GetUser(ctx context.Context, uri *versiautils.URL) (*versia.User, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FederationServiceImpl.GetUser").
 		AddAttribute("userURI", uri.String())
 	defer s.End()
@@ -57,19 +58,19 @@ func (i *FederationServiceImpl) GetUser(ctx context.Context, uri *lysand.URL) (*
 		return nil, err
 	}
 
-	u := &lysand.User{}
+	u := &versia.User{}
 	if err := json.Unmarshal(body, u); err != nil {
 		s.SetSimpleStatus(unitel.Error, err.Error())
 		return nil, err
 	}
 
-	fedHeaders, err := lysand.ExtractFederationHeaders(resp.Header)
+	fedHeaders, err := versiacrypto.ExtractFederationHeaders(resp.Header)
 	if err != nil {
 		s.SetSimpleStatus(unitel.Error, err.Error())
 		return nil, err
 	}
 
-	v := lysand.Verifier{PublicKey: u.PublicKey.Key.Key}
+	v := versiacrypto.Verifier{PublicKey: u.PublicKey.Key.Key}
 	if !v.Verify("GET", uri.ToStd(), body, fedHeaders) {
 		s.SetSimpleStatus(unitel.Error, ErrSignatureValidationFailed.Error())
 		i.log.V(1).Error(ErrSignatureValidationFailed, "signature validation failed", "user", u.URI.String())
@@ -100,7 +101,7 @@ func (i *FederationServiceImpl) DiscoverUser(ctx context.Context, baseURL, usern
 	return wf, nil
 }
 
-func (i *FederationServiceImpl) DiscoverInstance(ctx context.Context, baseURL string) (*lysand.InstanceMetadata, error) {
+func (i *FederationServiceImpl) DiscoverInstance(ctx context.Context, baseURL string) (*versia.InstanceMetadata, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FederationServiceImpl.DiscoverInstance").
 		AddAttribute("baseURL", baseURL)
 	defer s.End()
@@ -112,10 +113,10 @@ func (i *FederationServiceImpl) DiscoverInstance(ctx context.Context, baseURL st
 		return nil, err
 	} else if resp.StatusCode >= http.StatusBadRequest {
 		s.SetSimpleStatus(unitel.Error, fmt.Sprintf("unexpected response code: %d", resp.StatusCode))
-		return nil, &lysand.ResponseError{StatusCode: resp.StatusCode, URL: resp.Request.URL}
+		return nil, &versia.ResponseError{StatusCode: resp.StatusCode, URL: resp.Request.URL}
 	}
 
-	var metadata lysand.InstanceMetadata
+	var metadata versia.InstanceMetadata
 	if err := json.Unmarshal(body, &metadata); err != nil {
 		s.SetSimpleStatus(unitel.Error, err.Error())
 		return nil, err
@@ -150,7 +151,7 @@ func (i *FederationServiceImpl) SendToInbox(ctx context.Context, author *entity.
 		return nil, err
 	}
 
-	sigData := lysand.NewSignatureData("POST", base64.StdEncoding.EncodeToString(nonce), uri, versiacrypto.SHA256(body))
+	sigData := versiacrypto.NewSignatureData("POST", base64.StdEncoding.EncodeToString(nonce), uri, versiacrypto.SHA256(body))
 	sig := author.Signer.Sign(*sigData)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", uri.String(), bytes.NewReader(body))
