@@ -6,6 +6,7 @@ Go.
 > Compatibility level: Lysand 3.1 (sort of)
 
 > ⚠️ This project is still in development and is not ready for production use.
+> In this phase no pull requests will be accepted and code may often break.
 
 ## Developing
 
