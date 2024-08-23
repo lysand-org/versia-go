@@ -8,6 +8,8 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"git.devminer.xyz/devminer/unitel/unitelhttp"
+	"git.devminer.xyz/devminer/unitel/unitelsql"
 	"github.com/lysand-org/versia-go/ent/instancemetadata"
 	"github.com/lysand-org/versia-go/internal/handlers/follow_handler"
 	"github.com/lysand-org/versia-go/internal/handlers/meta_handler"
@@ -16,7 +18,6 @@ import (
 	"github.com/lysand-org/versia-go/internal/repository/repo_impls"
 	"github.com/lysand-org/versia-go/internal/service/svc_impls"
 	"github.com/lysand-org/versia-go/internal/validators/val_impls"
-	"github.com/lysand-org/versia-go/pkg/versia"
 	"net/http"
 	"os"
 	"os/signal"
@@ -64,19 +65,16 @@ func main() {
 	}
 
 	httpClient := &http.Client{
-		Transport: tel.NewTracedTransport(
+		Transport: unitelhttp.NewTracedTransport(
+			tel,
 			&http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: config.C.Telemetry.Environment == "development"}},
 			// TODO: Only forward traces to configured hosts
 			true,
 			[]string{"origin", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
 			[]string{"host", "x-nonce", "x-signature", "x-signed-by"},
+			unitelhttp.WithLogger(zerologr.New(&log.Logger).WithName("http-client")),
 		),
 	}
-
-	federationClient := versia.NewClient(
-		versia.WithHTTPClient(httpClient),
-		versia.WithLogger(zerologr.New(&log.Logger).WithName("federation-client")),
-	)
 
 	log.Debug().Msg("Opening database connection")
 	var db *ent.Client
@@ -110,7 +108,7 @@ func main() {
 	// Stateless services
 
 	requestSigner := svc_impls.NewRequestSignerImpl(tel, zerologr.New(&log.Logger).WithName("request-signer"))
-	federationService := svc_impls.NewFederationServiceImpl(httpClient, federationClient, tel, zerologr.New(&log.Logger).WithName("federation-service"))
+	federationService := svc_impls.NewFederationServiceImpl(httpClient, tel, zerologr.New(&log.Logger).WithName("federation-service"))
 	taskService := svc_impls.NewTaskServiceImpl(tq, tel, zerologr.New(&log.Logger).WithName("task-service"))
 
 	// Manager
@@ -172,7 +170,7 @@ func main() {
 		MaxAge:           0,
 	}))
 
-	web.Use(tel.FiberMiddleware(unitel.FiberMiddlewareConfig{
+	web.Use(unitelhttp.FiberMiddleware(tel, unitelhttp.FiberMiddlewareConfig{
 		Repanic:         false,
 		WaitForDelivery: false,
 		Timeout:         5 * time.Second,
@@ -181,8 +179,9 @@ func main() {
 		// origin for outgoing requests
 		TraceResponseHeaders: []string{"host", "x-nonce", "x-signature", "x-signed-by"},
 		// IgnoredRoutes:        nil,
+		Logger: zerologr.New(&log.Logger).WithName("http-server"),
 	}))
-	web.Use(unitel.RequestLogger(log.Logger, true, true))
+	web.Use(unitelhttp.RequestLogger(zerologr.New(&log.Logger).WithName("http-server"), true, true))
 
 	log.Debug().Msg("Registering handlers")
 
@@ -231,8 +230,8 @@ func main() {
 	wg.Wait()
 }
 
-func openDB(t *unitel.Telemetry, isSqlite bool, uri string) (*ent.Client, error) {
-	s := t.StartSpan(context.Background(), "function", "main.openDB")
+func openDB(tel *unitel.Telemetry, isSqlite bool, uri string) (*ent.Client, error) {
+	s := tel.StartSpan(context.Background(), "function", "main.openDB")
 	defer s.End()
 
 	var drv driver.Driver
@@ -251,7 +250,7 @@ func openDB(t *unitel.Telemetry, isSqlite bool, uri string) (*ent.Client, error)
 		dbType = "postgres"
 	}
 
-	sql.Register(dialectType+"-traced", t.TraceSQL(drv, dbType, false))
+	sql.Register(dialectType+"-traced", unitelsql.NewTracedSQL(tel, drv, dbType))
 
 	db, err := sql.Open(dialectType+"-traced", uri)
 	if err != nil {

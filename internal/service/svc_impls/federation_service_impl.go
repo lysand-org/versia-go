@@ -30,19 +30,16 @@ var (
 type FederationServiceImpl struct {
 	httpC *protoretry.Client
 
-	federationClient *versia.FederationClient
-
 	telemetry *unitel.Telemetry
 
 	log logr.Logger
 }
 
-func NewFederationServiceImpl(httpClient *http.Client, federationClient *versia.FederationClient, telemetry *unitel.Telemetry, log logr.Logger) *FederationServiceImpl {
+func NewFederationServiceImpl(httpClient *http.Client, telemetry *unitel.Telemetry, log logr.Logger) *FederationServiceImpl {
 	return &FederationServiceImpl{
-		httpC:            protoretry.New(httpClient),
-		federationClient: federationClient,
-		telemetry:        telemetry,
-		log:              log,
+		httpC:     protoretry.New(httpClient),
+		telemetry: telemetry,
+		log:       log,
 	}
 }
 
@@ -101,6 +98,15 @@ func (i *FederationServiceImpl) DiscoverUser(ctx context.Context, baseURL, usern
 	return wf, nil
 }
 
+type ResponseError struct {
+	StatusCode int
+	URL        *url.URL
+}
+
+func (e *ResponseError) Error() string {
+	return fmt.Sprintf("error from %s: %d", e.URL, e.StatusCode)
+}
+
 func (i *FederationServiceImpl) DiscoverInstance(ctx context.Context, baseURL string) (*versia.InstanceMetadata, error) {
 	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FederationServiceImpl.DiscoverInstance").
 		AddAttribute("baseURL", baseURL)
@@ -113,7 +119,7 @@ func (i *FederationServiceImpl) DiscoverInstance(ctx context.Context, baseURL st
 		return nil, err
 	} else if resp.StatusCode >= http.StatusBadRequest {
 		s.SetSimpleStatus(unitel.Error, fmt.Sprintf("unexpected response code: %d", resp.StatusCode))
-		return nil, &versia.ResponseError{StatusCode: resp.StatusCode, URL: resp.Request.URL}
+		return nil, &ResponseError{StatusCode: resp.StatusCode, URL: resp.Request.URL}
 	}
 
 	var metadata versia.InstanceMetadata
