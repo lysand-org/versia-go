@@ -1,0 +1,54 @@
+image:
+  repository: ghcr.io/lysand-org/versia-go
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+environment: production
+
+versia:
+  instance:
+    name: Versia-Go
+    description: Versia-Go instance
+    address: ""
+
+  telemetry: {
+    # Regex to match the full URL
+    # forwardSpansTo:
+
+    # sentryDSN: ""
+
+    # The OTLP endpoint must be OTLP+GRPC or "console"
+    # otlpEndpoint: ""
+  }
+
+ingress:
+  enabled: true
+  # className: ""
+  # sslSecret: ""
+
+pod:
+  replicas: 1
+  resources: {
+    # limits:
+    #   cpu: 500m
+    # requests:
+    #   cpu: 50m
+    #   memory: 16Mi
+  }
+  annotations: { }
+  labels: { }
+  nodeSelector: { }
+  affinity: { }
+  tolerations: { }
+
+database:
+  type: "sqlite"
+  size: 1Gi
+  # If not commented in, this will use whatever is your default storage class
+  # storageClassName: longhorn
+
+  # type: "postgresql"
+  # uri: postgres://user:password@host:5432/database
+
+nats:
+  uri: ""

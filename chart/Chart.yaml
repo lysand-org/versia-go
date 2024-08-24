@@ -1,0 +1,7 @@
+apiVersion: v2
+name: versia_go
+description: Helm chart for Versia-Go
+
+type: application
+version: 0.1.0
+appVersion: "0.0.1"

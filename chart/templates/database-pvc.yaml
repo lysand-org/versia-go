@@ -1,0 +1,16 @@
+# Only SQLite needs a volume
+{{- if eq .Values.database.type "sqlite" }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "versiago.fullname" . }}-db
+spec:
+  accessModes:
+    - ReadWriteOnce
+{{- if .Values.database.storageClassName }}
+  storageClassName: {{ .Values.database.storageClassName }}
+{{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.database.size }}
+{{- end }}
