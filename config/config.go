@@ -38,9 +38,9 @@ func Load() {
 		log.Warn().Err(err).Msg("Failed to load .env file")
 	}
 
-	publicAddress, err := url.Parse(os.Getenv("PUBLIC_ADDRESS"))
+	publicAddress, err := url.Parse(os.Getenv("VERSIA_INSTANCE_ADDRESS"))
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to parse PUBLIC_ADDRESS")
+		log.Fatal().Err(err).Msg("Failed to parse VERSIA_INSTANCE_ADDRESS")
 	}
 
 	var forwardTracesTo *regexp.Regexp
@@ -66,8 +66,8 @@ func Load() {
 		Host:           publicAddress.Host,
 		SharedInboxURL: publicAddress.ResolveReference(&url.URL{Path: "/api/inbox"}),
 
-		InstanceName:        os.Getenv("INSTANCE_NAME"),
-		InstanceDescription: optionalEnvStr("INSTANCE_DESCRIPTION"),
+		InstanceName:        os.Getenv("VERSIA_INSTANCE_NAME"),
+		InstanceDescription: optionalEnvStr("VERSIA_INSTANCE_DESCRIPTION"),
 
 		NATSURI:        os.Getenv("NATS_URI"),
 		NATSStreamName: getEnvStr("NATS_STREAM_NAME", "versia-go"),

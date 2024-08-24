@@ -30,8 +30,8 @@ services:
         target: /app/test.db
     environment:
       VERSIA_PORT: 8080
+      VERSIA_INSTANCE_ADDRESS: https://lysand-test.i.devminer.xyz:8080
       NATS_URI: nats://nats:4222
-      PUBLIC_ADDRESS: https://lysand-test.i.devminer.xyz:8080
       NATS_STREAM_NAME: versia-go-1
     ports:
       - "8080:8080"
@@ -45,8 +45,8 @@ services:
         target: /app/test.db
     environment:
       VERSIA_PORT: 8081
+      VERSIA_INSTANCE_ADDRESS: https://lysand-test-2.i.devminer.xyz:8081
       NATS_URI: nats://nats:4222
-      PUBLIC_ADDRESS: https://lysand-test-2.i.devminer.xyz:8081
       NATS_STREAM_NAME: versia-go-2
     ports:
       - "8081:8081"
