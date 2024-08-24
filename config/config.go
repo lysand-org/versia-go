@@ -43,14 +43,13 @@ func Load() {
 
 	var forwardTracesTo *regexp.Regexp
 	if raw := optionalEnvStr("FORWARD_TRACES_TO"); raw != nil {
-
 		if forwardTracesTo, err = regexp.Compile(*raw); err != nil {
-			log.Panic().Err(err).Str("raw", *raw).Msg("Failed to compile")
+			log.Fatal().Err(err).Str("raw", *raw).Msg("Failed to compile")
 		}
 	}
 
 	C = Config{
-		Port: getEnvInt("PORT", 80),
+		Port: getEnvInt("VERSIA_PORT", 80),
 
 		PublicAddress:  publicAddress,
 		Host:           publicAddress.Host,
