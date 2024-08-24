@@ -17,7 +17,6 @@ type Attachment struct {
 	// BlurHash is available when the content type is an image
 	Width *int `json:"width,omitempty"`
 
-	// TODO: Figure out when this is available
 	FPS *int `json:"fps,omitempty"`
 }
 

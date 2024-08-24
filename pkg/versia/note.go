@@ -7,7 +7,6 @@ import (
 
 // NoteVisibility is the visibility of a note. For more information, see the [Spec].
 //
-// TODO:
 // [Spec]: https://lysand.org/objects/publications#visibility
 type NoteVisibility string
 

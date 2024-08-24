@@ -141,7 +141,7 @@ func (i *UserRepositoryImpl) Discover(ctx context.Context, domain, username stri
 
 	l := i.log.WithValues("domain", domain, "username", username)
 
-	// TODO: This *could* go wrong
+	// FIXME: This *could* go wrong
 	if domain != config.C.Host {
 		l.V(2).Info("Discovering instance")
 

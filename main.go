@@ -51,6 +51,10 @@ func init() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 }
 
+func shouldPropagate(r *http.Request) bool {
+	return config.C.ForwardTracesTo.Match([]byte(r.URL.String()))
+}
+
 func main() {
 	zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	zerologr.NameFieldName = "logger"
@@ -68,11 +72,10 @@ func main() {
 		Transport: unitelhttp.NewTracedTransport(
 			tel,
 			&http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: config.C.Telemetry.Environment == "development"}},
-			// TODO: Only forward traces to configured hosts
-			true,
 			[]string{"origin", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
-			[]string{"host", "x-nonce", "x-signature", "x-signed-by"},
+			[]string{"host", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
 			unitelhttp.WithLogger(zerologr.New(&log.Logger).WithName("http-client")),
+			unitelhttp.WithTracePropagation(shouldPropagate),
 		),
 	}
 
@@ -177,9 +180,10 @@ func main() {
 		// host for incoming requests
 		TraceRequestHeaders: []string{"origin", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
 		// origin for outgoing requests
-		TraceResponseHeaders: []string{"host", "x-nonce", "x-signature", "x-signed-by"},
+		TraceResponseHeaders: []string{"host", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
 		// IgnoredRoutes:        nil,
-		Logger: zerologr.New(&log.Logger).WithName("http-server"),
+		Logger:          zerologr.New(&log.Logger).WithName("http-server"),
+		TracePropagator: shouldPropagate,
 	}))
 	web.Use(unitelhttp.RequestLogger(zerologr.New(&log.Logger).WithName("http-server"), true, true))
 

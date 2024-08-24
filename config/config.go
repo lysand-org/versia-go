@@ -1,13 +1,13 @@
 package config
 
 import (
-	"net/url"
-	"os"
-	"strconv"
-
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
+	"net/url"
+	"os"
+	"regexp"
+	"strconv"
 )
 
 type Config struct {
@@ -25,7 +25,8 @@ type Config struct {
 
 	DatabaseURI string
 
-	Telemetry unitel.Opts
+	Telemetry       unitel.Opts
+	ForwardTracesTo *regexp.Regexp
 }
 
 var C Config
@@ -38,6 +39,14 @@ func Load() {
 	publicAddress, err := url.Parse(os.Getenv("PUBLIC_ADDRESS"))
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to parse PUBLIC_ADDRESS")
+	}
+
+	var forwardTracesTo *regexp.Regexp
+	if raw := optionalEnvStr("FORWARD_TRACES_TO"); raw != nil {
+
+		if forwardTracesTo, err = regexp.Compile(*raw); err != nil {
+			log.Panic().Err(err).Str("raw", *raw).Msg("Failed to compile")
+		}
 	}
 
 	C = Config{
@@ -54,7 +63,8 @@ func Load() {
 		NATSStreamName: getEnvStr("NATS_STREAM_NAME", "versia-go"),
 		DatabaseURI:    os.Getenv("DATABASE_URI"),
 
-		Telemetry: unitel.ParseOpts("versia-go"),
+		ForwardTracesTo: forwardTracesTo,
+		Telemetry:       unitel.ParseOpts("versia-go"),
 	}
 
 	return

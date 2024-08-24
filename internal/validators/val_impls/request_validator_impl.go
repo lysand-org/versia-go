@@ -48,7 +48,6 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 		return err
 	}
 
-	// TODO: Fetch user from database instead of using the URI
 	user, err := i.repositories.Users().Resolve(ctx, versiautils.URLFromStd(fedHeaders.SignedBy))
 	if err != nil {
 		return err
