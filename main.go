@@ -182,36 +182,15 @@ func main() {
 		TraceRequestHeaders: []string{"origin", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
 		// origin for outgoing requests
 		TraceResponseHeaders: []string{"host", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
-		// IgnoredRoutes:        nil,
-		Logger:          zerologr.New(&log.Logger).WithName("http-server"),
-		TracePropagator: shouldPropagate,
+		IgnoredRoutes:        []string{"/api/health"},
+		Logger:               zerologr.New(&log.Logger).WithName("http-server"),
+		TracePropagator:      shouldPropagate,
 	}))
 	web.Use(unitelhttp.RequestLogger(zerologr.New(&log.Logger).WithName("http-server"), true, true))
 
 	log.Debug().Msg("Registering handlers")
 
-	web.Get("/api/health", func(c *fiber.Ctx) error {
-		dbWorking := true
-		if err := db.Ping(); err != nil {
-			log.Error().Err(err).Msg("Database healthcheck failed")
-			dbWorking = false
-		}
-
-		natsWorking := true
-		if status := nc.Status(); status != nats.CONNECTED {
-			log.Error().Str("status", status.String()).Msg("NATS healthcheck failed")
-			natsWorking = false
-		}
-
-		if dbWorking && natsWorking {
-			return c.SendString("lookin' good")
-		}
-
-		return api_schema.ErrInternalServerError(map[string]any{
-			"database": dbWorking,
-			"nats":     natsWorking,
-		})
-	})
+	web.Get("/api/health", healthCheck(db, nc))
 
 	userHandler.Register(web.Group("/"))
 	noteHandler.Register(web.Group("/"))
@@ -373,4 +352,29 @@ func initServerActor(db *ent.Client, telemetry *unitel.Telemetry) error {
 	tx.MarkForCommit()
 
 	return tx.Finish()
+}
+
+func healthCheck(db *ent.Client, nc *nats.Conn) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		dbWorking := true
+		if err := db.Ping(); err != nil {
+			log.Error().Err(err).Msg("Database healthcheck failed")
+			dbWorking = false
+		}
+
+		natsWorking := true
+		if status := nc.Status(); status != nats.CONNECTED {
+			log.Error().Str("status", status.String()).Msg("NATS healthcheck failed")
+			natsWorking = false
+		}
+
+		if dbWorking && natsWorking {
+			return c.SendString("lookin' good")
+		}
+
+		return api_schema.ErrInternalServerError(map[string]any{
+			"database": dbWorking,
+			"nats":     natsWorking,
+		})
+	}
 }
