@@ -44,9 +44,14 @@ func Load() {
 	}
 
 	var forwardTracesTo *regexp.Regexp
-	if raw := optionalEnvStr("FORWARD_TRACES_TO"); raw != nil {
-		if forwardTracesTo, err = regexp.Compile(*raw); err != nil {
-			log.Fatal().Err(err).Str("raw", *raw).Msg("Failed to compile")
+	{
+		rawForwardTracesTo := optionalEnvStr("FORWARD_TRACES_TO")
+		if rawForwardTracesTo == nil {
+			s := "matchnothing^"
+			rawForwardTracesTo = &s
+		}
+		if forwardTracesTo, err = regexp.Compile(*rawForwardTracesTo); err != nil {
+			log.Fatal().Err(err).Str("raw", *rawForwardTracesTo).Msg("Failed to compile")
 		}
 	}
 
