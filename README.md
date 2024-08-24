@@ -1,9 +1,9 @@
 # Versia-Go
 
-Versia-Go is a experimental implementation of the (not yet renamed :P) [Versia](https://lysand.org) protocol written in
+Versia-Go is a experimental implementation of the (not yet renamed :P) [Versia](https://versia.pub) protocol written in
 Go.
 
-> Compatibility level: Lysand 3.1 (sort of)
+> Compatibility level: Versia Working Draft 4.0
 
 > ⚠️ This project is still in development and is not ready for production use.
 > In this phase no pull requests will be accepted and code may often break.
@@ -18,7 +18,7 @@ Go.
 ### Running
 
 ```shell
-git clone https://github.com/lysand/versia-go.git
+git clone https://github.com/lysand-org/versia-go.git
 cd versia-go
 
 docker compose up -d nats
