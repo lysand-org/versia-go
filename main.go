@@ -11,6 +11,7 @@ import (
 	"git.devminer.xyz/devminer/unitel/unitelhttp"
 	"git.devminer.xyz/devminer/unitel/unitelsql"
 	"github.com/lysand-org/versia-go/ent/instancemetadata"
+	"github.com/lysand-org/versia-go/internal/api_schema"
 	"github.com/lysand-org/versia-go/internal/handlers/follow_handler"
 	"github.com/lysand-org/versia-go/internal/handlers/meta_handler"
 	"github.com/lysand-org/versia-go/internal/handlers/note_handler"
@@ -188,6 +189,29 @@ func main() {
 	web.Use(unitelhttp.RequestLogger(zerologr.New(&log.Logger).WithName("http-server"), true, true))
 
 	log.Debug().Msg("Registering handlers")
+
+	web.Get("/api/health", func(c *fiber.Ctx) error {
+		dbWorking := true
+		if err := db.Ping(); err != nil {
+			log.Error().Err(err).Msg("Database healthcheck failed")
+			dbWorking = false
+		}
+
+		natsWorking := true
+		if status := nc.Status(); status != nats.CONNECTED {
+			log.Error().Str("status", status.String()).Msg("NATS healthcheck failed")
+			natsWorking = false
+		}
+
+		if dbWorking && natsWorking {
+			return c.SendString("lookin' good")
+		}
+
+		return api_schema.ErrInternalServerError(map[string]any{
+			"database": dbWorking,
+			"nats":     natsWorking,
+		})
+	})
 
 	userHandler.Register(web.Group("/"))
 	noteHandler.Register(web.Group("/"))
