@@ -11,7 +11,9 @@ import (
 )
 
 type Config struct {
-	Port int
+	Port    int
+	TLSKey  *string
+	TLSCert *string
 
 	PublicAddress  *url.URL
 	Host           string
@@ -48,8 +50,17 @@ func Load() {
 		}
 	}
 
+	tlsKey := optionalEnvStr("VERSIA_TLS_KEY")
+	tlsCert := optionalEnvStr("VERSIA_TLS_CERT")
+	if (tlsKey != nil && tlsCert == nil) || (tlsKey == nil && tlsCert != nil) {
+		log.Fatal().
+			Msg("Both VERSIA_TLS_KEY and VERSIA_TLS_CERT have to be set if you want to use in-process TLS termination.")
+	}
+
 	C = Config{
-		Port: getEnvInt("VERSIA_PORT", 80),
+		Port:    getEnvInt("VERSIA_PORT", 80),
+		TLSCert: tlsCert,
+		TLSKey:  tlsKey,
 
 		PublicAddress:  publicAddress,
 		Host:           publicAddress.Host,

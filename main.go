@@ -215,7 +215,16 @@ func main() {
 		defer wg.Done()
 
 		log.Debug().Msg("Starting server")
-		if err := web.ListenTLS(fmt.Sprintf(":%d", config.C.Port), "cert.pem", "key.pem"); err != nil {
+
+		addr := fmt.Sprintf(":%d", config.C.Port)
+
+		var err error
+		if config.C.TLSKey != nil {
+			err = web.ListenTLS(addr, *config.C.TLSCert, *config.C.TLSKey)
+		} else {
+			err = web.Listen(addr)
+		}
+		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to start server")
 		}
 	}()
