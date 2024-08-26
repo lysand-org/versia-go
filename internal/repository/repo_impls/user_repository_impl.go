@@ -387,12 +387,12 @@ func (i *UserRepositoryImpl) LookupByURIs(ctx context.Context, uris []versiautil
 	return utils.MapErrorSlice(us, entity.NewUser)
 }
 
-func (i *UserRepositoryImpl) LookupByIDOrUsername(ctx context.Context, idOrUsername string) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.LookupByIDOrUsername")
+func (i *UserRepositoryImpl) LookupLocalByIDOrUsername(ctx context.Context, idOrUsername string) (*entity.User, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.LookupLocalByIDOrUsername")
 	defer s.End()
 	ctx = s.Context()
 
-	var preds []predicate.User
+	preds := []predicate.User{user.IsRemote(false)}
 	if u, err := uuid.Parse(idOrUsername); err == nil {
 		preds = append(preds, user.IDEQ(u))
 	} else {

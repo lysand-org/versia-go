@@ -25,7 +25,7 @@ type UserRepository interface {
 
 	LookupByURI(ctx context.Context, uri *versiautils.URL) (*entity.User, error)
 	LookupByURIs(ctx context.Context, uris []versiautils.URL) ([]*entity.User, error)
-	LookupByIDOrUsername(ctx context.Context, idOrUsername string) (*entity.User, error)
+	LookupLocalByIDOrUsername(ctx context.Context, idOrUsername string) (*entity.User, error)
 }
 
 type FollowRepository interface {

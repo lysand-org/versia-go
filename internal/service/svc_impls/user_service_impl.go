@@ -77,7 +77,7 @@ func (i UserServiceImpl) GetUserByID(ctx context.Context, id uuid.UUID) (*entity
 	defer s.End()
 	ctx = s.Context()
 
-	return i.repositories.Users().LookupByIDOrUsername(ctx, id.String())
+	return i.repositories.Users().GetByID(ctx, id)
 }
 
 func (i UserServiceImpl) GetWebfingerForUser(ctx context.Context, userID string) (*webfinger.User, error) {
@@ -85,7 +85,7 @@ func (i UserServiceImpl) GetWebfingerForUser(ctx context.Context, userID string)
 	defer s.End()
 	ctx = s.Context()
 
-	u, err := i.repositories.Users().LookupByIDOrUsername(ctx, userID)
+	u, err := i.repositories.Users().LookupLocalByIDOrUsername(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
