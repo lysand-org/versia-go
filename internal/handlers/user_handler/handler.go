@@ -42,10 +42,10 @@ func (i *Handler) Register(r fiber.Router) {
 
 	r.Get("/.well-known/webfinger", i.Webfinger)
 
+	r.Get("/api/app/users/search", i.SearchUser)
 	r.Get("/api/app/users/:id", i.GetUser)
 	r.Post("/api/app/users/", i.CreateUser)
 
-	r.Get("/api/users/search", i.SearchUser)
 	r.Get("/api/users/:id", i.GetLysandUser)
 	r.Post("/api/users/:id/inbox", i.LysandInbox)
 }
