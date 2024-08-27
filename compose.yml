@@ -23,30 +23,15 @@ services:
 
   versia-1:
     <<: *versia-default
-    hostname: lysand-test.i.devminer.xyz
+    hostname: versia.localhost
     volumes:
       - type: bind
         source: ./1.db
         target: /app/test.db
     environment:
       VERSIA_PORT: 8080
-      VERSIA_INSTANCE_ADDRESS: https://lysand-test.i.devminer.xyz:8080
+      VERSIA_INSTANCE_ADDRESS: http://versia.localhost:8080
       NATS_URI: nats://nats:4222
-      NATS_STREAM_NAME: versia-go-1
+      NATS_STREAM_NAME: versia-go
     ports:
       - "8080:8080"
-
-  versia-2:
-    <<: *versia-default
-    hostname: lysand-test-2.i.devminer.xyz
-    volumes:
-      - type: bind
-        source: ./2.db
-        target: /app/test.db
-    environment:
-      VERSIA_PORT: 8081
-      VERSIA_INSTANCE_ADDRESS: https://lysand-test-2.i.devminer.xyz:8081
-      NATS_URI: nats://nats:4222
-      NATS_STREAM_NAME: versia-go-2
-    ports:
-      - "8081:8081"

@@ -84,8 +84,8 @@ func (i *UserRepositoryImpl) NewUser(ctx context.Context, username, password str
 	return entity.NewUser(u)
 }
 
-func (i *UserRepositoryImpl) ImportLysandUserByURI(ctx context.Context, uri *versiautils.URL) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.ImportLysandUserByURI")
+func (i *UserRepositoryImpl) ImportVersiaUserByURI(ctx context.Context, uri *versiautils.URL) (*entity.User, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/UserRepositoryImpl.ImportVersiaUserByURI")
 	defer s.End()
 	ctx = s.Context()
 
@@ -201,7 +201,7 @@ func (i *UserRepositoryImpl) Resolve(ctx context.Context, uri *versiautils.URL) 
 	if u == nil {
 		l.V(2).Info("User not found in DB")
 
-		u, err := i.ImportLysandUserByURI(ctx, uri)
+		u, err := i.ImportVersiaUserByURI(ctx, uri)
 		if err != nil {
 			l.Error(err, "Failed to import user")
 			return nil, err
@@ -241,7 +241,7 @@ outer:
 
 		l.V(2).Info("User not found in DB")
 
-		importedUser, err := i.ImportLysandUserByURI(ctx, &uri)
+		importedUser, err := i.ImportVersiaUserByURI(ctx, &uri)
 		if err != nil {
 			l.Error(err, "Failed to import user")
 

@@ -46,7 +46,7 @@ func NewNote(dbNote *ent.Note) (*Note, error) {
 	return n, nil
 }
 
-func (n Note) ToLysand() versia.Note {
+func (n Note) ToVersia() versia.Note {
 	return versia.Note{
 		Entity: versia.Entity{
 			ID:         n.ID,

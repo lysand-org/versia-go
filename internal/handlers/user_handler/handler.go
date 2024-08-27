@@ -46,6 +46,6 @@ func (i *Handler) Register(r fiber.Router) {
 	r.Get("/api/app/users/:id", i.GetUser)
 	r.Post("/api/app/users/", i.CreateUser)
 
-	r.Get("/api/users/:id", i.GetLysandUser)
-	r.Post("/api/users/:id/inbox", i.LysandInbox)
+	r.Get("/api/users/:id", i.GetVersiaUser)
+	r.Post("/api/users/:id/inbox", i.HandleVersiaInbox)
 }

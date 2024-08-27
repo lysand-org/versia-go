@@ -12,7 +12,7 @@ import (
 	"github.com/lysand-org/versia-go/internal/api_schema"
 )
 
-func (i *Handler) LysandInbox(c *fiber.Ctx) error {
+func (i *Handler) HandleVersiaInbox(c *fiber.Ctx) error {
 	if err := i.requestValidator.ValidateFiberCtx(c.UserContext(), c); err != nil {
 		if errors.Is(err, val_impls.ErrInvalidSignature) {
 			i.log.Error(err, "Invalid signature")

@@ -23,10 +23,10 @@ type User struct {
 	Followers  *versiautils.URL
 	Following  *versiautils.URL
 
-	DisplayName     string
-	LysandAvatar    versiautils.ImageContentTypeMap
-	LysandBiography versiautils.TextContentTypeMap
-	Signer          versiacrypto.Signer
+	DisplayName string
+	Avatar      versiautils.ImageContentTypeMap
+	Biography   versiautils.TextContentTypeMap
+	Signer      versiacrypto.Signer
 }
 
 func NewUser(dbData *ent.User) (*User, error) {
@@ -38,8 +38,8 @@ func NewUser(dbData *ent.User) (*User, error) {
 		},
 		DisplayName: dbData.Username,
 
-		LysandAvatar:    lysandAvatar(dbData),
-		LysandBiography: lysandBiography(dbData),
+		Avatar:    userAvatar(dbData),
+		Biography: userBiography(dbData),
 	}
 
 	if dbData.DisplayName != nil {
@@ -81,7 +81,7 @@ func NewUser(dbData *ent.User) (*User, error) {
 	return u, nil
 }
 
-func (u User) ToLysand() *versia.User {
+func (u User) ToVersia() *versia.User {
 	return &versia.User{
 		Entity: versia.Entity{
 			ID:         u.ID,
@@ -91,7 +91,7 @@ func (u User) ToLysand() *versia.User {
 		},
 		DisplayName: helpers.StringPtr(u.DisplayName),
 		Username:    u.Username,
-		Avatar:      u.LysandAvatar,
+		Avatar:      u.Avatar,
 		Header:      imageMap(u.Edges.HeaderImage),
 		Indexable:   u.Indexable,
 		PublicKey: versia.UserPublicKey{
@@ -99,7 +99,7 @@ func (u User) ToLysand() *versia.User {
 			Algorithm: u.PublicKeyAlgorithm,
 			Key:       u.PublicKey,
 		},
-		Bio:    u.LysandBiography,
+		Bio:    u.Biography,
 		Fields: u.Fields,
 
 		Inbox:     u.Inbox,
@@ -110,7 +110,7 @@ func (u User) ToLysand() *versia.User {
 	}
 }
 
-func lysandAvatar(u *ent.User) versiautils.ImageContentTypeMap {
+func userAvatar(u *ent.User) versiautils.ImageContentTypeMap {
 	if avatar := imageMap(u.Edges.AvatarImage); avatar != nil {
 		return avatar
 	}
@@ -122,7 +122,7 @@ func lysandAvatar(u *ent.User) versiautils.ImageContentTypeMap {
 	}
 }
 
-func lysandBiography(u *ent.User) versiautils.TextContentTypeMap {
+func userBiography(u *ent.User) versiautils.TextContentTypeMap {
 	if u.Biography == nil {
 		return nil
 	}

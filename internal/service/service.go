@@ -42,14 +42,14 @@ type NoteService interface {
 	CreateNote(ctx context.Context, req api_schema.CreateNoteRequest) (*entity.Note, error)
 	GetNote(ctx context.Context, id uuid.UUID) (*entity.Note, error)
 
-	ImportLysandNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error)
+	ImportVersiaNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error)
 }
 
 type FollowService interface {
 	NewFollow(ctx context.Context, follower, followee *entity.User) (*entity.Follow, error)
 	GetFollow(ctx context.Context, id uuid.UUID) (*entity.Follow, error)
 
-	ImportLysandFollow(ctx context.Context, lFollow *versia.Follow) (*entity.Follow, error)
+	ImportVersiaFollow(ctx context.Context, lFollow *versia.Follow) (*entity.Follow, error)
 }
 
 type InstanceMetadataService interface {
@@ -61,5 +61,5 @@ type TaskService interface {
 }
 
 type RequestSigner interface {
-	Sign(c *fiber.Ctx, signer versiacrypto.Signer, body any) error
+	SignAndSend(c *fiber.Ctx, signer versiacrypto.Signer, body any) error
 }

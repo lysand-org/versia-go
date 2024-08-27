@@ -4,11 +4,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (i *Handler) GetLysandInstanceMetadata(c *fiber.Ctx) error {
+func (i *Handler) GetVersiaInstanceMetadata(c *fiber.Ctx) error {
 	m, err := i.instanceMetadataService.Ours(c.UserContext())
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(m.ToLysand())
+	// TODO: Sign with the instance private key
+	return c.JSON(m.ToVersia())
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/lysand-org/versia-go/internal/api_schema"
 )
 
-func (i *Handler) GetLysandFollow(c *fiber.Ctx) error {
+func (i *Handler) GetVersiaFollow(c *fiber.Ctx) error {
 	parsedRequestedFollowID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return api_schema.ErrBadRequest(map[string]any{"reason": "Invalid follow ID"})
@@ -24,5 +24,5 @@ func (i *Handler) GetLysandFollow(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(f.ToLysand())
+	return c.JSON(f.ToVersia())
 }

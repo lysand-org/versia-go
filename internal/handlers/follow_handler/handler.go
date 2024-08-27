@@ -29,5 +29,5 @@ func New(followService service.FollowService, federationService service.Federati
 }
 
 func (i *Handler) Register(r fiber.Router) {
-	r.Get("/api/follows/:id", i.GetLysandFollow)
+	r.Get("/api/follows/:id", i.GetVersiaFollow)
 }

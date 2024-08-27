@@ -70,7 +70,7 @@ func NewInstanceMetadata(dbData *ent.InstanceMetadata) (*InstanceMetadata, error
 	return n, nil
 }
 
-func (m InstanceMetadata) ToLysand() versia.InstanceMetadata {
+func (m InstanceMetadata) ToVersia() versia.InstanceMetadata {
 	return versia.InstanceMetadata{
 		CreatedAt:   versiautils.TimeFromStd(m.CreatedAt),
 		Extensions:  m.Extensions,

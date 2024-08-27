@@ -89,10 +89,10 @@ func (i NoteServiceImpl) GetNote(ctx context.Context, id uuid.UUID) (*entity.Not
 	return i.repositories.Notes().GetByID(ctx, id)
 }
 
-func (i NoteServiceImpl) ImportLysandNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/NoteServiceImpl.ImportLysandNote")
+func (i NoteServiceImpl) ImportVersiaNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/NoteServiceImpl.ImportVersiaNote")
 	defer s.End()
 	ctx = s.Context()
 
-	return i.repositories.Notes().ImportLysandNote(ctx, lNote)
+	return i.repositories.Notes().ImportVersiaNote(ctx, lNote)
 }

@@ -38,14 +38,15 @@ go run .
 - [ ] Follows
   - [ ] API
   - [x] Automatic follows for public users
-  - [ ] Unfollows (scheduled for Lysand Working Draft 4)
+  - [ ] Unfollows (scheduled for Versia Working Draft 4)
     - [ ] API
 - [ ] Users
   - [ ] API
     - [x] Create user
-  - [ ] Lysand API
+  - [ ] Versia API
     - [x] Get user (from local)
     - [x] Webfinger
+      - [ ] User discovery
     - [ ] Inbox handling
       - [ ] Federated notes
       - [ ] Federated unfollows

@@ -69,8 +69,8 @@ func (i FollowServiceImpl) GetFollow(ctx context.Context, id uuid.UUID) (*entity
 	return f, nil
 }
 
-func (i FollowServiceImpl) ImportLysandFollow(ctx context.Context, lFollow *versia.Follow) (*entity.Follow, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FollowServiceImpl.ImportLysandFollow").
+func (i FollowServiceImpl) ImportVersiaFollow(ctx context.Context, lFollow *versia.Follow) (*entity.Follow, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/FollowServiceImpl.ImportVersiaFollow").
 		AddAttribute("uri", lFollow.URI.String())
 	defer s.End()
 	ctx = s.Context()

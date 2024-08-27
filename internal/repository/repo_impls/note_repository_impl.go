@@ -62,8 +62,8 @@ func (i *NoteRepositoryImpl) NewNote(ctx context.Context, author *entity.User, c
 	return entity.NewNote(n)
 }
 
-func (i *NoteRepositoryImpl) ImportLysandNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/NoteRepositoryImpl.ImportLysandNote")
+func (i *NoteRepositoryImpl) ImportVersiaNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/NoteRepositoryImpl.ImportVersiaNote")
 	defer s.End()
 	ctx = s.Context()
 

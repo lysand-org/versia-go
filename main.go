@@ -145,7 +145,7 @@ func main() {
 	// Handlers
 
 	userHandler := user_handler.New(federationService, requestSigner, userService, inboxService, bodyValidator, requestValidator, zerologr.New(&log.Logger).WithName("user-handler"))
-	noteHandler := note_handler.New(noteService, bodyValidator, zerologr.New(&log.Logger).WithName("notes-handler"))
+	noteHandler := note_handler.New(noteService, bodyValidator, requestSigner, zerologr.New(&log.Logger).WithName("notes-handler"))
 	followHandler := follow_handler.New(followService, federationService, zerologr.New(&log.Logger).WithName("follow-handler"))
 	metaHandler := meta_handler.New(instanceMetadataService, zerologr.New(&log.Logger).WithName("meta-handler"))
 

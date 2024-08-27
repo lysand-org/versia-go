@@ -50,8 +50,8 @@ func (i *InstanceMetadataRepositoryImpl) GetByHost(ctx context.Context, host str
 	return entity.NewInstanceMetadata(m)
 }
 
-func (i *InstanceMetadataRepositoryImpl) ImportFromLysandByURI(ctx context.Context, uri *versiautils.URL) (*entity.InstanceMetadata, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/InstanceMetadataRepositoryImpl.ImportFromLysandByURI").
+func (i *InstanceMetadataRepositoryImpl) ImportFromVersiaByURI(ctx context.Context, uri *versiautils.URL) (*entity.InstanceMetadata, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "repo_impls/InstanceMetadataRepositoryImpl.ImportFromVersiaByURI").
 		AddAttribute("uri", uri.String())
 	defer s.End()
 	ctx = s.Context()

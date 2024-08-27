@@ -12,16 +12,18 @@ import (
 type Handler struct {
 	noteService   service.NoteService
 	bodyValidator validators.BodyValidator
+	requestSigner service.RequestSigner
 
 	hostMeta webfinger.HostMeta
 
 	log logr.Logger
 }
 
-func New(noteService service.NoteService, bodyValidator validators.BodyValidator, log logr.Logger) *Handler {
+func New(noteService service.NoteService, bodyValidator validators.BodyValidator, requestSigner service.RequestSigner, log logr.Logger) *Handler {
 	return &Handler{
 		noteService:   noteService,
 		bodyValidator: bodyValidator,
+		requestSigner: requestSigner,
 
 		hostMeta: webfinger.NewHostMeta(config.C.PublicAddress),
 

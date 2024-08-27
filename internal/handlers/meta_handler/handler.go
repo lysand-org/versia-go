@@ -27,9 +27,9 @@ func New(instanceMetadataService service.InstanceMetadataService, log logr.Logge
 }
 
 func (i *Handler) Register(r fiber.Router) {
-	r.Get("/.well-known/versia", i.GetLysandInstanceMetadata)
-	r.Get("/.well-known/versia/admins", i.GetLysandInstanceMetadata)
-	r.Get("/.well-known/versia/moderators", i.GetLysandInstanceMetadata)
+	r.Get("/.well-known/versia", i.GetVersiaInstanceMetadata)
+	r.Get("/.well-known/versia/admins", i.GetVersiaInstanceMetadata)
+	r.Get("/.well-known/versia/moderators", i.GetVersiaInstanceMetadata)
 
 	// Webfinger host meta spec
 	r.Get("/.well-known/host-meta", i.GetHostMeta)

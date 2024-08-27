@@ -9,35 +9,32 @@ import (
 type Follow struct {
 	*ent.Follow
 
-	URI         *versiautils.URL
-	FollowerURI *versiautils.URL
-	FolloweeURI *versiautils.URL
+	URI      *versiautils.URL
+	Follower *User
+	Followee *User
 }
 
-func NewFollow(dbFollow *ent.Follow) (*Follow, error) {
-	f := &Follow{Follow: dbFollow}
+func NewFollow(dbData *ent.Follow) (*Follow, error) {
+	f := &Follow{Follow: dbData}
 
 	var err error
 
-	f.URI, err = versiautils.ParseURL(dbFollow.URI)
-	if err != nil {
+	if f.URI, err = versiautils.ParseURL(dbData.URI); err != nil {
 		return nil, err
 	}
 
-	f.FollowerURI, err = versiautils.ParseURL(dbFollow.Edges.Follower.URI)
-	if err != nil {
+	if f.Follower, err = NewUser(dbData.Edges.Follower); err != nil {
 		return nil, err
 	}
 
-	f.FolloweeURI, err = versiautils.ParseURL(dbFollow.Edges.Followee.URI)
-	if err != nil {
+	if f.Followee, err = NewUser(dbData.Edges.Followee); err != nil {
 		return nil, err
 	}
 
 	return f, nil
 }
 
-func (f Follow) ToLysand() *versia.Follow {
+func (f Follow) ToVersia() *versia.Follow {
 	return &versia.Follow{
 		Entity: versia.Entity{
 			ID:         f.ID,
@@ -45,12 +42,12 @@ func (f Follow) ToLysand() *versia.Follow {
 			CreatedAt:  versiautils.Time(f.CreatedAt),
 			Extensions: f.Extensions,
 		},
-		Author:   f.FollowerURI,
-		Followee: f.FolloweeURI,
+		Author:   f.Follower.URI,
+		Followee: f.Followee.URI,
 	}
 }
 
-func (f Follow) ToLysandAccept() *versia.FollowAccept {
+func (f Follow) ToVersiaAccept() *versia.FollowAccept {
 	return &versia.FollowAccept{
 		Entity: versia.Entity{
 			ID:         f.ID,
@@ -58,12 +55,12 @@ func (f Follow) ToLysandAccept() *versia.FollowAccept {
 			CreatedAt:  versiautils.Time(f.CreatedAt),
 			Extensions: f.Extensions,
 		},
-		Author:   f.FolloweeURI,
-		Follower: f.FollowerURI,
+		Author:   f.Followee.URI,
+		Follower: f.Follower.URI,
 	}
 }
 
-func (f Follow) ToLysandReject() *versia.FollowReject {
+func (f Follow) ToVersiaReject() *versia.FollowReject {
 	return &versia.FollowReject{
 		Entity: versia.Entity{
 			ID:         f.ID,
@@ -71,7 +68,7 @@ func (f Follow) ToLysandReject() *versia.FollowReject {
 			CreatedAt:  versiautils.Time(f.CreatedAt),
 			Extensions: f.Extensions,
 		},
-		Author:   f.FolloweeURI,
-		Follower: f.FollowerURI,
+		Author:   f.Followee.URI,
+		Follower: f.Follower.URI,
 	}
 }

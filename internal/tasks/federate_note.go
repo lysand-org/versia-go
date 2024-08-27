@@ -35,7 +35,7 @@ func (t *Handler) FederateNote(ctx context.Context, data FederateNoteData) error
 				continue
 			}
 
-			res, err := t.federationService.SendToInbox(ctx, n.Author, &uu, n.ToLysand())
+			res, err := t.federationService.SendToInbox(ctx, n.Author, &uu, n.ToVersia())
 			if err != nil {
 				t.log.Error(err, "Failed to send note to remote user", "res", res, "user", uu.ID)
 			} else {

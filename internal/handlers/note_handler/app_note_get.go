@@ -14,15 +14,26 @@ func (i *Handler) GetNote(c *fiber.Ctx) error {
 		})
 	}
 
-	u, err := i.noteService.GetNote(c.UserContext(), parsedRequestedNoteID)
+	n, err := i.noteService.GetNote(c.UserContext(), parsedRequestedNoteID)
 	if err != nil {
 		i.log.Error(err, "Failed to query note", "id", parsedRequestedNoteID)
 
 		return api_schema.ErrInternalServerError(map[string]any{"reason": "Failed to query note"})
 	}
-	if u == nil {
+	if n == nil {
 		return api_schema.ErrNotFound(nil)
 	}
 
-	return c.JSON(u.ToLysand())
+	if !n.Author.IsRemote {
+		// For local authors we can also sign the note
+		if err := i.requestSigner.SignAndSend(c, n.Author.Signer, n.ToVersia()); err != nil {
+			i.log.Error(err, "Failed to sign response body", "id", parsedRequestedNoteID)
+
+			return api_schema.ErrInternalServerError(map[string]any{
+				"reason": "failed to sign response body",
+			})
+		}
+	}
+
+	return c.JSON(n.ToVersia())
 }

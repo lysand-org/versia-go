@@ -6,7 +6,7 @@ import (
 	"github.com/lysand-org/versia-go/internal/api_schema"
 )
 
-func (i *Handler) GetLysandUser(c *fiber.Ctx) error {
+func (i *Handler) GetVersiaUser(c *fiber.Ctx) error {
 	parsedRequestedUserID, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -27,5 +27,13 @@ func (i *Handler) GetLysandUser(c *fiber.Ctx) error {
 		return api_schema.ErrNotFound(map[string]any{"id": parsedRequestedUserID})
 	}
 
-	return i.requestSigner.Sign(c, u.Signer, u.ToLysand())
+	if err := i.requestSigner.SignAndSend(c, u.Signer, u.ToVersia()); err != nil {
+		i.log.Error(err, "Failed to sign response body", "id", parsedRequestedUserID)
+
+		return api_schema.ErrInternalServerError(map[string]any{
+			"reason": "failed to sign response body",
+		})
+	}
+
+	return nil
 }

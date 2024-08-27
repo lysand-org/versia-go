@@ -113,7 +113,7 @@ func (i InboxServiceImpl) handleFollow(ctx context.Context, o versia.Follow, u *
 			return err
 		}
 
-		if _, err := i.federationService.SendToInbox(ctx, u, author, f.ToLysandAccept()); err != nil {
+		if _, err := i.federationService.SendToInbox(ctx, u, author, f.ToVersiaAccept()); err != nil {
 			i.log.Error(err, "Failed to send follow accept to inbox", "user", user.ID, "author", author.ID)
 			return err
 		}

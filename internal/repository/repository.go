@@ -12,7 +12,7 @@ import (
 
 type UserRepository interface {
 	NewUser(ctx context.Context, username, password string, privateKey ed25519.PrivateKey, publicKey ed25519.PublicKey) (*entity.User, error)
-	ImportLysandUserByURI(ctx context.Context, uri *versiautils.URL) (*entity.User, error)
+	ImportVersiaUserByURI(ctx context.Context, uri *versiautils.URL) (*entity.User, error)
 
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 	GetLocalByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
@@ -39,14 +39,14 @@ type FollowRepository interface {
 
 type NoteRepository interface {
 	NewNote(ctx context.Context, author *entity.User, content string, mentions []*entity.User) (*entity.Note, error)
-	ImportLysandNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error)
+	ImportVersiaNote(ctx context.Context, lNote *versia.Note) (*entity.Note, error)
 
 	GetByID(ctx context.Context, idOrUsername uuid.UUID) (*entity.Note, error)
 }
 
 type InstanceMetadataRepository interface {
 	GetByHost(ctx context.Context, host string) (*entity.InstanceMetadata, error)
-	ImportFromLysandByURI(ctx context.Context, uri *versiautils.URL) (*entity.InstanceMetadata, error)
+	ImportFromVersiaByURI(ctx context.Context, uri *versiautils.URL) (*entity.InstanceMetadata, error)
 }
 
 type Manager interface {

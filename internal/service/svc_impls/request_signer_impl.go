@@ -27,8 +27,8 @@ func NewRequestSignerImpl(telemetry *unitel.Telemetry, log logr.Logger) *Request
 	}
 }
 
-func (i *RequestSignerImpl) Sign(c *fiber.Ctx, signer versiacrypto.Signer, body any) error {
-	s := i.telemetry.StartSpan(c.UserContext(), "function", "svc_impls/RequestSignerImpl.Sign")
+func (i *RequestSignerImpl) SignAndSend(c *fiber.Ctx, signer versiacrypto.Signer, body any) error {
+	s := i.telemetry.StartSpan(c.UserContext(), "function", "svc_impls/RequestSignerImpl.SignAndSend")
 	defer s.End()
 
 	j, err := json.Marshal(body)
@@ -57,6 +57,8 @@ func (i *RequestSignerImpl) Sign(c *fiber.Ctx, signer versiacrypto.Signer, body 
 	}
 
 	i.log.V(2).Info("signed response", "digest", base64.StdEncoding.EncodeToString(digest), "nonce", nonce)
+
+	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
 
 	return c.Send(j)
 }
