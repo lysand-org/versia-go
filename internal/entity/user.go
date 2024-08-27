@@ -120,6 +120,7 @@ func userAvatar(u *ent.User) versiautils.ImageContentMap {
 	return versiautils.ImageContentMap{
 		"image/svg+xml": versiautils.File{
 			Content: utils.DefaultAvatarURL(u.ID),
+			Remote:  true,
 		},
 	}
 }
@@ -134,6 +135,7 @@ func userBiography(u *ent.User) versiautils.TextContentTypeMap {
 	return versiautils.TextContentTypeMap{
 		"text/html": versiautils.TextContent{
 			Content: *u.Biography,
+			Remote:  false,
 		},
 	}
 }
@@ -150,7 +152,8 @@ func imageMap(i *ent.Image) versiautils.ImageContentMap {
 
 	return versiautils.ImageContentMap{
 		i.MimeType: {
-			Content: (*versiautils.URL)(u),
+			Content: versiautils.URLFromStd(u),
+			Remote:  true,
 		},
 	}
 }
