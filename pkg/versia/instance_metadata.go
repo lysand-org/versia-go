@@ -28,7 +28,7 @@ type InstanceMetadata struct {
 	Description *string `json:"description,omitempty"`
 
 	// Host is the hostname of the instance, including the port
-	Host string `json:"host,omitempty"`
+	Host string `json:"host"`
 
 	// PublicKey is the public key of the instance
 	PublicKey InstancePublicKey `json:"public_key"`
