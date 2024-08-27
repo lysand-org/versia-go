@@ -22,7 +22,7 @@ type User struct {
 	DisplayName *string `json:"display_name,omitempty"`
 
 	// Fields is a list of fields that the user has filled out.
-	Fields []UserField `json:"fields"`
+	Fields []UserField `json:"fields,omitempty"`
 
 	// Username is the username of the user. Must be unique on the instance and match the following regex: ^[a-z0-9_-]+$
 	Username string `json:"username"`
