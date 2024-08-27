@@ -48,25 +48,12 @@ type User struct {
 	// https://lysand.org/objects/user#fields
 	Fields []UserField `json:"fields,omitempty"`
 
-	// Featured is the featured posts of the user.
-	// https://lysand.org/objects/user#featured
-	Featured *versiautils.URL `json:"featured"`
-
-	// Followers is the followers of the user.
-	// https://lysand.org/objects/user#followers
-	Followers *versiautils.URL `json:"followers"`
-
-	// Following is the users that the user is following.
-	// https://lysand.org/objects/user#following
-	Following *versiautils.URL `json:"following"`
-
 	// Inbox is the inbox of the user.
 	// https://lysand.org/objects/user#posts
 	Inbox *versiautils.URL `json:"inbox"`
 
-	// Outbox is the outbox of the user.
-	// https://lysand.org/objects/user#outbox
-	Outbox *versiautils.URL `json:"outbox"`
+	// Collections is a map of all collections for a user
+	Collections UserCollections `json:"collections"`
 }
 
 func (u User) MarshalJSON() ([]byte, error) {
@@ -80,6 +67,22 @@ type UserField struct {
 	Key   versiautils.TextContentTypeMap `json:"key"`
 	Value versiautils.TextContentTypeMap `json:"value"`
 }
+
+type UserCollectionType string
+
+const (
+	// UserCollectionFeatured is a URL to a collection of the user's featured posts.
+	UserCollectionFeatured UserCollectionType = "featured"
+	// UserCollectionFollowers is a URL to a collection of the user's followers.
+	UserCollectionFollowers UserCollectionType = "followers"
+	// UserCollectionFollowing is a URL to a collection of the users that the user is following.
+	UserCollectionFollowing UserCollectionType = "following"
+	// UserCollectionOutbox is a URL to a collection of the user's posts.
+	UserCollectionOutbox UserCollectionType = "outbox"
+)
+
+// UserCollections is a map of all collections for a user
+type UserCollections map[UserCollectionType]*versiautils.URL
 
 // UserPublicKey represents a public key for a user. For more information, see the [Spec].
 //

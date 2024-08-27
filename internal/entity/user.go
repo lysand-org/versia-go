@@ -102,11 +102,13 @@ func (u User) ToVersia() *versia.User {
 		Bio:    u.Biography,
 		Fields: u.Fields,
 
-		Inbox:     u.Inbox,
-		Outbox:    u.Outbox,
-		Featured:  u.Featured,
-		Followers: u.Followers,
-		Following: u.Following,
+		Inbox: u.Inbox,
+		Collections: versia.UserCollections{
+			versia.UserCollectionOutbox:    u.Outbox,
+			versia.UserCollectionFeatured:  u.Featured,
+			versia.UserCollectionFollowing: u.Following,
+			versia.UserCollectionFollowers: u.Followers,
+		},
 	}
 }
 

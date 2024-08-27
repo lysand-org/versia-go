@@ -7,6 +7,7 @@ import (
 	"github.com/lysand-org/versia-go/config"
 	"github.com/lysand-org/versia-go/internal/repository"
 	"github.com/lysand-org/versia-go/internal/service"
+	"github.com/lysand-org/versia-go/pkg/versia"
 	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
 	"golang.org/x/crypto/bcrypt"
 
@@ -109,10 +110,10 @@ func (i *UserRepositoryImpl) ImportVersiaUserByURI(ctx context.Context, uri *ver
 		SetFields(lUser.Fields).
 		SetExtensions(lUser.Extensions).
 		SetInbox(lUser.Inbox.String()).
-		SetOutbox(lUser.Outbox.String()).
-		SetFeatured(lUser.Featured.String()).
-		SetFollowers(lUser.Followers.String()).
-		SetFollowing(lUser.Following.String()).
+		SetOutbox(lUser.Collections[versia.UserCollectionOutbox].String()).
+		SetFeatured(lUser.Collections[versia.UserCollectionFeatured].String()).
+		SetFollowers(lUser.Collections[versia.UserCollectionFollowers].String()).
+		SetFollowing(lUser.Collections[versia.UserCollectionFollowing].String()).
 		OnConflict().
 		UpdateNewValues().
 		ID(ctx)
