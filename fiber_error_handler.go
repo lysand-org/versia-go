@@ -26,7 +26,7 @@ func fiberErrorHandler(c *fiber.Ctx, err error) error {
 		apiErr = api_schema.NewAPIError(fiber.StatusInternalServerError, "Internal Server Error")(nil)
 	}
 
-	log.Error().Err(apiErr).Msg("Unhandled error")
+	log.Error().Err(apiErr).Msg("Error")
 
 	return c.Status(apiErr.StatusCode).JSON(api_schema.NewFailedAPIResponse[any](apiErr))
 }
