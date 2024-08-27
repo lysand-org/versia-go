@@ -15,6 +15,9 @@ type InstanceMetadata struct {
 	// Type is always "InstanceMetadata"
 	Type string `json:"type"`
 
+	// CreatedAt is the initial date when the instance was first created
+	CreatedAt versiautils.Time `json:"created_at"`
+
 	// Extensions is a map of active extensions
 	Extensions Extensions `json:"extensions,omitempty"`
 

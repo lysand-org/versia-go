@@ -56,6 +56,7 @@ func (i *InstanceMetadataRepositoryImpl) ImportFromLysandByURI(ctx context.Conte
 	defer s.End()
 	ctx = s.Context()
 
+	// TODO: implement storing the instance metadata
 	//i.federationService.
 
 	return nil, nil
