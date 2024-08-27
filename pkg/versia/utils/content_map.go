@@ -95,10 +95,10 @@ type File struct {
 	Remote bool `json:"remote"`
 
 	// URL to the attachment
-	Content     *URL     `json:"content"`
-	Description string   `json:"description"`
-	Hash        DataHash `json:"hash"`
-	Size        int      `json:"size"`
+	Content     *URL      `json:"content"`
+	Description *string   `json:"description,omitempty"`
+	Hash        *DataHash `json:"hash,omitempty"`
+	Size        *int      `json:"size,omitempty"`
 
 	// BlurHash is available when the content type is an image
 	BlurHash *string `json:"blurhash,omitempty"`
