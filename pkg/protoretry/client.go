@@ -3,6 +3,7 @@ package protoretry
 import (
 	"context"
 	"errors"
+	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,14 +19,39 @@ func New(base *http.Client) *Client {
 }
 
 func (c *Client) Do(req *http.Request) (*http.Response, error) {
-	if res, err := c.base.Do(req); err == nil {
-		return res, nil
-	} else if !errors.Is(err, syscall.ECONNREFUSED) {
+	l := log.With().Str("url", req.URL.String()).Logger()
+
+	l.Debug().Msg("fetch")
+	res, err := c.base.Do(req)
+	if err != nil {
+		var urlErr *url.Error
+
+		if errors.Is(err, syscall.ECONNREFUSED) {
+			goto onTlsError
+		}
+
+		if errors.As(err, &urlErr) && errors.Is(urlErr.Err, http.ErrSchemeMismatch) {
+			goto onTlsError
+		}
+
+		l.Error().Err(err).Msg("failed")
 		return nil, err
+
+	onTlsError:
+		l.Debug().Msg("downgrading to http")
+		req.URL.Scheme = "http"
+
+		l.Debug().Msg("fetch")
+		if res, err := c.base.Do(req); err == nil {
+			return res, nil
+		} else {
+			l.Error().Err(err).Msg("failed")
+			return nil, err
+		}
 	}
 
-	req.URL.Scheme = "http"
-	return c.base.Do(req)
+	l.Debug().Msg("fetched")
+	return res, nil
 }
 
 func (c *Client) GET(ctx context.Context, u *url.URL) ([]byte, *http.Response, error) {
