@@ -2,8 +2,8 @@ package val_impls
 
 import (
 	"errors"
-	"github.com/lysand-org/versia-go/ent/schema"
-	"github.com/lysand-org/versia-go/internal/validators"
+	"github.com/versia-pub/versia-go/ent/schema"
+	"github.com/versia-pub/versia-go/internal/validators"
 	"reflect"
 	"regexp"
 	"strings"
@@ -13,7 +13,7 @@ import (
 	universal_translator "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
-	"github.com/lysand-org/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/internal/api_schema"
 )
 
 type bodyValidator struct {

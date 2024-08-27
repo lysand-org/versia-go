@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/attachment"
-	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/ent/attachment"
+	"github.com/versia-pub/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/pkg/versia"
 )
 
 // Attachment is the model entity for the Attachment schema.

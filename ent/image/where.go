@@ -4,7 +4,7 @@ package image
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"github.com/lysand-org/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

@@ -5,7 +5,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/pkg/versia"
 	"net/url"
 	"time"
 )

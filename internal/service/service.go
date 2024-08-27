@@ -3,15 +3,15 @@ package service
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/pkg/versia"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/pkg/versia"
+	versiacrypto "github.com/versia-pub/versia-go/pkg/versia/crypto"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/internal/api_schema"
-	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/pkg/webfinger"
+	"github.com/versia-pub/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/pkg/webfinger"
 )
 
 type UserService interface {

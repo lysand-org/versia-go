@@ -1,6 +1,6 @@
 package versia
 
-import versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+import versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 
 // Collection is a paginated group of entities. For more information, see the [Spec].
 //

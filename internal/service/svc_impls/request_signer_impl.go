@@ -7,8 +7,8 @@ import (
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lysand-org/versia-go/internal/service"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
+	"github.com/versia-pub/versia-go/internal/service"
+	versiacrypto "github.com/versia-pub/versia-go/pkg/versia/crypto"
 	"net/url"
 )
 

@@ -3,7 +3,7 @@ package user_handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/internal/api_schema"
 )
 
 func (i *Handler) GetUser(c *fiber.Ctx) error {

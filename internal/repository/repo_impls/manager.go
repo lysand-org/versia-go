@@ -2,12 +2,12 @@ package repo_impls
 
 import (
 	"context"
-	"github.com/lysand-org/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/repository"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/internal/database"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/internal/database"
 )
 
 type Factory[T any] func(db *ent.Client, log logr.Logger, telemetry *unitel.Telemetry) T

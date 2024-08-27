@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"crypto/ed25519"
-	"github.com/lysand-org/versia-go/pkg/versia"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/pkg/versia"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/entity"
 )
 
 type UserRepository interface {

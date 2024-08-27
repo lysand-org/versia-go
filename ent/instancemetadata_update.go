@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/instancemetadata"
-	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
+	"github.com/versia-pub/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/pkg/versia"
 )
 
 // InstanceMetadataUpdate is the builder for updating InstanceMetadata entities.

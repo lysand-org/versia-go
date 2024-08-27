@@ -12,11 +12,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/image"
-	"github.com/lysand-org/versia-go/ent/instancemetadata"
-	"github.com/lysand-org/versia-go/ent/note"
-	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/ent/image"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
+	"github.com/versia-pub/versia-go/ent/note"
+	"github.com/versia-pub/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/user"
 )
 
 // UserQuery is the builder for querying User entities.

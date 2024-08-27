@@ -7,7 +7,7 @@ import (
 	"net/url"
 )
 
-// FederationHeaders represents the signature header of the Lysand protocol. For more information, see the [Spec].
+// FederationHeaders represents the signature header of the Versia protocol. For more information, see the [Spec].
 //
 // [Spec]: https://versia.pub/signatures#signature-definition
 type FederationHeaders struct {

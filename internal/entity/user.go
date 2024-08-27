@@ -1,14 +1,14 @@
 package entity
 
 import (
-	"github.com/lysand-org/versia-go/internal/helpers"
-	"github.com/lysand-org/versia-go/pkg/versia"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/internal/helpers"
+	"github.com/versia-pub/versia-go/pkg/versia"
+	versiacrypto "github.com/versia-pub/versia-go/pkg/versia/crypto"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 	"net/url"
 
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/internal/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/internal/utils"
 )
 
 type User struct {
@@ -24,7 +24,7 @@ type User struct {
 	Following  *versiautils.URL
 
 	DisplayName string
-	Avatar      versiautils.ImageContentTypeMap
+	Avatar      versiautils.ImageContentMap
 	Biography   versiautils.TextContentTypeMap
 	Signer      versiacrypto.Signer
 }
@@ -93,7 +93,7 @@ func (u User) ToVersia() *versia.User {
 		Username:    u.Username,
 		Avatar:      u.Avatar,
 		Header:      imageMap(u.Edges.HeaderImage),
-		Indexable:   u.Indexable,
+		Indexable:   helpers.BoolPtr(u.Indexable),
 		PublicKey: versia.UserPublicKey{
 			Actor:     u.PKActorURI,
 			Algorithm: u.PublicKeyAlgorithm,
@@ -112,13 +112,13 @@ func (u User) ToVersia() *versia.User {
 	}
 }
 
-func userAvatar(u *ent.User) versiautils.ImageContentTypeMap {
+func userAvatar(u *ent.User) versiautils.ImageContentMap {
 	if avatar := imageMap(u.Edges.AvatarImage); avatar != nil {
 		return avatar
 	}
 
-	return versiautils.ImageContentTypeMap{
-		"image/svg+xml": versiautils.ImageContent{
+	return versiautils.ImageContentMap{
+		"image/svg+xml": versiautils.File{
 			Content: utils.DefaultAvatarURL(u.ID),
 		},
 	}
@@ -138,7 +138,7 @@ func userBiography(u *ent.User) versiautils.TextContentTypeMap {
 	}
 }
 
-func imageMap(i *ent.Image) versiautils.ImageContentTypeMap {
+func imageMap(i *ent.Image) versiautils.ImageContentMap {
 	if i == nil {
 		return nil
 	}
@@ -148,7 +148,7 @@ func imageMap(i *ent.Image) versiautils.ImageContentTypeMap {
 		return nil
 	}
 
-	return versiautils.ImageContentTypeMap{
+	return versiautils.ImageContentMap{
 		i.MimeType: {
 			Content: (*versiautils.URL)(u),
 		},

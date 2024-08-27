@@ -2,11 +2,11 @@ package svc_impls
 
 import (
 	"context"
-	"github.com/lysand-org/versia-go/internal/service"
+	"github.com/versia-pub/versia-go/internal/service"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
-	"github.com/lysand-org/versia-go/pkg/taskqueue"
+	"github.com/versia-pub/versia-go/pkg/taskqueue"
 )
 
 var _ service.TaskService = (*TaskServiceImpl)(nil)

@@ -2,11 +2,11 @@ package versia
 
 import (
 	"encoding/json"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	versiacrypto "github.com/versia-pub/versia-go/pkg/versia/crypto"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
-// InstanceMetadata represents the metadata of a Lysand instance. For more information, see the [Spec].
+// InstanceMetadata represents the metadata of a Versia instance. For more information, see the [Spec].
 //
 // ! Unlike other entities, instance metadata is not meant to be federated.
 //
@@ -43,15 +43,15 @@ type InstanceMetadata struct {
 	Admins *versiautils.URL `json:"admins,omitempty"`
 
 	// Logo is the URL to the instance's logo
-	Logo *versiautils.ImageContentTypeMap `json:"logo,omitempty"`
+	Logo *versiautils.ImageContentMap `json:"logo,omitempty"`
 
 	// Banner is the URL to the instance's banner
-	Banner *versiautils.ImageContentTypeMap `json:"banner,omitempty"`
+	Banner *versiautils.ImageContentMap `json:"banner,omitempty"`
 
 	// Software is information about the instance software
 	Software InstanceSoftware `json:"software"`
 
-	// Compatibility is information about the instance's compatibility with different Lysand versions
+	// Compatibility is information about the instance's compatibility with different Versia versions
 	Compatibility InstanceCompatibility `json:"compatibility"`
 }
 
@@ -62,7 +62,7 @@ func (s InstanceMetadata) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s2)
 }
 
-// InstanceSoftware represents the software of a Lysand instance.
+// InstanceSoftware represents the software of a Versia instance.
 type InstanceSoftware struct {
 	// Name is the name of the instance software
 	Name string `json:"name"`
@@ -70,9 +70,9 @@ type InstanceSoftware struct {
 	Version string `json:"version"`
 }
 
-// InstanceCompatibility represents the compatibility of a Lysand instance.
+// InstanceCompatibility represents the compatibility of a Versia instance.
 type InstanceCompatibility struct {
-	// Versions is a list of versions of Lysand the instance is compatible with
+	// Versions is a list of versions of Versia the instance is compatible with
 	Versions []string `json:"versions"`
 
 	// Extensions is a list of extensions supported by the instance

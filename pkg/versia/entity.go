@@ -2,43 +2,30 @@ package versia
 
 import (
 	"github.com/google/uuid"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
-// Entity is the base type for all Lysand entities.  For more information, see the [Spec].
+// Entity is the base type for all Versia entities.  For more information, see the [Spec].
 //
-// [Spec]: https://lysand.org/objects#types
+// [Spec]: https://versia.pub/entities
 type Entity struct {
-	// Type is the type of the entity
-	Type string `json:"type"`
-
 	// ID is a UUID for the entity
 	ID uuid.UUID `json:"id"`
 
-	// URI is the URL to the entity
-	URI *versiautils.URL `json:"uri"`
+	// Type is the type of the entity
+	Type string `json:"type"`
 
 	// CreatedAt is the time the entity was created
 	CreatedAt versiautils.Time `json:"created_at"`
 
-	// Extensions is a map of active extensions
-	// https://lysand.org/objects/server-metadata#extensions
+	// URI is the URL to the entity
+	URI *versiautils.URL `json:"uri"`
+
+	// Extensions is a map of active extensions for the entity
 	Extensions Extensions `json:"extensions,omitempty"`
 }
 
+// Extensions represents the active extensions on an entity. For more information, see the [Spec].
+//
+// [Spec]: https://versia.pub/extensions#extension-definition
 type Extensions map[string]any
-
-// {
-//   "org.lysand:custom_emojis": {
-//     "emojis": [
-//       {
-//         "name": "neocat_3c",
-//         "url": {
-//           "image/webp": {
-//             "content": "https://cdn.lysand.org/a97727158bf062ad31cbfb02e212ce0c7eca599a2f863276511b8512270b25e8/neocat_3c_256.webp"
-//           }
-//         }
-//       }
-//     ]
-//   }
-// }

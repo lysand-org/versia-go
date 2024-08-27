@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/instancemetadata"
-	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
+	"github.com/versia-pub/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/user"
 )
 
 // InstanceMetadataQuery is the builder for querying InstanceMetadata entities.

@@ -8,7 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/versia-pub/versia-go/ent/image"
 )
 
 // Image is the model entity for the Image schema.

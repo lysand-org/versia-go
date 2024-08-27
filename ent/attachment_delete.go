@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/lysand-org/versia-go/ent/attachment"
-	"github.com/lysand-org/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/attachment"
+	"github.com/versia-pub/versia-go/ent/predicate"
 )
 
 // AttachmentDelete is the builder for deleting a Attachment entity.

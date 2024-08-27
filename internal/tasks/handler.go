@@ -3,12 +3,12 @@ package tasks
 import (
 	"context"
 	"encoding/json"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/internal/service"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/service"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
-	"github.com/lysand-org/versia-go/pkg/taskqueue"
+	"github.com/versia-pub/versia-go/pkg/taskqueue"
 )
 
 const (

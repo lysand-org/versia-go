@@ -3,8 +3,8 @@ package utils
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/config"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/config"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 	"net/url"
 )
 

@@ -3,8 +3,8 @@ package user_handler
 import (
 	"github.com/go-logr/logr"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lysand-org/versia-go/internal/service"
-	"github.com/lysand-org/versia-go/internal/validators"
+	"github.com/versia-pub/versia-go/internal/service"
+	"github.com/versia-pub/versia-go/internal/validators"
 )
 
 type Handler struct {

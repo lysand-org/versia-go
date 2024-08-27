@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/lysand-org/versia-go/internal/validators/val_impls"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/internal/validators/val_impls"
+	"github.com/versia-pub/versia-go/pkg/versia"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/internal/api_schema"
 )
 
 func (i *Handler) HandleVersiaInbox(c *fiber.Ctx) error {

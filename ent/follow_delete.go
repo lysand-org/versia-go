@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/lysand-org/versia-go/ent/follow"
-	"github.com/lysand-org/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/follow"
+	"github.com/versia-pub/versia-go/ent/predicate"
 )
 
 // FollowDelete is the builder for deleting a Follow entity.

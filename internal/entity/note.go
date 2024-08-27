@@ -1,9 +1,9 @@
 package entity
 
 import (
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/pkg/versia"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/pkg/versia"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
 type Note struct {
@@ -54,18 +54,18 @@ func (n Note) ToVersia() versia.Note {
 			CreatedAt:  versiautils.Time(n.CreatedAt),
 			Extensions: n.Extensions,
 		},
-		Author:      n.Author.URI,
-		Content:     n.Content,
-		Category:    nil,
-		Device:      nil,
-		Previews:    nil,
+		Author:   n.Author.URI,
+		Content:  n.Content,
+		Category: nil,
+		Device:   nil,
+		Previews: nil,
+		// TODO: Get from database
 		Group:       nil,
 		Attachments: nil,
 		RepliesTo:   nil,
-		Quoting:     nil,
+		Quotes:      nil,
 		Mentions:    n.MentionURIs,
 		Subject:     n.Subject,
 		IsSensitive: &n.IsSensitive,
-		Visibility:  versia.NoteVisibility(n.Visibility),
 	}
 }

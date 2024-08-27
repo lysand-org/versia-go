@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/instancemetadata"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
+	"github.com/versia-pub/versia-go/pkg/versia"
 )
 
 // InstanceMetadata is the model entity for the InstanceMetadata schema.

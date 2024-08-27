@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"git.devminer.xyz/devminer/unitel"
-	"github.com/lysand-org/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent"
 )
 
 func BeginTx(ctx context.Context, db *ent.Client, telemetry *unitel.Telemetry) (*Tx, error) {

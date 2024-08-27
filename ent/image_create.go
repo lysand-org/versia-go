@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/lysand-org/versia-go/ent/image"
+	"github.com/versia-pub/versia-go/ent/image"
 )
 
 // ImageCreate is the builder for creating a Image entity.

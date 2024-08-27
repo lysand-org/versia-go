@@ -2,14 +2,14 @@ package svc_impls
 
 import (
 	"context"
-	"github.com/lysand-org/versia-go/config"
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/internal/service"
+	"github.com/versia-pub/versia-go/config"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/service"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
-	"github.com/lysand-org/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/entity"
 )
 
 var _ service.InstanceMetadataService = (*InstanceMetadataServiceImpl)(nil)

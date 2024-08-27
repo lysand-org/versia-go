@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/attachment"
-	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/ent/attachment"
+	"github.com/versia-pub/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/user"
 )
 
 // AttachmentQuery is the builder for querying Attachment entities.

@@ -2,54 +2,44 @@ package versia
 
 import (
 	"encoding/json"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	versiacrypto "github.com/versia-pub/versia-go/pkg/versia/crypto"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
-// User represents a user object in the Lysand protocol. For more information, see the [Spec].
+// User represents a user object in the Versia protocol. For more information, see the [Spec].
 //
-// [Spec]: https://lysand.org/objects/user
+// [Spec]: https://versia.pub/entities/user
 type User struct {
 	Entity
 
-	// PublicKey is the public key of the user.
-	// https://lysand.org/objects/user#public-key
-	PublicKey UserPublicKey `json:"public_key"`
-
-	// DisplayName is the display name of the user.
-	// https://lysand.org/objects/user#display-name
-	DisplayName *string `json:"display_name,omitempty"`
-
-	// Username is the username of the user. Must be unique on the instance and match the following regex: ^[a-z0-9_-]+$
-	// https://lysand.org/objects/user#username
-	Username string `json:"username"`
-
-	// Indexable is a boolean that indicates whether the user is indexable by search engines.
-	// https://lysand.org/objects/user#indexable
-	Indexable bool `json:"indexable"`
-
-	// ManuallyApprovesFollowers is a boolean that indicates whether the user manually approves followers.
-	// https://lysand.org/objects/user#manually-approves-followers
-	ManuallyApprovesFollowers bool `json:"manually_approves_followers"`
-
 	// Avatar is the avatar of the user in different image content types.
-	// https://lysand.org/objects/user#avatar
-	Avatar versiautils.ImageContentTypeMap `json:"avatar,omitempty"`
-
-	// Header is the header image of the user in different image content types.
-	// https://lysand.org/objects/user#header
-	Header versiautils.ImageContentTypeMap `json:"header,omitempty"`
+	Avatar versiautils.ImageContentMap `json:"avatar,omitempty"`
 
 	// Bio is the biography of the user in different text content types.
-	// https://lysand.org/objects/user#bio
-	Bio versiautils.TextContentTypeMap `json:"bio"`
+	Bio versiautils.TextContentTypeMap `json:"bio,omitempty"`
+
+	// DisplayName is the display name of the user.
+	DisplayName *string `json:"display_name,omitempty"`
 
 	// Fields is a list of fields that the user has filled out.
-	// https://lysand.org/objects/user#fields
-	Fields []UserField `json:"fields,omitempty"`
+	Fields []UserField `json:"fields"`
+
+	// Username is the username of the user. Must be unique on the instance and match the following regex: ^[a-z0-9_-]+$
+	Username string `json:"username"`
+
+	// Header is the header image of the user in different image content types.
+	Header versiautils.ImageContentMap `json:"header,omitempty"`
+
+	// PublicKey is the public key of the user.
+	PublicKey UserPublicKey `json:"public_key"`
+
+	// ManuallyApprovesFollowers is a boolean that indicates whether the user manually approves followers.
+	ManuallyApprovesFollowers *bool `json:"manually_approves_followers,omitempty"`
+
+	// Indexable is a boolean that indicates whether the user is indexable by search engines.
+	Indexable *bool `json:"indexable,omitempty"`
 
 	// Inbox is the inbox of the user.
-	// https://lysand.org/objects/user#posts
 	Inbox *versiautils.URL `json:"inbox"`
 
 	// Collections is a map of all collections for a user
@@ -86,7 +76,7 @@ type UserCollections map[UserCollectionType]*versiautils.URL
 
 // UserPublicKey represents a public key for a user. For more information, see the [Spec].
 //
-// [Spec]: https://lysand.org/security/keys#public-key-cryptography
+// [Spec]: https://versia.pub/signatures
 type UserPublicKey struct {
 	Actor *versiautils.URL `json:"actor"`
 

@@ -2,7 +2,7 @@ package versia
 
 import (
 	"encoding/json"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
 // Delete signals the deletion of an entity. For more information, see the [Spec].

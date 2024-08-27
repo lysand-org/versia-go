@@ -13,12 +13,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/image"
-	"github.com/lysand-org/versia-go/ent/instancemetadata"
-	"github.com/lysand-org/versia-go/ent/note"
-	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/ent/image"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
+	"github.com/versia-pub/versia-go/ent/note"
+	"github.com/versia-pub/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/pkg/versia"
 )
 
 // UserUpdate is the builder for updating User entities.

@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/lysand-org/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent"
 	// required by schema hooks.
-	_ "github.com/lysand-org/versia-go/ent/runtime"
+	_ "github.com/versia-pub/versia-go/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/lysand-org/versia-go/ent/migrate"
+	"github.com/versia-pub/versia-go/ent/migrate"
 )
 
 type (

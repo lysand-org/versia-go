@@ -12,12 +12,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/lysand-org/versia-go/ent/attachment"
-	"github.com/lysand-org/versia-go/ent/follow"
-	"github.com/lysand-org/versia-go/ent/image"
-	"github.com/lysand-org/versia-go/ent/instancemetadata"
-	"github.com/lysand-org/versia-go/ent/note"
-	"github.com/lysand-org/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/ent/attachment"
+	"github.com/versia-pub/versia-go/ent/follow"
+	"github.com/versia-pub/versia-go/ent/image"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
+	"github.com/versia-pub/versia-go/ent/note"
+	"github.com/versia-pub/versia-go/ent/user"
 )
 
 // ent aliases to avoid import conflicts in user's code.

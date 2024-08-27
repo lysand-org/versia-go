@@ -1,10 +1,10 @@
 package entity
 
 import (
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/pkg/versia"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/pkg/versia"
+	versiacrypto "github.com/versia-pub/versia-go/pkg/versia/crypto"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
 type InstanceMetadata struct {
@@ -20,8 +20,8 @@ type InstanceMetadata struct {
 
 	PublicKey *versiacrypto.SPKIPublicKey
 
-	Logo   *versiautils.ImageContentTypeMap
-	Banner *versiautils.ImageContentTypeMap
+	Logo   *versiautils.ImageContentMap
+	Banner *versiautils.ImageContentMap
 }
 
 func NewInstanceMetadata(dbData *ent.InstanceMetadata) (*InstanceMetadata, error) {

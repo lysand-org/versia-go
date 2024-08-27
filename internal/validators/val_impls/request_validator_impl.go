@@ -6,11 +6,11 @@ import (
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/internal/utils"
-	"github.com/lysand-org/versia-go/internal/validators"
-	versiacrypto "github.com/lysand-org/versia-go/pkg/versia/crypto"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/utils"
+	"github.com/versia-pub/versia-go/internal/validators"
+	versiacrypto "github.com/versia-pub/versia-go/pkg/versia/crypto"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 	"net/http"
 )
 

@@ -4,19 +4,19 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
-	"github.com/lysand-org/versia-go/internal/api_schema"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/internal/service"
+	"github.com/versia-pub/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/service"
 	"net/url"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/config"
-	"github.com/lysand-org/versia-go/ent/schema"
-	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/internal/utils"
-	"github.com/lysand-org/versia-go/pkg/webfinger"
+	"github.com/versia-pub/versia-go/config"
+	"github.com/versia-pub/versia-go/ent/schema"
+	"github.com/versia-pub/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/utils"
+	"github.com/versia-pub/versia-go/pkg/webfinger"
 )
 
 var _ service.UserService = (*UserServiceImpl)(nil)

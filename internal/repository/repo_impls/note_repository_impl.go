@@ -2,16 +2,16 @@ package repo_impls
 
 import (
 	"context"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/pkg/versia"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/ent/note"
-	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/internal/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent/note"
+	"github.com/versia-pub/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/utils"
 )
 
 var _ repository.NoteRepository = (*NoteRepositoryImpl)(nil)

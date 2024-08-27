@@ -2,10 +2,10 @@ package tasks
 
 import (
 	"context"
-	"github.com/lysand-org/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/repository"
 
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/entity"
 )
 
 type FederateNoteData struct {

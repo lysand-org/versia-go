@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/lysand-org/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent"
 )
 
 // The AttachmentFunc type is an adapter to allow the use of ordinary

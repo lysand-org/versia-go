@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lysand-org/versia-go/internal/api_schema"
-	"github.com/lysand-org/versia-go/pkg/webfinger"
+	"github.com/versia-pub/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/pkg/webfinger"
 	"net"
 	"syscall"
 )

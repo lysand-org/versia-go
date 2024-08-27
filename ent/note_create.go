@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent/attachment"
-	"github.com/lysand-org/versia-go/ent/note"
-	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/ent/attachment"
+	"github.com/versia-pub/versia-go/ent/note"
+	"github.com/versia-pub/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/pkg/versia"
 )
 
 // NoteCreate is the builder for creating a Note entity.

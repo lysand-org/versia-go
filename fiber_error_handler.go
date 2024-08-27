@@ -5,8 +5,8 @@ import (
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lysand-org/versia-go/internal/api_schema"
 	"github.com/rs/zerolog/log"
+	"github.com/versia-pub/versia-go/internal/api_schema"
 )
 
 func fiberErrorHandler(c *fiber.Ctx, err error) error {

@@ -4,21 +4,21 @@ import (
 	"context"
 	"crypto/ed25519"
 	"errors"
-	"github.com/lysand-org/versia-go/config"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/internal/service"
-	"github.com/lysand-org/versia-go/pkg/versia"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/config"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/service"
+	"github.com/versia-pub/versia-go/pkg/versia"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 	"golang.org/x/crypto/bcrypt"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/internal/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/utils"
 )
 
 const bcryptCost = 12
@@ -106,7 +106,7 @@ func (i *UserRepositoryImpl) ImportVersiaUserByURI(ctx context.Context, uri *ver
 		SetPublicKey(lUser.PublicKey.RawKey).
 		SetPublicKeyAlgorithm(lUser.PublicKey.Algorithm).
 		SetPublicKeyActor(lUser.PublicKey.Actor.String()).
-		SetIndexable(lUser.Indexable).
+		SetNillableIndexable(lUser.Indexable).
 		SetFields(lUser.Fields).
 		SetExtensions(lUser.Extensions).
 		SetInbox(lUser.Inbox.String()).

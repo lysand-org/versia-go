@@ -1,4 +1,4 @@
-module github.com/lysand-org/versia-go
+module github.com/versia-pub/versia-go
 
 go 1.22.5
 

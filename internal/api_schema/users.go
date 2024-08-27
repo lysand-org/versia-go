@@ -2,7 +2,7 @@ package api_schema
 
 import (
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/pkg/versia"
+	"github.com/versia-pub/versia-go/pkg/versia"
 )
 
 type User struct {

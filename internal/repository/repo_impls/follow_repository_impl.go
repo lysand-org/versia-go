@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/lysand-org/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/repository"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/ent/follow"
-	"github.com/lysand-org/versia-go/ent/predicate"
-	"github.com/lysand-org/versia-go/ent/user"
-	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/internal/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent/follow"
+	"github.com/versia-pub/versia-go/ent/predicate"
+	"github.com/versia-pub/versia-go/ent/user"
+	"github.com/versia-pub/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/utils"
 )
 
 var ErrFollowAlreadyExists = errors.New("follow already exists")

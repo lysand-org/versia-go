@@ -4,12 +4,12 @@ import (
 	"context"
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/ent/instancemetadata"
-	"github.com/lysand-org/versia-go/internal/entity"
-	"github.com/lysand-org/versia-go/internal/repository"
-	"github.com/lysand-org/versia-go/internal/service"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
+	"github.com/versia-pub/versia-go/internal/entity"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/service"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
 var _ repository.InstanceMetadataRepository = (*InstanceMetadataRepositoryImpl)(nil)

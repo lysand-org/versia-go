@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: "lysand-org/versia-go"
+  IMAGE_NAME: "versia-pub/versia-go"
 
 jobs:
   docker:

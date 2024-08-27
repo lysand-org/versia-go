@@ -3,10 +3,10 @@ package user_handler
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
-	"github.com/lysand-org/versia-go/config"
-	"github.com/lysand-org/versia-go/internal/api_schema"
-	"github.com/lysand-org/versia-go/internal/helpers"
-	"github.com/lysand-org/versia-go/pkg/webfinger"
+	"github.com/versia-pub/versia-go/config"
+	"github.com/versia-pub/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/internal/helpers"
+	"github.com/versia-pub/versia-go/pkg/webfinger"
 )
 
 func (i *Handler) Webfinger(c *fiber.Ctx) error {

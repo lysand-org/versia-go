@@ -18,7 +18,7 @@ Go.
 ### Running
 
 ```shell
-git clone https://github.com/lysand-org/versia-go.git
+git clone https://github.com/versia-pub/versia-go.git
 cd versia-go
 
 docker compose up -d nats

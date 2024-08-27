@@ -1,9 +1,9 @@
 package entity
 
 import (
-	"github.com/lysand-org/versia-go/ent"
-	"github.com/lysand-org/versia-go/pkg/versia"
-	versiautils "github.com/lysand-org/versia-go/pkg/versia/utils"
+	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/pkg/versia"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
 type Follow struct {

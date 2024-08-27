@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/lysand-org/versia-go/pkg/protoretry"
+	"github.com/versia-pub/versia-go/pkg/protoretry"
 	"net/http"
 	"net/url"
 	"strings"
