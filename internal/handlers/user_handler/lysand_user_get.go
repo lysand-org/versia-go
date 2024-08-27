@@ -14,7 +14,7 @@ func (i *Handler) GetLysandUser(c *fiber.Ctx) error {
 		})
 	}
 
-	u, err := i.userService.GetUserByID(c.UserContext(), parsedRequestedUserID)
+	u, err := i.userService.GetLocalUserByID(c.UserContext(), parsedRequestedUserID)
 	if err != nil {
 		i.log.Error(err, "Failed to query user", "id", parsedRequestedUserID)
 

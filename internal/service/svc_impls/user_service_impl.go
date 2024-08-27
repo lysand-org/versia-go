@@ -72,12 +72,12 @@ func (i UserServiceImpl) NewUser(ctx context.Context, username, password string)
 	return user, nil
 }
 
-func (i UserServiceImpl) GetUserByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/UserServiceImpl.GetUserByID")
+func (i UserServiceImpl) GetLocalUserByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/UserServiceImpl.GetLocalUserByID")
 	defer s.End()
 	ctx = s.Context()
 
-	return i.repositories.Users().GetByID(ctx, id)
+	return i.repositories.Users().GetLocalByID(ctx, id)
 }
 
 func (i UserServiceImpl) GetWebfingerForUser(ctx context.Context, userID string) (*webfinger.User, error) {

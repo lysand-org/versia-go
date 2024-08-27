@@ -82,7 +82,7 @@ func (i NoteServiceImpl) CreateNote(ctx context.Context, req api_schema.CreateNo
 }
 
 func (i NoteServiceImpl) GetNote(ctx context.Context, id uuid.UUID) (*entity.Note, error) {
-	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/NoteServiceImpl.GetUserByID")
+	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/NoteServiceImpl.GetLocalUserByID")
 	defer s.End()
 	ctx = s.Context()
 

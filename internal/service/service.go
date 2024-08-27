@@ -19,7 +19,7 @@ type UserService interface {
 
 	NewUser(ctx context.Context, username, password string) (*entity.User, error)
 
-	GetUserByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
+	GetLocalUserByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 
 	GetWebfingerForUser(ctx context.Context, userID string) (*webfinger.User, error)
 
