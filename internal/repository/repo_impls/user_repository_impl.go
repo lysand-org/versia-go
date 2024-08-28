@@ -180,6 +180,9 @@ func (i *UserRepositoryImpl) Discover(ctx context.Context, domain, username stri
 		l.Error(err, "Failed to find local user", "username", username)
 		return nil, err
 	}
+	if u == nil {
+		return nil, nil
+	}
 
 	l.V(2).Info("Found local user", "userURI", u.URI)
 
