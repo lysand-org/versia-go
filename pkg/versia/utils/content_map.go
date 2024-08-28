@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"slices"
+	"github.com/ldez/mimetype"
 )
 
 var (
-	validTextContentTypes  = []string{"text/html", "text/plain"}
-	validImageContentTypes = []string{"image/png", "image/jpeg", "image/gif", "image/svg+xml"}
+	preferredTextContentTypes  = []string{"text/html", "text/plain"}
+	preferredImageContentTypes = []string{"image/png", "image/jpeg", "image/gif", "image/svg+xml", "image/webp"}
 )
 
 // ContentMap is a map of content types to their respective content.
@@ -23,7 +23,7 @@ func (e UnexpectedContentTypeError) Error() string {
 	return fmt.Sprintf("unexpected content type: %s", e.MIMEType)
 }
 
-func (m ContentMap[T]) unmarshalJSON(raw []byte, valid []string) error {
+func (m ContentMap[T]) unmarshalJSON(raw []byte, mimetypeChecker func(type_ string) bool) error {
 	var cm map[string]json.RawMessage
 	if err := json.Unmarshal(raw, &cm); err != nil {
 		return err
@@ -33,11 +33,9 @@ func (m ContentMap[T]) unmarshalJSON(raw []byte, valid []string) error {
 
 	errs := make([]error, 0)
 	for k, v := range cm {
-		if valid != nil {
-			if !slices.Contains(valid, k) {
-				errs = append(errs, UnexpectedContentTypeError{k})
-				continue
-			}
+		if !mimetypeChecker(k) {
+			errs = append(errs, UnexpectedContentTypeError{k})
+			continue
 		}
 
 		var c T
@@ -76,11 +74,11 @@ type TextContent struct {
 type TextContentTypeMap ContentMap[TextContent]
 
 func (t TextContentTypeMap) UnmarshalJSON(data []byte) error {
-	return (ContentMap[TextContent])(t).unmarshalJSON(data, validTextContentTypes)
+	return (ContentMap[TextContent])(t).unmarshalJSON(data, mimetype.IsText)
 }
 
 func (t TextContentTypeMap) String() string {
-	if c := (ContentMap[TextContent])(t).getPreferred(validTextContentTypes); c != nil {
+	if c := (ContentMap[TextContent])(t).getPreferred(preferredImageContentTypes); c != nil {
 		return c.Content
 	}
 
@@ -116,11 +114,11 @@ type DataHash struct {
 type ImageContentMap ContentMap[File]
 
 func (i ImageContentMap) UnmarshalJSON(data []byte) error {
-	return (ContentMap[File])(i).unmarshalJSON(data, validImageContentTypes)
+	return (ContentMap[File])(i).unmarshalJSON(data, mimetype.IsImage)
 }
 
 func (i ImageContentMap) String() string {
-	if c := (ContentMap[File])(i).getPreferred(validImageContentTypes); c != nil {
+	if c := (ContentMap[File])(i).getPreferred(preferredImageContentTypes); c != nil {
 		return c.Content.String()
 	}
 
@@ -132,7 +130,9 @@ type NoteAttachmentContentMap ContentMap[File]
 var ErrContentMapEntryNotRemote = errors.New("content map entry not remote")
 
 func (i NoteAttachmentContentMap) UnmarshalJSON(data []byte) error {
-	if err := (ContentMap[File])(i).unmarshalJSON(data, nil); err != nil {
+	if err := (ContentMap[File])(i).unmarshalJSON(data, func(type_ string) bool {
+		return true
+	}); err != nil {
 		return err
 	}
 
