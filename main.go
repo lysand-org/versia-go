@@ -7,42 +7,35 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"database/sql/driver"
-	"fmt"
-	"git.devminer.xyz/devminer/unitel/unitelhttp"
-	"git.devminer.xyz/devminer/unitel/unitelsql"
-	"github.com/versia-pub/versia-go/ent/instancemetadata"
-	"github.com/versia-pub/versia-go/internal/api_schema"
-	"github.com/versia-pub/versia-go/internal/handlers/follow_handler"
-	"github.com/versia-pub/versia-go/internal/handlers/meta_handler"
-	"github.com/versia-pub/versia-go/internal/handlers/note_handler"
-	"github.com/versia-pub/versia-go/internal/repository"
-	"github.com/versia-pub/versia-go/internal/repository/repo_impls"
-	"github.com/versia-pub/versia-go/internal/service/svc_impls"
-	"github.com/versia-pub/versia-go/internal/validators/val_impls"
 	"net/http"
 	"os"
 	"os/signal"
+	"slices"
 	"strings"
 	"sync"
-	"time"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"git.devminer.xyz/devminer/unitel"
+	"git.devminer.xyz/devminer/unitel/unitelhttp"
+	"git.devminer.xyz/devminer/unitel/unitelsql"
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zerologr"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	pgx "github.com/jackc/pgx/v5/stdlib"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/versia-pub/versia-go/config"
 	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/ent/instancemetadata"
 	"github.com/versia-pub/versia-go/internal/database"
-	"github.com/versia-pub/versia-go/internal/handlers/user_handler"
-	"github.com/versia-pub/versia-go/internal/tasks"
+	"github.com/versia-pub/versia-go/internal/repository"
+	"github.com/versia-pub/versia-go/internal/repository/repo_impls"
+	"github.com/versia-pub/versia-go/internal/service/svc_impls"
+	"github.com/versia-pub/versia-go/internal/task"
+	"github.com/versia-pub/versia-go/internal/task/task_impls"
 	"github.com/versia-pub/versia-go/internal/utils"
+	"github.com/versia-pub/versia-go/internal/validators/val_impls"
 	"github.com/versia-pub/versia-go/pkg/taskqueue"
 	"modernc.org/sqlite"
 )
@@ -52,11 +45,9 @@ func init() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 }
 
-func shouldPropagate(r *http.Request) bool {
-	return config.C.ForwardTracesTo.Match([]byte(r.URL.String()))
-}
-
 func main() {
+	rootCtx, cancelRoot := context.WithCancel(context.Background())
+
 	zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	zerologr.NameFieldName = "logger"
 	zerologr.NameSeparator = "/"
@@ -98,24 +89,27 @@ func main() {
 	}
 
 	log.Debug().Msg("Starting taskqueue client")
-	tq, err := taskqueue.NewClient(context.Background(), config.C.NATSStreamName, nc, tel, zerologr.New(&log.Logger).WithName("taskqueue-client"))
+	tq, err := taskqueue.NewClient(config.C.NATSStreamName, nc, tel, zerologr.New(&log.Logger).WithName("taskqueue-client"))
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create taskqueue client")
 	}
-	defer tq.Close()
 
 	log.Debug().Msg("Running schema migration")
 	if err := migrateDB(db, zerologr.New(&log.Logger).WithName("migrate-db"), tel); err != nil {
 		log.Fatal().Err(err).Msg("Failed to run schema migration")
 	}
 
+	log.Debug().Msg("Initializing instance")
+	if err := initInstance(db, tel); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize instance")
+	}
+
 	// Stateless services
 
 	requestSigner := svc_impls.NewRequestSignerImpl(tel, zerologr.New(&log.Logger).WithName("request-signer"))
 	federationService := svc_impls.NewFederationServiceImpl(httpClient, tel, zerologr.New(&log.Logger).WithName("federation-service"))
-	taskService := svc_impls.NewTaskServiceImpl(tq, tel, zerologr.New(&log.Logger).WithName("task-service"))
 
-	// Manager
+	// Repositories
 
 	repos := repo_impls.NewManagerImpl(
 		db, tel, zerologr.New(&log.Logger).WithName("repositories"),
@@ -134,103 +128,50 @@ func main() {
 	bodyValidator := val_impls.NewBodyValidator(zerologr.New(&log.Logger).WithName("validation-service"))
 	requestValidator := val_impls.NewRequestValidator(repos, tel, zerologr.New(&log.Logger).WithName("request-validator"))
 
+	// Task handlers
+
+	notes := task_impls.NewNoteHandler(federationService, repos, tel, zerologr.New(&log.Logger).WithName("task-note-handler"))
+	notesSet := registerTaskHandler(rootCtx, "notes", tq, notes)
+
+	taskManager := task_impls.NewManager(notes, tel, zerologr.New(&log.Logger).WithName("task-manager"))
+
 	// Services
 
+	taskService := svc_impls.NewTaskServiceImpl(taskManager, tel, zerologr.New(&log.Logger).WithName("task-service"))
 	userService := svc_impls.NewUserServiceImpl(repos, federationService, tel, zerologr.New(&log.Logger).WithName("user-service"))
 	noteService := svc_impls.NewNoteServiceImpl(federationService, taskService, repos, tel, zerologr.New(&log.Logger).WithName("note-service"))
 	followService := svc_impls.NewFollowServiceImpl(federationService, repos, tel, zerologr.New(&log.Logger).WithName("follow-service"))
 	inboxService := svc_impls.NewInboxService(federationService, repos, tel, zerologr.New(&log.Logger).WithName("inbox-service"))
 	instanceMetadataService := svc_impls.NewInstanceMetadataServiceImpl(federationService, repos, tel, zerologr.New(&log.Logger).WithName("instance-metadata-service"))
 
-	// Handlers
+	wg := sync.WaitGroup{}
 
-	userHandler := user_handler.New(federationService, requestSigner, userService, inboxService, bodyValidator, requestValidator, zerologr.New(&log.Logger).WithName("user-handler"))
-	noteHandler := note_handler.New(noteService, bodyValidator, requestSigner, zerologr.New(&log.Logger).WithName("notes-handler"))
-	followHandler := follow_handler.New(followService, federationService, zerologr.New(&log.Logger).WithName("follow-handler"))
-	metaHandler := meta_handler.New(instanceMetadataService, zerologr.New(&log.Logger).WithName("meta-handler"))
+	if config.C.Mode == config.ModeWeb || config.C.Mode == config.ModeCombined {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 
-	// Initialization
-
-	if err := initServerActor(db, tel); err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize server actor")
+			if err := server(
+				rootCtx,
+				tel,
+				db,
+				nc,
+				federationService,
+				requestSigner,
+				bodyValidator,
+				requestValidator,
+				userService,
+				noteService,
+				followService,
+				instanceMetadataService,
+				inboxService,
+			); err != nil {
+				log.Fatal().Err(err).Msg("Failed to start server")
+			}
+		}()
 	}
 
-	web := fiber.New(fiber.Config{
-		ProxyHeader:           "X-Forwarded-For",
-		ErrorHandler:          fiberErrorHandler,
-		DisableStartupMessage: true,
-		AppName:               "versia-go",
-		EnablePrintRoutes:     true,
-	})
-
-	web.Use(cors.New(cors.Config{
-		AllowOriginsFunc: func(origin string) bool {
-			return true
-		},
-		AllowMethods:     "GET,POST,PUT,DELETE,PATCH",
-		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, b3, traceparent, sentry-trace, baggage",
-		AllowCredentials: true,
-		ExposeHeaders:    "",
-		MaxAge:           0,
-	}))
-
-	web.Use(unitelhttp.FiberMiddleware(tel, unitelhttp.FiberMiddlewareConfig{
-		Repanic:         false,
-		WaitForDelivery: false,
-		Timeout:         5 * time.Second,
-		// host for incoming requests
-		TraceRequestHeaders: []string{"origin", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
-		// origin for outgoing requests
-		TraceResponseHeaders: []string{"host", "x-nonce", "x-signature", "x-signed-by", "sentry-trace", "sentry-baggage"},
-		IgnoredRoutes:        []string{"/api/health"},
-		Logger:               zerologr.New(&log.Logger).WithName("http-server"),
-		TracePropagator:      shouldPropagate,
-	}))
-	web.Use(unitelhttp.RequestLogger(zerologr.New(&log.Logger).WithName("http-server"), true, true))
-
-	log.Debug().Msg("Registering handlers")
-
-	web.Get("/api/health", healthCheck(db, nc))
-
-	userHandler.Register(web.Group("/"))
-	noteHandler.Register(web.Group("/"))
-	followHandler.Register(web.Group("/"))
-	metaHandler.Register(web.Group("/"))
-
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-
-	// TODO: Run these in separate processes, if wanted
-	go func() {
-		defer wg.Done()
-
-		log.Debug().Msg("Starting taskqueue consumer")
-
-		tasks.NewHandler(federationService, repos, tel, zerologr.New(&log.Logger).WithName("task-handler")).
-			Register(tq)
-
-		if err := tq.StartConsumer(context.Background(), "consumer"); err != nil {
-			log.Fatal().Err(err).Msg("failed to start taskqueue client")
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		log.Debug().Msg("Starting server")
-
-		addr := fmt.Sprintf(":%d", config.C.Port)
-
-		var err error
-		if config.C.TLSKey != nil {
-			err = web.ListenTLS(addr, *config.C.TLSCert, *config.C.TLSKey)
-		} else {
-			err = web.Listen(addr)
-		}
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to start server")
-		}
-	}()
+	maybeRunTaskHandler(rootCtx, "notes", notesSet, &wg)
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt)
@@ -238,10 +179,7 @@ func main() {
 
 	log.Info().Msg("Shutting down")
 
-	tq.Close()
-	if err := web.Shutdown(); err != nil {
-		log.Error().Err(err).Msg("Failed to shutdown server")
-	}
+	cancelRoot()
 
 	wg.Wait()
 }
@@ -293,8 +231,8 @@ func migrateDB(db *ent.Client, log logr.Logger, telemetry *unitel.Telemetry) err
 	return nil
 }
 
-func initServerActor(db *ent.Client, telemetry *unitel.Telemetry) error {
-	s := telemetry.StartSpan(context.Background(), "function", "main.initServerActor")
+func initInstance(db *ent.Client, telemetry *unitel.Telemetry) error {
+	s := telemetry.StartSpan(context.Background(), "function", "main.initInstance")
 	defer s.End()
 	ctx := s.Context()
 
@@ -354,27 +292,47 @@ func initServerActor(db *ent.Client, telemetry *unitel.Telemetry) error {
 	return tx.Finish()
 }
 
-func healthCheck(db *ent.Client, nc *nats.Conn) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		dbWorking := true
-		if err := db.Ping(); err != nil {
-			log.Error().Err(err).Msg("Database healthcheck failed")
-			dbWorking = false
-		}
-
-		natsWorking := true
-		if status := nc.Status(); status != nats.CONNECTED {
-			log.Error().Str("status", status.String()).Msg("NATS healthcheck failed")
-			natsWorking = false
-		}
-
-		if dbWorking && natsWorking {
-			return c.SendString("lookin' good")
-		}
-
-		return api_schema.ErrInternalServerError(map[string]any{
-			"database": dbWorking,
-			"nats":     natsWorking,
-		})
+func registerTaskHandler[T task.Handler](ctx context.Context, name string, tq *taskqueue.Client, handler T) *taskqueue.Set {
+	s, err := tq.Set(ctx, name)
+	if err != nil {
+		log.Fatal().Err(err).Str("handler", name).Msg("Could not create taskset for task handler")
 	}
+
+	handler.Register(s)
+
+	return s
+}
+
+func maybeRunTaskHandler(ctx context.Context, name string, set *taskqueue.Set, wg *sync.WaitGroup) {
+	l := log.With().Str("handler", name).Logger()
+
+	if config.C.Mode == config.ModeWeb {
+		l.Warn().Strs("requested", config.C.Consumers).Msg("Not starting task handler, as this process is running in web mode")
+		return
+	}
+
+	if config.C.Mode == config.ModeConsumer && !slices.Contains(config.C.Consumers, name) {
+		l.Warn().Strs("requested", config.C.Consumers).Msg("Not starting task handler, as it wasn't requested")
+		return
+	}
+
+	wg.Add(1)
+
+	c := set.Consumer(name)
+	if err := c.Start(ctx); err != nil {
+		l.Fatal().Err(err).Msg("Could not start task handler")
+	}
+
+	l.Info().Msg("Started task handler")
+
+	go func() {
+		defer wg.Done()
+
+		<-ctx.Done()
+		l.Debug().Msg("Got signal to stop task handler")
+
+		c.Close()
+
+		l.Info().Msg("Stopped task handler")
+	}()
 }

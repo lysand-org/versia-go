@@ -51,6 +51,7 @@ type InstanceMetadataRepository interface {
 
 type Manager interface {
 	Atomic(ctx context.Context, fn func(ctx context.Context, tx Manager) error) error
+	Ping() error
 
 	Users() UserRepository
 	Notes() NoteRepository

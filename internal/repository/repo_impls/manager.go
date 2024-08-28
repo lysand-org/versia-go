@@ -89,6 +89,10 @@ func (i *ManagerImpl) Atomic(ctx context.Context, fn func(ctx context.Context, t
 	return tx.Finish()
 }
 
+func (i *ManagerImpl) Ping() error {
+	return i.db.Ping()
+}
+
 func (i *ManagerImpl) Users() repository.UserRepository {
 	return i.users
 }

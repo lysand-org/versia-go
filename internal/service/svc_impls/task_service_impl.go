@@ -2,7 +2,9 @@ package svc_impls
 
 import (
 	"context"
+
 	"github.com/versia-pub/versia-go/internal/service"
+	"github.com/versia-pub/versia-go/internal/task"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
@@ -12,22 +14,22 @@ import (
 var _ service.TaskService = (*TaskServiceImpl)(nil)
 
 type TaskServiceImpl struct {
-	client *taskqueue.Client
+	manager task.Manager
 
 	telemetry *unitel.Telemetry
 	log       logr.Logger
 }
 
-func NewTaskServiceImpl(client *taskqueue.Client, telemetry *unitel.Telemetry, log logr.Logger) *TaskServiceImpl {
+func NewTaskServiceImpl(manager task.Manager, telemetry *unitel.Telemetry, log logr.Logger) *TaskServiceImpl {
 	return &TaskServiceImpl{
-		client: client,
+		manager: manager,
 
 		telemetry: telemetry,
 		log:       log,
 	}
 }
 
-func (i TaskServiceImpl) ScheduleTask(ctx context.Context, type_ string, data any) error {
+func (i TaskServiceImpl) ScheduleNoteTask(ctx context.Context, type_ string, data any) error {
 	s := i.telemetry.StartSpan(ctx, "function", "svc_impls/TaskServiceImpl.ScheduleTask")
 	defer s.End()
 	ctx = s.Context()
@@ -38,7 +40,7 @@ func (i TaskServiceImpl) ScheduleTask(ctx context.Context, type_ string, data an
 		return err
 	}
 
-	if err := i.client.Submit(ctx, t); err != nil {
+	if err := i.manager.Notes().Submit(ctx, t); err != nil {
 		i.log.Error(err, "Failed to schedule task", "type", type_, "taskID", t.ID)
 		return err
 	}

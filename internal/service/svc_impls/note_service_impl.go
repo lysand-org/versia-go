@@ -2,17 +2,18 @@ package svc_impls
 
 import (
 	"context"
+	"slices"
+
 	"github.com/versia-pub/versia-go/internal/repository"
 	"github.com/versia-pub/versia-go/internal/service"
+	task_dtos "github.com/versia-pub/versia-go/internal/task/dtos"
 	"github.com/versia-pub/versia-go/pkg/versia"
-	"slices"
 
 	"git.devminer.xyz/devminer/unitel"
 	"github.com/go-logr/logr"
 	"github.com/google/uuid"
 	"github.com/versia-pub/versia-go/internal/api_schema"
 	"github.com/versia-pub/versia-go/internal/entity"
-	"github.com/versia-pub/versia-go/internal/tasks"
 )
 
 var _ service.NoteService = (*NoteServiceImpl)(nil)
@@ -69,7 +70,7 @@ func (i NoteServiceImpl) CreateNote(ctx context.Context, req api_schema.CreateNo
 			return err
 		}
 
-		if err := i.taskService.ScheduleTask(ctx, tasks.FederateNote, tasks.FederateNoteData{NoteID: n.ID}); err != nil {
+		if err := i.taskService.ScheduleNoteTask(ctx, task_dtos.FederateNote, task_dtos.FederateNoteData{NoteID: n.ID}); err != nil {
 			return err
 		}
 

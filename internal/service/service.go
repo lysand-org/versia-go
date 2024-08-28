@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/versia-pub/versia-go/internal/repository"
 	"github.com/versia-pub/versia-go/pkg/versia"
@@ -57,7 +58,7 @@ type InstanceMetadataService interface {
 }
 
 type TaskService interface {
-	ScheduleTask(ctx context.Context, type_ string, data any) error
+	ScheduleNoteTask(ctx context.Context, type_ string, data any) error
 }
 
 type RequestSigner interface {

@@ -1,13 +1,24 @@
 package config
 
 import (
-	"git.devminer.xyz/devminer/unitel"
-	"github.com/joho/godotenv"
-	"github.com/rs/zerolog/log"
 	"net/url"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
+	"strings"
+
+	"git.devminer.xyz/devminer/unitel"
+	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
+)
+
+type Mode string
+
+const (
+	ModeCombined Mode = "combined"
+	ModeWeb      Mode = "web"
+	ModeConsumer Mode = "consumer"
 )
 
 type Config struct {
@@ -24,6 +35,9 @@ type Config struct {
 
 	NATSURI        string
 	NATSStreamName string
+
+	Mode      Mode
+	Consumers []string
 
 	DatabaseURI string
 
@@ -62,6 +76,13 @@ func Load() {
 			Msg("Both VERSIA_TLS_KEY and VERSIA_TLS_CERT have to be set if you want to use in-process TLS termination.")
 	}
 
+	mode := getEnvStrOneOf("VERSIA_MODE", ModeCombined, ModeCombined, ModeWeb, ModeConsumer)
+
+	var consumers []string
+	if raw := optionalEnvStr("VERSIA_TQ_CUSTOMERS"); raw != nil {
+		consumers = strings.Split(*raw, ",")
+	}
+
 	C = Config{
 		Port:    getEnvInt("VERSIA_PORT", 80),
 		TLSCert: tlsCert,
@@ -76,13 +97,15 @@ func Load() {
 
 		NATSURI:        os.Getenv("NATS_URI"),
 		NATSStreamName: getEnvStr("NATS_STREAM_NAME", "versia-go"),
-		DatabaseURI:    os.Getenv("DATABASE_URI"),
+
+		Mode:      mode,
+		Consumers: consumers,
+
+		DatabaseURI: os.Getenv("DATABASE_URI"),
 
 		ForwardTracesTo: forwardTracesTo,
 		Telemetry:       unitel.ParseOpts("versia-go"),
 	}
-
-	return
 }
 
 func optionalEnvStr(key string) *string {
@@ -91,6 +114,18 @@ func optionalEnvStr(key string) *string {
 		return nil
 	}
 	return &value
+}
+
+func getEnvBool(key string, default_ bool) bool {
+	if value, ok := os.LookupEnv(key); ok {
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			panic(err)
+		}
+		return b
+	}
+
+	return default_
 }
 
 func getEnvStr(key, default_ string) string {
@@ -109,6 +144,25 @@ func getEnvInt(key string, default_ int) int {
 		}
 
 		return parsed
+	}
+
+	return default_
+}
+
+func getEnvStrOneOf[T ~string](key string, default_ T, enum ...T) T {
+	if value, ok := os.LookupEnv(key); ok {
+		if !slices.Contains(enum, T(value)) {
+			sb := strings.Builder{}
+			sb.WriteString(key)
+			sb.WriteString(" can only be one of ")
+			for _, v := range enum {
+				sb.WriteString(string(v))
+			}
+
+			panic(sb.String())
+		}
+
+		return T(value)
 	}
 
 	return default_
