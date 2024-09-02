@@ -1,7 +1,6 @@
 # Versia-Go
 
-Versia-Go is a experimental implementation of the (not yet renamed :P) [Versia](https://versia.pub) protocol written in
-Go.
+Versia-Go is a experimental implementation of the [Versia](https://versia.pub) protocol written in Go.
 
 > Compatibility level: Versia Working Draft 4.0
 
