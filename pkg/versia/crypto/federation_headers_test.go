@@ -1,9 +1,10 @@
 package versiacrypto
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFederationHeaders_String(t *testing.T) {
@@ -11,7 +12,7 @@ func TestFederationHeaders_String(t *testing.T) {
 		RequestMethod: "POST",
 		Nonce:         "1234567890",
 		URL:           &url.URL{Scheme: "https", Host: "bob.com", Path: "/users/bob", RawQuery: "z=foo&a=bar"},
-		Digest:        hashSHA256([]byte("hello")),
+		Digest:        SHA256([]byte("hello")),
 	}
 
 	assert.Equal(t, "post /users/bob?z=foo&a=bar 1234567890 LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=", one.String())

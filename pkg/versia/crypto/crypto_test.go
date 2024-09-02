@@ -4,21 +4,23 @@ import (
 	"crypto/ed25519"
 	"crypto/x509"
 	"encoding/base64"
-	"github.com/stretchr/testify/assert"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 )
 
 func TestFederationClient_ValidateSignatureHeader(t *testing.T) {
 	var (
 		bobURL = &url.URL{Scheme: "https", Host: "bob.com"}
 
-		bobPrivBytes = must(base64.StdEncoding.DecodeString, "MC4CAQAwBQYDK2VwBCIEINOATgmaya61Ha9OEE+DD3RnOEqDaHyQ3yLf5upwskUU")
-		bobPriv      = must(x509.ParsePKCS8PrivateKey, bobPrivBytes).(ed25519.PrivateKey)
+		bobPrivBytes = versiautils.Must(base64.StdEncoding.DecodeString, "MC4CAQAwBQYDK2VwBCIEINOATgmaya61Ha9OEE+DD3RnOEqDaHyQ3yLf5upwskUU")
+		bobPriv      = versiautils.Must(x509.ParsePKCS8PrivateKey, bobPrivBytes).(ed25519.PrivateKey)
 		signer       = Signer{PrivateKey: bobPriv, UserURL: bobURL}
 
-		bobPubBytes = must(base64.StdEncoding.DecodeString, "MCowBQYDK2VwAyEAQ08Z/FJ5f16o8mthLaFZMo4ssn0fJ7c+bipNYm3kId4=")
-		bobPub      = must(x509.ParsePKIXPublicKey, bobPubBytes).(ed25519.PublicKey)
+		bobPubBytes = versiautils.Must(base64.StdEncoding.DecodeString, "MCowBQYDK2VwAyEAQ08Z/FJ5f16o8mthLaFZMo4ssn0fJ7c+bipNYm3kId4=")
+		bobPub      = versiautils.Must(x509.ParsePKIXPublicKey, bobPubBytes).(ed25519.PublicKey)
 		verifier    = Verifier{PublicKey: bobPub}
 
 		method = "POST"
@@ -27,7 +29,7 @@ func TestFederationClient_ValidateSignatureHeader(t *testing.T) {
 		body   = []byte("hello")
 	)
 
-	toSign := NewSignatureData(method, nonce, u, hashSHA256(body))
+	toSign := NewSignatureData(method, nonce, u, SHA256(body))
 	assert.Equal(t, `post /a/b/c?z=foo&a=bar myrandomnonce LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=`, toSign.String())
 
 	signed := signer.Sign(*toSign)
