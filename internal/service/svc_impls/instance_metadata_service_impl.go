@@ -2,8 +2,8 @@ package svc_impls
 
 import (
 	"context"
-	"github.com/versia-pub/versia-go/config"
 	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/internal/config"
 	"github.com/versia-pub/versia-go/internal/repository"
 	"github.com/versia-pub/versia-go/internal/service"
 

@@ -3,8 +3,8 @@ package user_handler
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
-	"github.com/versia-pub/versia-go/config"
 	"github.com/versia-pub/versia-go/internal/api_schema"
+	"github.com/versia-pub/versia-go/internal/config"
 	"github.com/versia-pub/versia-go/internal/helpers"
 	"github.com/versia-pub/versia-go/pkg/webfinger"
 )

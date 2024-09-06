@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/versia-pub/versia-go/config"
+	"github.com/versia-pub/versia-go/internal/config"
 	versiautils "github.com/versia-pub/versia-go/pkg/versia/utils"
 	"net/url"
 )

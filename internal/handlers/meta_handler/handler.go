@@ -3,7 +3,7 @@ package meta_handler
 import (
 	"github.com/go-logr/logr"
 	"github.com/gofiber/fiber/v2"
-	"github.com/versia-pub/versia-go/config"
+	"github.com/versia-pub/versia-go/internal/config"
 	"github.com/versia-pub/versia-go/internal/service"
 	"github.com/versia-pub/versia-go/pkg/webfinger"
 )

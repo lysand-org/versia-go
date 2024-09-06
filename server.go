@@ -20,8 +20,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
-	"github.com/versia-pub/versia-go/config"
 	"github.com/versia-pub/versia-go/ent"
+	"github.com/versia-pub/versia-go/internal/config"
 	"github.com/versia-pub/versia-go/internal/handlers/user_handler"
 )
 

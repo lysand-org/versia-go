@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"errors"
-	"github.com/versia-pub/versia-go/config"
+	"github.com/versia-pub/versia-go/internal/config"
 	"github.com/versia-pub/versia-go/internal/repository"
 	"github.com/versia-pub/versia-go/internal/service"
 	"github.com/versia-pub/versia-go/pkg/versia"
