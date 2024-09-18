@@ -24,8 +24,3 @@ type Entity struct {
 	// Extensions is a map of active extensions for the entity
 	Extensions Extensions `json:"extensions,omitempty"`
 }
-
-// Extensions represents the active extensions on an entity. For more information, see the [Spec].
-//
-// [Spec]: https://versia.pub/extensions#extension-definition
-type Extensions map[string]any
