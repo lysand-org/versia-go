@@ -25,7 +25,10 @@ func (InstanceMetadata) Fields() []ent.Field {
 		field.String("softwareName").NotEmpty(),
 		field.String("softwareVersion").NotEmpty(),
 
-		field.String("sharedInboxURI").Validate(ValidateURI),
+		field.String("sharedInboxURI").
+			Validate(ValidateURI).
+			Optional().
+			Nillable(),
 		field.String("moderatorsURI").
 			Validate(ValidateURI).
 			Optional().

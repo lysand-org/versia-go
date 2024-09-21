@@ -851,6 +851,16 @@ func SharedInboxURIHasSuffix(v string) predicate.InstanceMetadata {
 	return predicate.InstanceMetadata(sql.FieldHasSuffix(FieldSharedInboxURI, v))
 }
 
+// SharedInboxURIIsNil applies the IsNil predicate on the "sharedInboxURI" field.
+func SharedInboxURIIsNil() predicate.InstanceMetadata {
+	return predicate.InstanceMetadata(sql.FieldIsNull(FieldSharedInboxURI))
+}
+
+// SharedInboxURINotNil applies the NotNil predicate on the "sharedInboxURI" field.
+func SharedInboxURINotNil() predicate.InstanceMetadata {
+	return predicate.InstanceMetadata(sql.FieldNotNull(FieldSharedInboxURI))
+}
+
 // SharedInboxURIEqualFold applies the EqualFold predicate on the "sharedInboxURI" field.
 func SharedInboxURIEqualFold(v string) predicate.InstanceMetadata {
 	return predicate.InstanceMetadata(sql.FieldEqualFold(FieldSharedInboxURI, v))

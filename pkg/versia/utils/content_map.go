@@ -125,6 +125,10 @@ func (i ImageContentMap) String() string {
 	return ""
 }
 
+func (i ImageContentMap) Map() map[string]File {
+	return i
+}
+
 type NoteAttachmentContentMap ContentMap[File]
 
 var ErrContentMapEntryNotRemote = errors.New("content map entry not remote")

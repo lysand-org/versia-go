@@ -114,7 +114,7 @@ var (
 		{Name: "private_key", Type: field.TypeBytes, Nullable: true},
 		{Name: "software_name", Type: field.TypeString},
 		{Name: "software_version", Type: field.TypeString},
-		{Name: "shared_inbox_uri", Type: field.TypeString},
+		{Name: "shared_inbox_uri", Type: field.TypeString, Nullable: true},
 		{Name: "moderators_uri", Type: field.TypeString, Nullable: true},
 		{Name: "admins_uri", Type: field.TypeString, Nullable: true},
 		{Name: "logo_endpoint", Type: field.TypeString, Nullable: true},

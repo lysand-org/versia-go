@@ -134,6 +134,14 @@ func (imc *InstanceMetadataCreate) SetSharedInboxURI(s string) *InstanceMetadata
 	return imc
 }
 
+// SetNillableSharedInboxURI sets the "sharedInboxURI" field if the given value is not nil.
+func (imc *InstanceMetadataCreate) SetNillableSharedInboxURI(s *string) *InstanceMetadataCreate {
+	if s != nil {
+		imc.SetSharedInboxURI(*s)
+	}
+	return imc
+}
+
 // SetModeratorsURI sets the "moderatorsURI" field.
 func (imc *InstanceMetadataCreate) SetModeratorsURI(s string) *InstanceMetadataCreate {
 	imc.mutation.SetModeratorsURI(s)
@@ -410,9 +418,6 @@ func (imc *InstanceMetadataCreate) check() error {
 			return &ValidationError{Name: "softwareVersion", err: fmt.Errorf(`ent: validator failed for field "InstanceMetadata.softwareVersion": %w`, err)}
 		}
 	}
-	if _, ok := imc.mutation.SharedInboxURI(); !ok {
-		return &ValidationError{Name: "sharedInboxURI", err: errors.New(`ent: missing required field "InstanceMetadata.sharedInboxURI"`)}
-	}
 	if v, ok := imc.mutation.SharedInboxURI(); ok {
 		if err := instancemetadata.SharedInboxURIValidator(v); err != nil {
 			return &ValidationError{Name: "sharedInboxURI", err: fmt.Errorf(`ent: validator failed for field "InstanceMetadata.sharedInboxURI": %w`, err)}
@@ -544,7 +549,7 @@ func (imc *InstanceMetadataCreate) createSpec() (*InstanceMetadata, *sqlgraph.Cr
 	}
 	if value, ok := imc.mutation.SharedInboxURI(); ok {
 		_spec.SetField(instancemetadata.FieldSharedInboxURI, field.TypeString, value)
-		_node.SharedInboxURI = value
+		_node.SharedInboxURI = &value
 	}
 	if value, ok := imc.mutation.ModeratorsURI(); ok {
 		_spec.SetField(instancemetadata.FieldModeratorsURI, field.TypeString, value)
@@ -843,6 +848,12 @@ func (u *InstanceMetadataUpsert) SetSharedInboxURI(v string) *InstanceMetadataUp
 // UpdateSharedInboxURI sets the "sharedInboxURI" field to the value that was provided on create.
 func (u *InstanceMetadataUpsert) UpdateSharedInboxURI() *InstanceMetadataUpsert {
 	u.SetExcluded(instancemetadata.FieldSharedInboxURI)
+	return u
+}
+
+// ClearSharedInboxURI clears the value of the "sharedInboxURI" field.
+func (u *InstanceMetadataUpsert) ClearSharedInboxURI() *InstanceMetadataUpsert {
+	u.SetNull(instancemetadata.FieldSharedInboxURI)
 	return u
 }
 
@@ -1222,6 +1233,13 @@ func (u *InstanceMetadataUpsertOne) SetSharedInboxURI(v string) *InstanceMetadat
 func (u *InstanceMetadataUpsertOne) UpdateSharedInboxURI() *InstanceMetadataUpsertOne {
 	return u.Update(func(s *InstanceMetadataUpsert) {
 		s.UpdateSharedInboxURI()
+	})
+}
+
+// ClearSharedInboxURI clears the value of the "sharedInboxURI" field.
+func (u *InstanceMetadataUpsertOne) ClearSharedInboxURI() *InstanceMetadataUpsertOne {
+	return u.Update(func(s *InstanceMetadataUpsert) {
+		s.ClearSharedInboxURI()
 	})
 }
 
@@ -1790,6 +1808,13 @@ func (u *InstanceMetadataUpsertBulk) SetSharedInboxURI(v string) *InstanceMetada
 func (u *InstanceMetadataUpsertBulk) UpdateSharedInboxURI() *InstanceMetadataUpsertBulk {
 	return u.Update(func(s *InstanceMetadataUpsert) {
 		s.UpdateSharedInboxURI()
+	})
+}
+
+// ClearSharedInboxURI clears the value of the "sharedInboxURI" field.
+func (u *InstanceMetadataUpsertBulk) ClearSharedInboxURI() *InstanceMetadataUpsertBulk {
+	return u.Update(func(s *InstanceMetadataUpsert) {
+		s.ClearSharedInboxURI()
 	})
 }
 

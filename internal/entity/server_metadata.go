@@ -10,6 +10,8 @@ import (
 type InstanceMetadata struct {
 	*ent.InstanceMetadata
 
+	URI *versiautils.URL
+
 	Moderators           []User
 	ModeratorsCollection *versiautils.URL
 
@@ -35,8 +37,13 @@ func NewInstanceMetadata(dbData *ent.InstanceMetadata) (*InstanceMetadata, error
 		return nil, err
 	}
 
-	if n.SharedInbox, err = versiautils.ParseURL(dbData.SharedInboxURI); err != nil {
+	if n.URI, err = versiautils.ParseURL(dbData.URI); err != nil {
 		return nil, err
+	}
+	if dbData.SharedInboxURI != nil {
+		if n.SharedInbox, err = versiautils.ParseURL(*dbData.SharedInboxURI); err != nil {
+			return nil, err
+		}
 	}
 	if dbData.ModeratorsURI != nil {
 		if n.ModeratorsCollection, err = versiautils.ParseURL(*dbData.ModeratorsURI); err != nil {

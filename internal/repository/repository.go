@@ -46,7 +46,8 @@ type NoteRepository interface {
 
 type InstanceMetadataRepository interface {
 	GetByHost(ctx context.Context, host string) (*entity.InstanceMetadata, error)
-	ImportFromVersiaByURI(ctx context.Context, uri *versiautils.URL) (*entity.InstanceMetadata, error)
+
+	Resolve(ctx context.Context, host string) (*entity.InstanceMetadata, error)
 }
 
 type Manager interface {

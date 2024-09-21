@@ -3071,7 +3071,7 @@ func (m *InstanceMetadataMutation) SharedInboxURI() (r string, exists bool) {
 // OldSharedInboxURI returns the old "sharedInboxURI" field's value of the InstanceMetadata entity.
 // If the InstanceMetadata object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InstanceMetadataMutation) OldSharedInboxURI(ctx context.Context) (v string, err error) {
+func (m *InstanceMetadataMutation) OldSharedInboxURI(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSharedInboxURI is only allowed on UpdateOne operations")
 	}
@@ -3085,9 +3085,22 @@ func (m *InstanceMetadataMutation) OldSharedInboxURI(ctx context.Context) (v str
 	return oldValue.SharedInboxURI, nil
 }
 
+// ClearSharedInboxURI clears the value of the "sharedInboxURI" field.
+func (m *InstanceMetadataMutation) ClearSharedInboxURI() {
+	m.sharedInboxURI = nil
+	m.clearedFields[instancemetadata.FieldSharedInboxURI] = struct{}{}
+}
+
+// SharedInboxURICleared returns if the "sharedInboxURI" field was cleared in this mutation.
+func (m *InstanceMetadataMutation) SharedInboxURICleared() bool {
+	_, ok := m.clearedFields[instancemetadata.FieldSharedInboxURI]
+	return ok
+}
+
 // ResetSharedInboxURI resets all changes to the "sharedInboxURI" field.
 func (m *InstanceMetadataMutation) ResetSharedInboxURI() {
 	m.sharedInboxURI = nil
+	delete(m.clearedFields, instancemetadata.FieldSharedInboxURI)
 }
 
 // SetModeratorsURI sets the "moderatorsURI" field.
@@ -4053,6 +4066,9 @@ func (m *InstanceMetadataMutation) ClearedFields() []string {
 	if m.FieldCleared(instancemetadata.FieldPrivateKey) {
 		fields = append(fields, instancemetadata.FieldPrivateKey)
 	}
+	if m.FieldCleared(instancemetadata.FieldSharedInboxURI) {
+		fields = append(fields, instancemetadata.FieldSharedInboxURI)
+	}
 	if m.FieldCleared(instancemetadata.FieldModeratorsURI) {
 		fields = append(fields, instancemetadata.FieldModeratorsURI)
 	}
@@ -4090,6 +4106,9 @@ func (m *InstanceMetadataMutation) ClearField(name string) error {
 		return nil
 	case instancemetadata.FieldPrivateKey:
 		m.ClearPrivateKey()
+		return nil
+	case instancemetadata.FieldSharedInboxURI:
+		m.ClearSharedInboxURI()
 		return nil
 	case instancemetadata.FieldModeratorsURI:
 		m.ClearModeratorsURI()

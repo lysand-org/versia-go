@@ -47,7 +47,7 @@ type InstanceMetadata struct {
 	// SoftwareVersion holds the value of the "softwareVersion" field.
 	SoftwareVersion string `json:"softwareVersion,omitempty"`
 	// SharedInboxURI holds the value of the "sharedInboxURI" field.
-	SharedInboxURI string `json:"sharedInboxURI,omitempty"`
+	SharedInboxURI *string `json:"sharedInboxURI,omitempty"`
 	// ModeratorsURI holds the value of the "moderatorsURI" field.
 	ModeratorsURI *string `json:"moderatorsURI,omitempty"`
 	// AdminsURI holds the value of the "adminsURI" field.
@@ -231,7 +231,8 @@ func (im *InstanceMetadata) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field sharedInboxURI", values[i])
 			} else if value.Valid {
-				im.SharedInboxURI = value.String
+				im.SharedInboxURI = new(string)
+				*im.SharedInboxURI = value.String
 			}
 		case instancemetadata.FieldModeratorsURI:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -383,8 +384,10 @@ func (im *InstanceMetadata) String() string {
 	builder.WriteString("softwareVersion=")
 	builder.WriteString(im.SoftwareVersion)
 	builder.WriteString(", ")
-	builder.WriteString("sharedInboxURI=")
-	builder.WriteString(im.SharedInboxURI)
+	if v := im.SharedInboxURI; v != nil {
+		builder.WriteString("sharedInboxURI=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	if v := im.ModeratorsURI; v != nil {
 		builder.WriteString("moderatorsURI=")

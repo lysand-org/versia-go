@@ -194,6 +194,12 @@ func (imu *InstanceMetadataUpdate) SetNillableSharedInboxURI(s *string) *Instanc
 	return imu
 }
 
+// ClearSharedInboxURI clears the value of the "sharedInboxURI" field.
+func (imu *InstanceMetadataUpdate) ClearSharedInboxURI() *InstanceMetadataUpdate {
+	imu.mutation.ClearSharedInboxURI()
+	return imu
+}
+
 // SetModeratorsURI sets the "moderatorsURI" field.
 func (imu *InstanceMetadataUpdate) SetModeratorsURI(s string) *InstanceMetadataUpdate {
 	imu.mutation.SetModeratorsURI(s)
@@ -609,6 +615,9 @@ func (imu *InstanceMetadataUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if value, ok := imu.mutation.SharedInboxURI(); ok {
 		_spec.SetField(instancemetadata.FieldSharedInboxURI, field.TypeString, value)
 	}
+	if imu.mutation.SharedInboxURICleared() {
+		_spec.ClearField(instancemetadata.FieldSharedInboxURI, field.TypeString)
+	}
 	if value, ok := imu.mutation.ModeratorsURI(); ok {
 		_spec.SetField(instancemetadata.FieldModeratorsURI, field.TypeString, value)
 	}
@@ -975,6 +984,12 @@ func (imuo *InstanceMetadataUpdateOne) SetNillableSharedInboxURI(s *string) *Ins
 	if s != nil {
 		imuo.SetSharedInboxURI(*s)
 	}
+	return imuo
+}
+
+// ClearSharedInboxURI clears the value of the "sharedInboxURI" field.
+func (imuo *InstanceMetadataUpdateOne) ClearSharedInboxURI() *InstanceMetadataUpdateOne {
+	imuo.mutation.ClearSharedInboxURI()
 	return imuo
 }
 
@@ -1422,6 +1437,9 @@ func (imuo *InstanceMetadataUpdateOne) sqlSave(ctx context.Context) (_node *Inst
 	}
 	if value, ok := imuo.mutation.SharedInboxURI(); ok {
 		_spec.SetField(instancemetadata.FieldSharedInboxURI, field.TypeString, value)
+	}
+	if imuo.mutation.SharedInboxURICleared() {
+		_spec.ClearField(instancemetadata.FieldSharedInboxURI, field.TypeString)
 	}
 	if value, ok := imuo.mutation.ModeratorsURI(); ok {
 		_spec.SetField(instancemetadata.FieldModeratorsURI, field.TypeString, value)
