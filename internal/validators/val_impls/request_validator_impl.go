@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	ErrInvalidSignature = errors.New("invalid signature")
+	ErrInvalidSignature    = errors.New("invalid signature")
+	ErrInvalidOriginHeader = errors.New("invalid origin header")
 
 	_ validators.RequestValidator = (*RequestValidatorImpl)(nil)
 )
@@ -41,6 +42,13 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 	defer s.End()
 	ctx = s.Context()
 
+	origin := r.Header.Get("Origin")
+	if origin != "" {
+		return ErrInvalidOriginHeader
+	}
+
+	l := i.log.WithValues("url", r.URL.Path)
+
 	r = r.WithContext(ctx)
 
 	fedHeaders, err := versiacrypto.ExtractFederationHeaders(r.Header)
@@ -48,23 +56,36 @@ func (i RequestValidatorImpl) Validate(ctx context.Context, r *http.Request) err
 		return err
 	}
 
-	user, err := i.repositories.Users().Resolve(ctx, versiautils.URLFromStd(fedHeaders.SignedBy))
-	if err != nil {
-		return err
+	var key *versiacrypto.SPKIPublicKey
+	var signerURI *versiautils.URL
+	if fedHeaders.SignedBy == nil {
+		metadata, err := i.repositories.InstanceMetadata().Resolve(ctx, origin)
+		if err != nil {
+			return err
+		}
+		signerURI = metadata.URI
+	} else {
+		user, err := i.repositories.Users().Resolve(ctx, versiautils.URLFromStd(fedHeaders.SignedBy))
+		if err != nil {
+			return err
+		}
+		signerURI = user.URI
 	}
+
+	l = l.WithValues("signer", signerURI)
 
 	body, err := utils.CopyBody(r)
 	if err != nil {
 		return err
 	}
 
-	if !(versiacrypto.Verifier{PublicKey: user.PublicKey.Key}).Verify(r.Method, r.URL, body, fedHeaders) {
-		i.log.WithCallDepth(1).Info("signature verification failed", "user", user.URI, "url", r.URL.Path)
+	if !(versiacrypto.Verifier{PublicKey: key}).Verify(r.Method, r.URL, body, fedHeaders) {
+		l.WithCallDepth(1).Info("signature verification failed")
 		s.CaptureError(ErrInvalidSignature)
 
 		return ErrInvalidSignature
 	} else {
-		i.log.V(2).Info("signature verification succeeded", "user", user.URI, "url", r.URL.Path)
+		l.V(2).Info("signature verification succeeded")
 	}
 
 	return nil

@@ -1,6 +1,7 @@
 package versiacrypto
 
 import (
+	"net/http"
 	"net/url"
 	"testing"
 
@@ -16,4 +17,16 @@ func TestFederationHeaders_String(t *testing.T) {
 	}
 
 	assert.Equal(t, "post /users/bob?z=foo&a=bar 1234567890 LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=", one.String())
+}
+
+func TestFederationHeaders_Headers(t *testing.T) {
+	headers, err := ExtractFederationHeaders(http.Header{
+		"X-Signed-By": []string{"instance"},
+		"X-Nonce":     []string{"11"},
+		"X-Signature": []string{"Cg=="},
+	})
+
+	assert.NoError(t, err)
+
+	assert.Nil(t, headers.SignedBy, "the SignedBy field should be nil when the signer is the instance")
 }

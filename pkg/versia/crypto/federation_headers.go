@@ -11,7 +11,7 @@ import (
 //
 // [Spec]: https://versia.pub/signatures#signature-definition
 type FederationHeaders struct {
-	// SignedBy is the URL to a user
+	// SignedBy is the URL to a user, or `nil` when the signature was created by the instance's privatekey
 	SignedBy *url.URL
 	// Nonce is a random string, used to prevent replay attacks
 	Nonce string
@@ -20,14 +20,23 @@ type FederationHeaders struct {
 }
 
 func (f *FederationHeaders) Inject(h http.Header) {
-	h.Set("x-signed-by", f.SignedBy.String())
+	signedBy := "instance"
+	if f.SignedBy != nil {
+		signedBy = f.SignedBy.String()
+	}
+	h.Set("x-signed-by", signedBy)
 	h.Set("x-nonce", f.Nonce)
 	h.Set("x-signature", base64.StdEncoding.EncodeToString(f.Signature))
 }
 
 func (f *FederationHeaders) Headers() map[string]string {
+	signedBy := "instance"
+	if f.SignedBy != nil {
+		signedBy = f.SignedBy.String()
+	}
+
 	return map[string]string{
-		"x-signed-by": f.SignedBy.String(),
+		"x-signed-by": signedBy,
 		"x-nonce":     f.Nonce,
 		"x-signature": base64.StdEncoding.EncodeToString(f.Signature),
 	}
@@ -39,9 +48,15 @@ func ExtractFederationHeaders(h http.Header) (*FederationHeaders, error) {
 		return nil, fmt.Errorf("missing x-signed-by header")
 	}
 
-	u, err := url.Parse(signedBy)
-	if err != nil {
-		return nil, err
+	var u *url.URL
+	if signedBy == "instance" {
+		// Signed by the instance
+	} else {
+		var err error
+		u, err = url.Parse(signedBy)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	nonce := h.Get("x-nonce")
