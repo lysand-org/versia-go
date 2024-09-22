@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"database/sql/driver"
+	"github.com/versia-pub/versia-go/pkg/versia"
 	"net/http"
 	"os"
 	"os/signal"
@@ -256,6 +257,7 @@ func initInstance(db *ent.Client, telemetry *unitel.Telemetry) error {
 	err = tx.InstanceMetadata.Create().
 		SetIsRemote(false).
 		SetURI(utils.InstanceMetadataAPIURL().String()).
+		SetExtensions(versia.Extensions{}).
 		SetName(config.C.InstanceName).
 		SetNillableDescription(config.C.InstanceDescription).
 		SetHost(config.C.Host).
