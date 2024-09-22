@@ -73,7 +73,7 @@ func server(
 	}))
 
 	web.Use(unitelhttp.FiberMiddleware(telemetry, unitelhttp.FiberMiddlewareConfig{
-		Repanic:         false,
+		Repanic:         true,
 		WaitForDelivery: false,
 		Timeout:         5 * time.Second,
 		// host for incoming requests
